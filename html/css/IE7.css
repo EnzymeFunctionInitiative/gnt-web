@@ -1,0 +1,7 @@
+	@charset "UTF-8";
+/* CSS Document IE fixes */
+
+.content_nav li { list-style: none; margin:0 0 0 6px; }
+        .headlines_top li { list-style: none; margin:0 0 0 0px; }
+        .left_nav_top li { list-style: none; margin:0 0 0 6px; }
+        .left_nav_bottom { margin-top: 10px; }

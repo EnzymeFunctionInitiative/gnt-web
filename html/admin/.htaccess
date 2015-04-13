@@ -1,0 +1,13 @@
+SSLRequireSSL
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+AuthType Basic
+AuthName "EFI EST Admin"
+AuthBasicProvider ldap
+AuthzLDAPAuthoritative on
+AuthLDAPURL ldap://auth.igb.illinois.edu:389/ou=People,dc=igb,dc=uiuc,dc=edu
+require ldap-group cn=efi_est_admins,ou=group,dc=igb,dc=uiuc,dc=edu
+AuthLDAPGroupAttributeIsDN off
+AuthLDAPGroupAttribute memberUid

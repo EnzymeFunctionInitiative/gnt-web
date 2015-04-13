@@ -1,0 +1,11 @@
+Installation Guide
+
+1.Edit the php.ini file so it has the following settings.
+        a. file_uploads = On
+        b. upload_max_filesize = 2048M
+        c. post_max_size = 2048M
+        d. memory_limit = 4048M
+        e. max_input_time = 100
+        f. max_execution_time = 100
+
+2.  Set permissions on /uploads and /html/output folder to allow apache user to read/write to it

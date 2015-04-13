@@ -1,0 +1,36 @@
+<?php
+////////////////////////////////////
+//                                              
+//      EFI GNN
+//      settings.inc.php                        
+//                                              
+//      Settings for the scripts
+//                                              
+//      David Slater                            
+//      May 2014                                
+//                                              
+////////////////////////////////////
+
+define("__TITLE__","EFI GNT");
+define("__TIMEZONE__","America/Chicago");
+define("__GNN_SCRIPT__","");
+define("__GNN_MODULE__","");
+define("__OUTPUT_DIR__","");
+define("__RELATIVE_OUTPUT_DIR__","/output");
+define("__DEFAULT_NEIGHBOR_SIZE__",10);
+define("__VALID_FILE_TYPE__","xgmml");
+define("__UPLOAD_DIR__","");
+define("__MYSQL_HOST__","");
+define("__MYSQL_USER__","");
+define("__MYSQL_PASSWORD__","");
+define("__MYSQL_DATABASE__","");
+define("__ADMIN_EMAIL__","");
+define("__RETENTION_DAYS__","7");
+define("__EMAIL_FOOTER__","");
+
+define("__MAX_TIMEOUT__","3600");
+define("__COOCCURRENCE__",20);
+
+define("__UNIPROT_VERSION__","2015_02");
+define("__ENA_VERSION__","122");
+?>
