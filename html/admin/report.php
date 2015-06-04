@@ -14,7 +14,7 @@ if (isset($_POST['create_job_report'])) {
 	$month = $_POST['month'];
 	$year = $_POST['year'];
 	$data =	statistics::get_jobs($db,$month,$year);
-	
+	$filename = "job_report-" . $year . "-" . $month . "." .$type;
 }
 
 
