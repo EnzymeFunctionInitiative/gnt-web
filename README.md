@@ -8,9 +8,9 @@ This project is the web interface for the EFI-Genome Neighborhood Tool located a
 
 ## Installation
 1.  Git Clone the repository
-'''git clone https://github.com/EnzymeFunctionInitiative/gnt-web.git'''
+```git clone https://github.com/EnzymeFunctionInitiative/gnt-web.git```
 
-2.Edit the php.ini file so it has the following settings.
+2. Edit the php.ini file so it has the following settings.
 	* file_uploads = On
         * upload_max_filesize = 2048M
         * post_max_size = 2048M
@@ -20,10 +20,10 @@ This project is the web interface for the EFI-Genome Neighborhood Tool located a
 
 3.  Set permissions on /uploads and /html/output folder to allow apache user to read/write to it
 4.  Add Alias in the apache config to point to the html folder
-'''Alias /efi-gnt /var/www/efi-gnt/html'''
+```Alias /efi-gnt /var/www/efi-gnt/html```
 5.  Create Mysql database and user
 6.  Import sql schema into mysql
-'''mysql -u root -p efi-gnt < sql/efi-gnt.sql'''
+```mysql -u root -p efi-gnt < sql/efi-gnt.sql```
 7.  Copy conf/settings.inc.php.example to conf/settings.inc.php
 8.  Edit conf/setting.inc.php with mysql information, location of gnn script, gnn module name
 9.  Done
