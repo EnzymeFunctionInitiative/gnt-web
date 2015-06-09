@@ -32,6 +32,9 @@ else {
 	<hr>
 	<h4>Network Information</h4>
 	<table width="100%" border="1">
+	<tr>
+		<td>Uploaded Filename:</td><td><?php echo $gnn->get_filename(); ?></td>
+	</tr>
         <tr>
 		<td>Neighborhood Size</td><td><?php echo $gnn->get_size(); ?></td>
         </tr>
