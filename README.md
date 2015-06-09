@@ -11,12 +11,12 @@ This project is the web interface for the EFI-Genome Neighborhood Tool located a
 '''git clone https://github.com/EnzymeFunctionInitiative/gnt-web.git'''
 
 2.Edit the php.ini file so it has the following settings.
-        a. file_uploads = On
-        b. upload_max_filesize = 2048M
-        c. post_max_size = 2048M
-        d. memory_limit = 4048M
-        e. max_input_time = 100
-        f. max_execution_time = 100
+	* file_uploads = On
+        * upload_max_filesize = 2048M
+        * post_max_size = 2048M
+        * memory_limit = 4048M
+        * max_input_time = 100
+        * max_execution_time = 100
 
 3.  Set permissions on /uploads and /html/output folder to allow apache user to read/write to it
 4.  Add Alias in the apache config to point to the html folder
