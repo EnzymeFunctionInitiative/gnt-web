@@ -112,8 +112,8 @@ class gnn {
 		$this->delete_outputs();
 		$this->set_time_started();
 		$binary = settings::get_gnn_script();
+		mkdir(settings::get_output_dir() . "/" . $this->get_id());
 		$exec = "source /etc/profile.d/modules.sh; module load " . functions::get_gnn_module() . "; ";
-
 		$exec .= $binary . " ";
 		$exec .= "-ssnin " . $this->get_full_path() . " ";
 		$exec .= "-n " . $this->get_size() . " ";
@@ -146,51 +146,59 @@ class gnn {
 	}
 
 	public function get_color_ssn() {
+		$filename = $this->get_id() . "_color_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
 		$output_dir = settings::get_output_dir();
-		$full_path = $output_dir . "/" . $this->get_id() . "_color.xgmml";
+		$full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
 		return $full_path;
 
 	}
 	public function get_relative_color_ssn() {
+		$filename = $this->get_id() . "_color_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
 		$output_dir = settings::get_rel_output_dir();
-                $full_path = $output_dir . "/" . $this->get_id() . "_color.xgmml";
+                $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
                 return $full_path;
 
 	}
 	public function get_gnn() {
+		$filename = $this->get_id() . "_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
 		$output_dir = settings::get_output_dir();
-		$full_path = $output_dir . "/" . $this->get_id() . "_gnn.xgmml";
+		$full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
 		return $full_path;
 	
 	}
         public function get_relative_gnn() {
+		$filename = $this->get_id() . "_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
                 $output_dir = settings::get_rel_output_dir();
-                $full_path = $output_dir . "/" . $this->get_id() . "_gnn.xgmml";
+                $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
                 return $full_path;
 
         }
 
 	public function get_no_matches() {
+		$filename = $this->get_id() . "_no_matches_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
                 $output_dir = settings::get_output_dir();
-                $full_path = $output_dir . "/" . $this->get_id() . "_no_matches.xgmml";
+                $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
                 return $full_path;
 
 	}
         public function get_relative_no_matches() {
+		$filename = $this->get_id() . "_no_matches_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
                 $output_dir = settings::get_rel_output_dir();
-                $full_path = $output_dir . "/" . $this->get_id() . "_no_matches.xgmml";
+                $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
                 return $full_path;
 
         }
 
 	public function get_stats() {
+		$filename = $this->get_id() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".tab";
 		$output_dir = settings::get_output_dir();
-		$full_path = $output_dir . "/" . $this->get_id() . "_stats.tab";
+		$full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
 		return $full_path;
 	}
 	public function get_relative_stats() {
+		$filename = $this->get_id() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".tab";
 		$output_dir = settings::get_rel_output_dir();
-		$full_path = $output_dir . "/" . $this->get_id() . "_stats.tab";
+		$full_path = $output_dir . "/" . $this->get_id() . "/".  $filename;
 		return $full_path;
 
 	}

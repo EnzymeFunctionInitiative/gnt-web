@@ -29,6 +29,17 @@ else {
 
 <hr>
 	<img src="images/quest_stages_c.jpg" width="990" height="119" alt="stage 1">
+	<hr>
+	<h4>Network Information</h4>
+	<table width="100%" border="1">
+        <tr>
+		<td>Neighborhood Size</td><td><?php echo $gnn->get_size(); ?></td>
+        </tr>
+	<tr>
+		<td>Input % Co-Occurrence</td><td><?php echo $gnn->get_cooccurrence(); ?>%</td>
+	</tr>
+	</table>
+
    <hr>
 	<h4>Colored Sequence Similarity Network (SSN)</h4>
 	<p>Each node in the network is a single protein from the data set. Large files (&gt;500MB) may not open.</p>
