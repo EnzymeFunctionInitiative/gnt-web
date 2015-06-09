@@ -5,3 +5,25 @@ The EFI, http://enzymefunction.org,  has developed an easy to use program that e
 Many existing genome neighborhood tools compare gene neighborhoods among multiple prokaryotic genomes in order to infer phylogenetic relationships. EFI-GNT is different in that it allows the comparison of genome neighborhoods between clusters of similar protein sequences in order to facilitate the assignment of function within protein families and superfamilies. 
 
 This project is the web interface for the EFI-Genome Neighborhood Tool located at https://github.com/EnzymeFunctionInitiative/EST
+
+## Installation
+1.  Git Clone the repository
+'''git clone https://github.com/EnzymeFunctionInitiative/gnt-web.git'''
+
+2.Edit the php.ini file so it has the following settings.
+        a. file_uploads = On
+        b. upload_max_filesize = 2048M
+        c. post_max_size = 2048M
+        d. memory_limit = 4048M
+        e. max_input_time = 100
+        f. max_execution_time = 100
+
+3.  Set permissions on /uploads and /html/output folder to allow apache user to read/write to it
+4.  Add Alias in the apache config to point to the html folder
+'''Alias /efi-gnt /var/www/efi-gnt/html'''
+5.  Create Mysql database and user
+6.  Import sql schema into mysql
+'''mysql -u root -p efi-gnt < sql/efi-gnt.sql'''
+7.  Copy conf/settings.inc.php.example to conf/settings.inc.php
+8.  Edit conf/setting.inc.php with mysql information, location of gnn script, gnn module name
+9.  Done
