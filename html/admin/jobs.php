@@ -40,7 +40,7 @@ foreach ($jobs as $job) {
 
 
 
-$month_html = "<select class='input-small' name='month'>";
+$month_html = "<select class='form-control' name='month'>";
 for ($i=1;$i<=12;$i++) {
         if ($month == $i) {
                 $month_html .= "<option value='" . $i . "' selected='selected'>" . date("F", mktime(0, 0, 0, $i, 10)) . "</option>\n";
@@ -51,7 +51,7 @@ for ($i=1;$i<=12;$i++) {
 }
 $month_html .= "</select>";
 
-$year_html = "<select class='input-small' name='year'>";
+$year_html = "<select class='form-control' name='year'>";
 for ($i=2014;$i<=date('Y');$i++) {
         if ($year = $i) {
                 $year_html .= "<option selected='selected' value='" . $i . "'>". $i . "</option>\n";
@@ -75,7 +75,7 @@ $monthName = date("F", mktime(0, 0, 0, $month, 10));
 
 </form>
 <h4>Jobs</h4>
-<table class='table table-condensed table-bordered'>
+<table class='table table-condensed table-bordered table-striped'>
 <tr>
 	<th>&nbsp</th>
 	<th>EFI-GNT ID</th>
