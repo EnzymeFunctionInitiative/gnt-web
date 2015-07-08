@@ -16,6 +16,8 @@ parsed for node and edge information. All clusters and their
 corresponding sequence accession numbers, with the exception of
 singletons which are excluded from analysis, are assigned a number and an unique color.</p>
 
+<img src='images/Tutorial_Figure7.jpeg' width='580'>
+
 <p><br>In the second step, after “cluster membership” information is
 gathered, the European Nucleotide Archive (<a href="http://www.ebi.ac.uk/ena/">ENA</a>)
 is queried using the UniProt accession number of each protein
@@ -36,7 +38,7 @@ neighborhood information.
 <p><br>The third and final step entails writing the GNN network file and
 coloring the original SSN network. The entire process is extremely
 fast and computationally inexpensive enough to be carried out on the
-same machine that hosts the Web server.</p>
+same machine that hosts the Web server. (average wait time = 3.5 minutes).</p>
         
 </div>
 <div>

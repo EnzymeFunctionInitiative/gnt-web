@@ -69,44 +69,22 @@ class gnn {
 
 	}
 
-        public static function test_create($db,$email,$size,$tmp_filename,$filename,$cooccurrence) {
-                $result = false;
-                $insert_array = array('gnn_email'=>$email,
-                        'gnn_size'=>$size,
-                        'gnn_key'=>self::generate_key(),
-                        'gnn_filename'=>$filename,
-                        'gnn_cooccurrence'=>$cooccurrence);
-                $result = $db->build_insert('gnn',$insert_array);
-                if ($result) { 
-                        self::test_copy($tmp_filename,$result);
-                }
-                return $result;
-
-        }
-
 	public static function copy_to_uploads_dir($tmp_file,$id) {
                 $uploads_dir = settings::get_uploads_dir();
                 $file_type = settings::get_valid_file_type();
                 $filename = $id . "." . $file_type;
                 $full_path = $uploads_dir . "/" . $filename;
-                if (move_uploaded_file($tmp_file,$full_path)) {
-                        return $filename;
-                }
+		if (is_uploaded_file($tmp_file)) {
+			if (move_uploaded_file($tmp_file,$full_path)) { return $filename; }
+	
+		}
+		else {
+			if (copy($tmp_file,$full_path)) { return $filename; }
+		}
                 return false;
 
         }
 
-        public static function test_copy($tmp_file,$id) {
-                $uploads_dir = settings::get_uploads_dir();
-                $file_type = settings::get_valid_file_type();
-                $filename = $id . "." . $file_type;
-                $full_path = $uploads_dir . "/" . $filename;
-                if (copy($tmp_file,$full_path)) {
-                        return $filename;
-                }
-                return false;
-
-        }
 
 	public function run_gnn() {
 		$this->delete_outputs();

@@ -52,8 +52,8 @@ this SSN-cluster. Additional tutorials regarding the manipulation of
 networks in Cytoscape can be found <a href="http://enzymefunction.org/resources/tutorials">here</a>.</p>
 <p><br><img src='images/Tutorial_Figure5.jpeg' alt='Figure 3' width='580'>
 
-<p><br><i>Figure 3. </i>A full GNN prepared with EFI-GNT for the proline racemase family
-(PF05544) [left] and a GNN that has been filtered for SSN-cluster 5
+<p><br><i>Figure 3. </i>A full GNN prepared with EFI-GNT for the Radical SAM family
+[left] and a GNN that has been filtered for SSN-cluster 93
 [right].</p>
 
 <p><br>Additionally, the spoke length is arbitrary. For crowded GNN-clusters, feel free to

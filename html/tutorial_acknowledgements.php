@@ -11,12 +11,9 @@ require_once 'includes/tutorial_header.inc.php'; ?>
 <p><u>GNN Development</u>
 
 <br>Suwen Zhao (Department of Pharmaceutical Chemistry, UCSF)
-<br>Alan Barber (Department of Biopharmaceutical Sciences, UCSF)
-<br>Shoshana Brown (Department of Biopharmaceutical Sciences, UCSF)
-<br>Eyal Akiva (Department of Bioengineering and Therapeutic Sciences, UCSF)
 <br>Jason Bouvier (Department of Biochemistry, UIUC)
 </p>
-<p><u>Website Build</u>
+<p><u>Software Build</u>
 
 <br>Daniel Davidson (Institute for Genomic Biology, UIUC)
 <br>David Slater (Institute for Genomic Biology, UIUC)

@@ -38,6 +38,7 @@ require_once('includes/header.inc.php');
         <p>Start here if you are new to the &quot;Genome Neighborhood Networks Tool&quot;.</p>
         <h4 class='center'><a href='tutorial.php'><button class='css_btn_class'>GO</button></a></h4>
 	<p style='color:red'>EFI-GNT is currently a Beta web tool. Node attributes may be added and visual styles updated.</p>
+	<p style='color:red'>Only networks generated with Uniprot Version <?php echo functions::get_uniprot_version(); ?> will work.  Any networks generated after June 11, 2015 will be accurate</p>
 
 <hr>
 	<img src="images/quest_stages_a.jpg" width="990" height="119" alt="stage 1">

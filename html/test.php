@@ -35,7 +35,7 @@ if (isset($_GET)) {
         }
 
         if ($valid) {
-                $id = gnn::test_create($db,$_GET['email'],$_GET['neighbor_size'],$path . $_GET['ssn_file'],basename($_GET['ssn_file']),$cooccurrence);
+                $id = gnn::create($db,$_GET['email'],$_GET['neighbor_size'],$path . $_GET['ssn_file'],basename($_GET['ssn_file']),$cooccurrence);
 		$gnn = new gnn($db,$id);
 		$key = $gnn->get_key();
 		header("Location: stepb.php?id=" . $id . "&key=" . $key); 

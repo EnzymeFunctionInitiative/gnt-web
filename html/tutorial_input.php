@@ -15,17 +15,18 @@ Institute for Genomic Biology at the University of Illinois at
 Urbana-Champaign. Acceptable input is an xgmml file resulting from
 the SSN-building web tool, <a href="http://efi.igb.illinois.edu/efi-est/">EFI-EST</a>,
 or a network that has been manipulated and exported from <a href="http://www.cytoscape.org/download.html">Cytoscape</a>
-(maximum size = 500 MB). This SSN may be a full network or a rep-node
+(maximum size = 2048 MB). This SSN may be a full network or a rep-node
 network. The user then designates the number of neighbors to retrieve
 from upstream and downstream of each query using the pull-down menu.
 As with EFI-EST, the user also inputs an e-mail address to which an
 email containing a link to the results will be sent.</p>
 
+<p>EFI-GNT is also capable of accepting custom networks given the .xgmml file has a node attribute named "ACC" that contains UniProt accession IDs.</p>
 <p><br><img src='images/Tutorial_Figure3.jpeg' alt='Figure 3' width='580'></p>
 
-<p><br>The EFI-GNT output is a pair of .xgmml files. The genome neighbor
+<p><br>The EFI-GNT output is a pair of .xgmml files and a tab file. The genome neighbor
 network (GNN) and an updated version of the original SSN that is now
-colored by cluster to correspond to the spoke nodes within the GNN. A
+colored by cluster to correspond to the spoke nodes within the GNN.  A statistical summary is available for download. This spreadsheet contains information for retrieved Pfam's, the co-occurrence, average gene distance, and cluster size for each SSN cluster.  A
 link from which both networks can be downloaded for a period of seven
 days will be sent to the e-mail address provided. The networks will
 be stored on the server for up to seven days.</p>

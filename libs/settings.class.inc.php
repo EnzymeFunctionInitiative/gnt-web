@@ -9,11 +9,7 @@ class settings {
 	}
 
 	public static function get_gnn_script() {
-		$gnn_script = __GNN_SCRIPT__;
-		if (file_exists($gnn_script)) {
-			return $gnn_script;
-		}
-		return false;
+		return __GNN_SCRIPT__;
 
 
 	}

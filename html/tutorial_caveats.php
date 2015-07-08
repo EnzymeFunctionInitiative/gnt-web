@@ -19,11 +19,11 @@ closer proximity are less likely to be “noise”.
 <p><br>The consolidation of an SSN-cluster into a single representative
 spoke node necessitates that the degree of SSN fractionation be
 optimized (ideally) prior to GNN generation. Thus, the more confident
-the user is in the SSN e-value cutoff, the more useful they will find
+the user is in the SSN alignment score cutoff, the more useful they will find
 the GNN information. An iterative approach likely will yield the most
 useful information. Please see the <a href="http://efi.igb.illinois.edu/efi-est/tutorial.php">EFI-EST
 tutorial</a> for information regarding the selection of a
-satisfactory e-value cutoff.</p>
+satisfactory alignment score cutoff.</p>
 <p><br>Additionally, there are several reasons why a query sequence may return less than
 the user-designated number of neighbors. Some of these caveats will
 be addressed in future iterations of EFI-GNT, while others require
@@ -65,9 +65,9 @@ substrate, but further exploiting the use of SSNs can provide family
 or superfamily context to the function of the neighbor beyond that of
 BLASTing the sequence against the publically available databases, not
 to mention the additional benefit of being able to interact with the
-data in Cytoscape. In general, the GNN produced by EFI-GNT provides a
+data in Cytoscape. <u>In general, the GNN produced by EFI-GNT provides a
 wealth of information, and this information can be leveraged best
-through trial and error.</p>
+through trial and error.</u></p>
 
 <p><br>We are developing enhancements to EFI-GNT that will provide statistical analyses so that user will be able to more easily identify the most abundant Pfam families identified by each query cluster.  This analysis quickly allows the signal to be segregated from the noise.  When implemented, these analyses will be available for download on the EFI-GNT results page.</p>
 

@@ -28,7 +28,7 @@ sequence is maintained within the hub node as a Node Attribute
 <ul>
 	<li>EC number (if extant)</li>
 	<li>PDB code (if extant)</li>
-	<li>PDB-hit (desription)</li>
+	<li>PDB-hit (described below)</li>
 	<li>Swiss-Prot annotation status (reviewed/unreviewed)</li>
 </ul>
 <p><br>Additional Node Attributes that are specific to the hub node:</p>
@@ -40,6 +40,21 @@ sequence is maintained within the hub node as a Node Attribute
 	<li>Pfam description = a short description of the family, e.g.,
 	Trypsin-like peptidase domain</li>
 </ul>
+<p><br>PDB-hit is a novel Node Attribute that indicates whether a sequence
+shares significant (e-value &lt; e<sup>-30</sup>) homology with a
+protein for which an X-ray crystal structure has been deposited in the PDB.
+The format of this information is “PDB code:e-value”. This
+information is valuable to computational chemists wanting to
+construct a structure model using a known structure as a template
+from a protein similar in sequence. Ideally, the neighbor sequence
+itself would have a deposited X-ray crystal structure, but this is
+most often not the case. Nonetheless, confident structure models have
+been employed successfully in pathway docking to determine the
+substrates of unknown enzymes. For users that are new to homology
+modeling, we suggest investigating the many useful modeling tools
+being developed by the Andrej Sali lab at the University of
+California at San Francisco <a href='http://salilab.org/our_resources.html'>here</a>.</p>
+
 <p><br><b>Spoke Node</b></p>
 <p><br>
 The &quot;spokes&quot; then radiate out of the central hub node to
@@ -124,8 +139,9 @@ neighborhood. The Node Attributes specific to spokes nodes are:</p>
 	SSN-cluster</li>
 	<li>Num_queries = the number of query sequences from the SSN-cluster
 	that retrieved a neighbor from this connected Pfam</li>
-	<li>Num_ratio = the “percent representation” as a ratio,
+	<li>Num_ratio = the “percent co-occurrence” as a ratio,
 	specifically num_neighbors/SSNclusterSize</li>
+	<li>ClusterFraction = the "percent co-occurrence" as decimal</li>
 </ul>
 <p><br>This hub-and-spoke clustering puts the emphasis on unique Pfam
 families that are encoded by the genome neighborhood that includes the sequences from the
@@ -139,20 +155,6 @@ operon, the presence of kinases and isomerases, may indicate that the
 proteins of this particular SSN-cluster may carry out an
 aldolase-type reaction for a catabolic pathway. </p>
 
-<p><br>PDB-hit is a novel Node Attribute that indicates whether a sequence
-shares significant (e-value &lt; e<sup>-15</sup>) homology with a
-protein for which an X-ray crystal structure has been deposited in the PDB.
-The format of this information is “PDB code:e-value”. This
-information is valuable to computational chemists wanting to
-construct a structure model using a known structure as a template
-from a protein similar in sequence. Ideally, the neighbor sequence
-itself would have a deposited X-ray crystal structure, but this is
-most often not the case. Nonetheless, confident structure models have
-been employed successfully in pathway docking to determine the
-substrates of unknown enzymes. For users that are new to homology
-modeling, we suggest investigating the many useful modeling tools
-being developed by the Andrej Sali lab at the University of
-California at San Francisco <a href='http://salilab.org/our_resources.html'>here</a>.</p>
 
 <p><br><a name="_GoBack"></a>For the sake of completion, EFI-GNT can collect up to 10 ENA entries
 both upstream and downstream of the query. This “neighborhood”
@@ -169,6 +171,7 @@ signal-to-noise ratio; where “signal” is biologically relevant
 gene neighbors and “noise” is unrelated, or coincidental, gene
 neighbors. 
 </p>
+<p>*Note - by necessity, both up - and downstream neighbors must be collected</p>
         </div>
 <div>
   <div> </div>
