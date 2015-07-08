@@ -23,7 +23,7 @@ foreach ($jobs as $job) {
 		$gnn_html .= "<td>&nbsp</td>";
 	}
 	else {
-		$gnn_html .= "<td><a href='" . $url ."'><i class='icon-share'></i></a></td>";
+		$gnn_html .= "<td><a href='" . $url ."'><span class='glyphicon glyphicon-share'></span></a></td>";
 	}
 	$gnn_html .= "<td>" . $job['GNT ID'] . "</td>\n";
 	$gnn_html .= "<td>" . $job['Email'] . "</td>\n";
