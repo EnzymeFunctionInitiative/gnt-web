@@ -294,14 +294,18 @@ class gnn {
 
 	public function email_user() {
 
-
+		$boundary = uniqid('np');
                 $subject = "EFI-GNN Complete";
                 $from = settings::get_admin_email();
                 $to = $this->get_email();
                 $url = settings::get_web_root() . "/stepc.php";
                 $full_url = $url . "?" . http_build_query(array('id'=>$this->get_id(),
                                 'key'=>$this->get_key()));
-                $message = "<br>Your EFI-GNN is Complete\r\n";
+
+		//html email
+                $message = "\r\n\r\n--" . $boundary . "\r\n";
+		$message .= "Content-type:text/html;charset='iso-8859-1'\r\n\r\n";
+		$message .= "<br>Your EFI-GNN is Complete\r\n";
                 $message .= "<br>To view results, please go to\r\n";
                 $message .= "<a href='" . $full_url . "'>" . $full_url . "</a>\r\n";
                 $message .= "<br>EFI-GNN ID: " . $this->get_id() . "\r\n";
@@ -310,12 +314,30 @@ class gnn {
 		$message .= "<br>% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%\r\n";
                 $message .= "<br>Time Submitted: " . $this->get_time_created() . "\r\n";
 		$message .= "<br>Time Completed: " . $this->get_time_completed() . "\r\n";
-                $message .= "<br>";
-		$message .= "<br>This data will only be retained for " . settings::get_retention_days() . " days.\r\n";
-		$message .= "<br>";
-                $message .= settings::get_email_footer() . "\r\n";
-                $headers = "From: " . $from . "\r\n";
-                $headers .= "Content-Type: text/html; charset=iso-8859-1" . "\r\n";
+		$message .= "<br><br>This data will only be retained for " . settings::get_retention_days() . " days.\r\n";
+		$message .= "<br>\r\n";
+                $message .= nl2br(settings::get_email_footer(),false) . "\r\n";
+
+		//plain text email
+		$message .= "\r\n\r\n--" . $boundary . "\r\n";
+	        $message .= "Content-type:text/plain;charset='iso-8859-1'\r\n\r\n";
+		$message .= "Your EFI-GNN is Complete\r\n";
+                $message .= "To view results, please go to\r\n";
+                $message .=  $full_url . "\r\n";
+                $message .= "EFI-GNN ID: " . $this->get_id() . "\r\n";
+                $message .= "Uploaded Filename: " . $this->get_filename() . "\r\n";
+                $message .= "Neighborhood Size: " . $this->get_size() . "\r\n";
+                $message .= "% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%\r\n";
+                $message .= "Time Submitted: " . $this->get_time_created() . "\r\n";
+                $message .= "Time Completed: " . $this->get_time_completed() . "\r\n";
+                $message .= "\r\nThis data will only be retained for " . settings::get_retention_days() . " days.\r\n";
+                $message .= "\r\n" . settings::get_email_footer() . "\r\n";
+		$message .= "\r\n\r\n--" . $boundary . "--\r\n";
+
+		//headers
+		$headers = "MIME-Version: 1.0\r\n";
+                $headers .= "From: " . $from . "\r\n";
+                $headers .= "Content-Type: multipart/alternative;boundary=" . $boundary . "\r\n";
                 mail($to,$subject,$message,$headers," -f " . $from);
 
 
