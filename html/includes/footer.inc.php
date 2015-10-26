@@ -1,4 +1,5 @@
-  <div class="clear"></div>
+
+<div class="clear"></div>
 <p class="suggestions"><a href="http://enzymefunction.org/content/sequence-similarity-networks-tool-feedback" target="_blank">Need help or have suggestions or comments?   Please provide it here &raquo;</a></p>
 </div>
 
