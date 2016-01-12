@@ -1,5 +1,8 @@
 <?php
 
+require_once('Mail.php');
+require_once('Mail/mime.php');
+
 class gnn {
 
 	////////////////Private Variables//////////
@@ -19,6 +22,8 @@ class gnn {
 	protected $gnn_nodes;
 	protected $gnn_edges;
 	protected $gnn_pfams;
+	protected $log_file = "log.txt";
+	protected $eol = PHP_EOL;
         ///////////////Public Functions///////////
 
 	 public function __construct($db,$id = 0) {
@@ -106,11 +111,10 @@ class gnn {
 		$output_array = array();
 		$output = exec($exec,$output_array,$exit_status);
 		$output = trim(rtrim($output));
-		error_log("Output: " . $output);
-		error_log("Exit Status: " . $exit_status);
+		error_log("Jog ID: " . $this->get_id() . ", Exit Status: " . $exit_status);
 		$this->set_time_completed();
-		$formatted_output = implode("<br>",$output_array);
-		error_log("Output Array: " . $formatted_output);
+		$formatted_output = implode("\n",$output_array);
+		file_put_contents($this->get_log_file(), $formatted_output);
 		if (($exit_status == 0) && (strpos($output,'makegnn.pl finished') !== false)) {
 			$this->set_gnn_stats();
 			$this->set_ssn_stats();
@@ -123,6 +127,14 @@ class gnn {
 
 	}
 
+	public function get_log_file() {
+                $filename = $this->log_file;
+                $output_dir = settings::get_output_dir();
+                $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+                return $full_path;
+
+
+	}
 	public function get_color_ssn() {
 		$filename = $this->get_id() . "_color_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
 		$output_dir = settings::get_output_dir();
@@ -294,7 +306,6 @@ class gnn {
 
 	public function email_user() {
 
-		$boundary = uniqid('np');
                 $subject = "EFI-GNN Complete";
                 $from = settings::get_admin_email();
                 $to = $this->get_email();
@@ -303,42 +314,41 @@ class gnn {
                                 'key'=>$this->get_key()));
 
 		//html email
-                $message = "\r\n\r\n--" . $boundary . "\r\n";
-		$message .= "Content-type:text/html;charset='iso-8859-1'\r\n\r\n";
-		$message .= "<br>Your EFI-GNN is Complete\r\n";
-                $message .= "<br>To view results, please go to\r\n";
-                $message .= "<a href='" . $full_url . "'>" . $full_url . "</a>\r\n";
-                $message .= "<br>EFI-GNN ID: " . $this->get_id() . "\r\n";
-		$message .= "<br>Uploaded Filename: " . $this->get_filename() . "\r\n";	
-                $message .= "<br>Neighborhood Size: " . $this->get_size() . "\r\n";
-		$message .= "<br>% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%\r\n";
-                $message .= "<br>Time Submitted: " . $this->get_time_created() . "\r\n";
-		$message .= "<br>Time Completed: " . $this->get_time_completed() . "\r\n";
-		$message .= "<br><br>This data will only be retained for " . settings::get_retention_days() . " days.\r\n";
-		$message .= "<br>\r\n";
-                $message .= nl2br(settings::get_email_footer(),false) . "\r\n";
+		$html_email = "<br>Your EFI-GNN is Complete" . $this->eol;
+                $html_email .= "<br>To view results, please go to <a href='" . htmlentities($full_url) . "'>" . $full_url . "</a>" . $this->eol;
+                $html_email .= "<br>EFI-GNN ID: " . $this->get_id() . $this->eol;
+		$html_email .= "<br>Uploaded Filename: " . $this->get_filename() . $this->eol;	
+                $html_email .= "<br>Neighborhood Size: " . $this->get_size() . $this->eol;
+		$html_email .= "<br>% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%" . $this->eol;
+                $html_email .= "<br>Time Submitted: " . $this->get_time_created() . $this->eol;
+		$html_email .= "<br>Time Completed: " . $this->get_time_completed() . $this->eol;
+		$html_email .= "<br><br>This data will only be retained for " . settings::get_retention_days() . " days." . $this->eol;
+		$html_email .= "<br>";
+                $html_email .= nl2br(settings::get_email_footer(),false) . $this->eol;
 
 		//plain text email
-		$message .= "\r\n\r\n--" . $boundary . "\r\n";
-	        $message .= "Content-type:text/plain;charset='iso-8859-1'\r\n\r\n";
-		$message .= "Your EFI-GNN is Complete\r\n";
-                $message .= "To view results, please go to\r\n";
-                $message .=  $full_url . "\r\n";
-                $message .= "EFI-GNN ID: " . $this->get_id() . "\r\n";
-                $message .= "Uploaded Filename: " . $this->get_filename() . "\r\n";
-                $message .= "Neighborhood Size: " . $this->get_size() . "\r\n";
-                $message .= "% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%\r\n";
-                $message .= "Time Submitted: " . $this->get_time_created() . "\r\n";
-                $message .= "Time Completed: " . $this->get_time_completed() . "\r\n";
-                $message .= "\r\nThis data will only be retained for " . settings::get_retention_days() . " days.\r\n";
-                $message .= "\r\n" . settings::get_email_footer() . "\r\n";
-		$message .= "\r\n\r\n--" . $boundary . "--\r\n";
+		$plain_email = "Your EFI-GNN is Complete" . $this->eol;
+                $plain_email .= "To view results, please go to " . $full_url . $this->eol;
+                $plain_email .= "EFI-GNN ID: " . $this->get_id() . $this->eol;
+                $plain_email .= "Uploaded Filename: " . $this->get_filename() . $this->eol;
+                $plain_email .= "Neighborhood Size: " . $this->get_size() . $this->eol;
+                $plain_email .= "% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%" . $this->eol;
+                $plain_email .= "Time Submitted: " . $this->get_time_created() . $this->eol;
+                $plain_email .= "Time Completed: " . $this->get_time_completed() . $this->eol . $this->eol;
+                $plain_email .= "This data will only be retained for " . settings::get_retention_days() . " days." . $this->eol . $this->eol;
+                $plain_email .= settings::get_email_footer() . $this->eol;
 
-		//headers
-		$headers = "MIME-Version: 1.0\r\n";
-                $headers .= "From: " . $from . "\r\n";
-                $headers .= "Content-Type: multipart/alternative;boundary=" . $boundary . "\r\n";
-                mail($to,$subject,$message,$headers," -f " . $from);
+		$message = new Mail_mime(array("eol"=>$this->eol));
+                $message->setTXTBody($plain_email);
+                $message->setHTMLBody($html_email);
+                $body = $message->get();
+                $extraheaders = array("From"=>$from,
+                                "Subject"=>$subject
+                                );
+                $headers = $message->headers($extraheaders);
+
+                $mail = Mail::factory("mail");
+                $mail->send($to,$headers,$body);
 
 
 	}
@@ -371,23 +381,43 @@ class gnn {
                 $from = settings::get_admin_email();
                 //$to = $this->get_admin_email();
 		$to = "dslater@igb.illinois.edu";
-                $url = settings::get_web_root() . "/stepc.php";
-                $full_url = $url . "?" . http_build_query(array('id'=>$this->get_id(),
-                                'key'=>$this->get_key()));
-                $message = "<br>Your EFI-GNN failed\r\n";
-                $message .= "<br>EFI-GNN ID: " . $this->get_id() . "\r\n";
-                $message .= "<br>Uploaded Filename: " . $this->get_filename() . "\r\n";
-                $message .= "<br>Neighborhood Size: " . $this->get_size() . "\r\n";
-                $message .= "<br>% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%\r\n";
-                $message .= "<br>Time Submitted: " . $this->get_time_created() . "\r\n";
-                $message .= "<br>Time Completed: " . $this->get_time_completed() . "\r\n";
-		$message .= "<br>Error: " . $error_message . "\r\n";
-                $message .= "<br>";
-                $message .= "<br>";
-                $message .= settings::get_email_footer() . "\r\n";
-                $headers = "From: " . $from . "\r\n";
-                $headers .= "Content-Type: text/html; charset=iso-8859-1" . "\r\n";
-                mail($to,$subject,$message,$headers," -f " . $from);
+
+		//html email
+                $html_email = "<br>Your EFI-GNN failed" . $this->eol;
+                $html_email .= "<br>EFI-GNN ID: " . $this->get_id() . $this->eol;
+                $html_email .= "<br>Uploaded Filename: " . $this->get_filename() . $this->eol;
+                $html_email .= "<br>Neighborhood Size: " . $this->get_size() . $this->eol;
+                $html_email .= "<br>% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%" . $this->eol;
+                $html_email .= "<br>Time Submitted: " . $this->get_time_created() . $this->eol;
+                $html_email .= "<br>Time Completed: " . $this->get_time_completed() . $this->eol;
+		$html_email .= "<br>Error: " . $error_message . $this->eol;
+                $html_email .= "<br>";
+                $html_email .= "<br>";
+                $html_email .= nl2br(settings::get_email_footer(),false) . $this->eol;
+
+		//text email
+		$plain_email = "Your EFI-GNN failed" . $this->eol;
+                $plain_email .= "EFI-GNN ID: " . $this->get_id() . $this->eol;
+                $plain_email .= "Uploaded Filename: " . $this->get_filename() . $this->eol;
+                $plain_email .= "Neighborhood Size: " . $this->get_size() . $this->eol;
+                $plain_email .= "% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%" . $this->eol;
+                $plain_email .= "Time Submitted: " . $this->get_time_created() . $this->eol;
+                $plain_email .= "Time Completed: " . $this->get_time_completed() . $this->eol;
+                $plain_email .= "Error: " . $error_message . $this->eol;
+                $plain_email .= $this->eol . $this->eol;
+                $plain_email .= settings::get_email_footer() . $this->eol;
+
+		$message = new Mail_mime(array("eol"=>$this->eol));
+                $message->setTXTBody($plain_email);
+                $message->setHTMLBody($html_email);
+                $body = $message->get();
+                $extraheaders = array("From"=>$from,
+                                "Subject"=>$subject
+                                );
+                $headers = $message->headers($extraheaders);
+
+                $mail = Mail::factory("mail");
+                $mail->send($to,$headers,$body);
 
 
 

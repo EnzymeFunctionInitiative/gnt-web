@@ -1,6 +1,8 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-set_include_path(get_include_path() . ':../libs');
+set_include_path(get_include_path() . ':../libs:includes/pear/');
 include_once '../conf/settings.inc.php';
 function __autoload($class_name) {
         if(file_exists("../libs/" . $class_name . ".class.inc.php")) {
