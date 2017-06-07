@@ -96,7 +96,7 @@ class gnn {
 		$this->set_time_started();
 		$binary = settings::get_gnn_script();
 		mkdir(settings::get_output_dir() . "/" . $this->get_id());
-		$exec = "source /etc/profile.d/modules.sh; module load " . functions::get_gnn_module() . "; ";
+		$exec = "source /etc/profile.d/modules.sh; module load " . settings::get_efidb_module() . "; ";
 		$exec .= $binary . " ";
 		$exec .= "-ssnin " . $this->get_full_path() . " ";
 		$exec .= "-n " . $this->get_size() . " ";
@@ -104,8 +104,9 @@ class gnn {
 		$exec .= "-gnn " . $this->get_gnn() . " ";
 		$exec .= "-ssnout " . $this->get_color_ssn() . " ";
 		$exec .= "-incfrac " . $this->get_cooccurrence() . " ";
-		$exec .= "-stats " . $this->get_stats();
-
+		$exec .= "-stats " . $this->get_stats() . " ";
+		$exec .= "-noneigh " . $this->get_no_neighbors() . " ";
+		$exec .= "-pfam " . $this->get_pfam_hub();
 		error_log("Job ID: " . $this->get_id());
 		error_log("Exec: " . $exec);
 		$output_array = array();
@@ -164,6 +165,21 @@ class gnn {
 
         }
 
+        public function get_pfam_hub() {
+                $filename = $this->get_id() . "_pfam_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+                $output_dir = settings::get_output_dir();
+                $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+                return $full_path;
+
+        }
+        public function get_relative_pfam_hub() {
+                $filename = $this->get_id() . "_pfam_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+                $output_dir = settings::get_rel_output_dir();
+                $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+                return $full_path;
+
+        }
+
 	public function get_no_matches() {
 		$filename = $this->get_id() . "_no_matches_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
                 $output_dir = settings::get_output_dir();
@@ -179,6 +195,22 @@ class gnn {
 
         }
 
+	public function get_no_neighbors() {
+                $filename = $this->get_id() . "_no_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+                $output_dir = settings::get_output_dir();
+                $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+                return $full_path;
+
+
+	}
+	public function get_relative_no_neighbors() {
+                $filename = $this->get_id() . "_no_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+                $output_dir = settings::get_rel_output_dir();
+                $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+                return $full_path;
+
+
+	}
 	public function get_stats() {
 		$filename = $this->get_id() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".tab";
 		$output_dir = settings::get_output_dir();
@@ -202,9 +234,16 @@ class gnn {
 		return round(filesize($this->get_no_matches()) / 1048576,2);
 	}
 
+	public function get_no_neighbors_filesize() {
+		return round(filesize($this->get_no_neighbors()) / 1048576,2);
+	}
 	public function get_stats_filesize() {
 		return round(filesize($this->get_stats()) / 1048576,2);
-	}	
+	}
+
+        public function get_pfam_hub_filesize() {
+                return round(filesize($this->get_pfam_hub()) / 1048576,2);
+        }	
 	public function set_time_started() {
 		$current_time = date("Y-m-d H:i:s",time());
 		$sql = "UPDATE gnn SET gnn_time_started='" . $current_time . "' ";
@@ -418,9 +457,7 @@ class gnn {
 
                 $mail = Mail::factory("mail");
                 $mail->send($to,$headers,$body);
-
-
-
 	}
+
 }
 ?>

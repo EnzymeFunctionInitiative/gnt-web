@@ -33,4 +33,8 @@ define("__COOCCURRENCE__",20);
 
 define("__UNIPROT_VERSION__","2015_02");
 define("__ENA_VERSION__","122");
+
+define("__CLUSTER_USER__","");
+define("__CLUSTER_SCHEDULER__","local"); //local,torque,slurm
+
 ?>

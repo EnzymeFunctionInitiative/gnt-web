@@ -75,5 +75,25 @@ class settings {
 	public static function get_default_cooccurrence() {
 		return __COOCCURRENCE__;
 	}
+
+	public static function get_cluster_user() {
+                return __CLUSTER_USER__;
+        }
+
+        public static function get_gnn_module() {
+                return __GNN_MODULE__;
+        }
+	public static function get_efidb_module() {
+		return __EFIDB_MODULE__;
+	}
+
+        public static function get_uniprot_version() {
+                return __UNIPROT_VERSION__;
+        }
+
+        public static function get_ena_version() {
+                return __ENA_VERSION__;
+        }
+
 }
 ?>

@@ -37,16 +37,28 @@ class functions {
 		
 	}
 
-	public static function get_gnn_module() {
-		return __GNN_MODULE__;
-	}
+	public static function log_message($message) {
+                $current_time = date('Y-m-d H:i:s');
+                $full_msg = $current_time . ": " . $message . "\n";
+                if (self::log_enabled()) {
+                        file_put_contents(self::get_log_file(),$full_msg,FILE_APPEND | LOCK_EX);
+                }
+                echo $full_msg;
 
-        public static function get_uniprot_version() {
-                return __UNIPROT_VERSION__;
         }
 
-	public static function get_ena_version() {
-		return __ENA_VERSION__;
-	}
+        public static function get_log_file() {
+                $log_file = __LOG_FILE__;
+                if (!$log_file) {
+                        touch($log_file);
+                }
+                return $log_file;
+
+        }
+
+        public static function log_enabled() {
+                return __ENABLE_LOG__;
+        }
+
 }
 ?>

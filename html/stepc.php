@@ -45,7 +45,7 @@ else {
 
    <hr>
 	<h4>Colored Sequence Similarity Network (SSN)</h4>
-	<p>Each node in the network is a single protein from the data set. Large files (&gt;500MB) may not open.</p>
+	<p>The nodes in the input SSN are assigned unique cluster numbers and colors.</p>
 
     <table width="100%" border="1">
     <th></th>
@@ -56,46 +56,65 @@ else {
     <td>
 	<a href='<?php echo settings::get_web_address() . $gnn->get_relative_color_ssn(); ?>'>
 	<button>Download</button></a></td>
-    <td><?php echo $gnn->get_ssn_nodes(); ?></td>
-    <td><?php echo $gnn->get_ssn_edges(); ?></td>
+    <td><?php echo number_format($gnn->get_ssn_nodes()); ?></td>
+    <td><?php echo number_format($gnn->get_ssn_edges()); ?></td>
     <td><?php echo $gnn->get_color_ssn_filesize(); ?>MB</td>
     </tr>
     </table>
 
 	<p>&nbsp;</p>
     <div class="align_left">
-    <h4>Genome Neighborhood Network (GNN)</h4>
-	<p>Each hub node in the network represents a protein family (PFAM) of neighbors and each spoke node represents a collection of sequences from the original SSN.</p>
+    <h4>Genome Neighborhood Network (GNN): SSN Cluster Hub-Nodes</h4>
+	<p>Each hub-node in the network represents an SSN cluster that identified neighbors, with spoke-nodes for Pfam family with neighbors.</p>
     </div>
 	    <table width="100%" border="1">
     <th></th>
-    <th># Pfams</th>
-    <th># Nodes</th>
-    <th># Edges</th>
     <th>File Size (MB)</th>
     <tr style='text-align:center;'>
 	    <td>
         <a href='<?php echo settings::get_web_address() . $gnn->get_relative_gnn(); ?>'>
         <button>Download</button></a></td>
-    <td><?php echo $gnn->get_gnn_pfams(); ?></td>
-    <td><?php echo $gnn->get_gnn_nodes(); ?></td>
-    <td><?php echo $gnn->get_gnn_edges(); ?></td>
     <td><?php echo $gnn->get_gnn_filesize(); ?>MB</td>
     </tr>
     </table>
-    
-	<h4>Stats</h4>
-        <p>Download Stats File: Tabular output of (1) Cluster Number, (2) Neighbor Pfam ID, (3) Neighbor Pfam Name, (4) Cluster Fraction, and (5) Average Gene Distance</p>
+   
+    <h4>Genome Neighborhood Network (GNN): Pfam Family Hub-Nodes</h4>
+	<p>Each hub-node in the network represents a Pfam family of neighbors, with spoke-nodes for each SSN cluster that identified the Pfam family.</p>
     </div>
             <table width="100%" border="1">
     <th></th>
     <th>File Size (MB)</th>
     <tr style='text-align:center;'>
             <td>
-        <a href='<?php echo settings::get_web_address() . $gnn->get_relative_stats(); ?>'>
+        <a href='<?php echo settings::get_web_address() . $gnn->get_relative_pfam_hub(); ?>'>
         <button>Download</button></a></td>
-    <td><?php echo $gnn->get_stats_filesize(); ?>MB</td>
+    <td><?php echo $gnn->get_pfam_hub_filesize(); ?>MB</td>
     </tr>
+    </table>
+ 
+	<h4>Other Files</h4>
+        <p>As described in the tutorial, additional files will soon be available</p>
+    </div>
+            <table width="100%" border="1">
+    <th></th>
+    <th>File</th>
+    <th>File Size (MB)</th>
+       <tr style='text-align:center;'>
+        <td>
+        <a href='<?php echo settings::get_web_address() . $gnn->get_relative_no_matches(); ?>'>
+        <button>Download</button></a></td>
+        <td>No Matches File</td>
+    <td><?php echo $gnn->get_no_matches_filesize(); ?>MB</td>
+    </tr>
+    <tr style='text-align:center;'>
+        <td>
+        <a href='<?php echo settings::get_web_address() . $gnn->get_relative_no_neighbors(); ?>'>
+        <button>Download</button></a></td>
+        <td>No Neighbors File</td>
+    <td><?php echo $gnn->get_no_neighbors_filesize(); ?>MB</td>
+    </tr>
+
+
     </table>
     
     <hr>

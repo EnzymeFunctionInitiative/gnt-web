@@ -9,35 +9,26 @@ require_once 'includes/tutorial_header.inc.php'; ?>
 
 <p><br><b>What is a Genome Neighborhood Network?</b></p>
 
-<p><br>While sequence homology alone is capable of indicating protein
-function in some cases, the combination of sequence homology and
-genome neighborhood analysis increases the confidence of these
-predictions and expands functional discovery to highly divergent
-proteins. Genome neighborhood analysis can shed light on the function
-of an unknown protein due to the way bacteria organize the genes
-within their genome, for example in the simple case described below.</p>
+<p>While sequence homology alone may be sufficient to allow correct assignment of protein function in some cases, the combination of sequence homology and genome neighborhood analysis may increase the confidence of these predictions for bacterial and fungal proteins as the sequence identity decreases.   Because the genes that encode metabolic pathways in bacteria and fungi often are colocalized in the genome, analysis of the genome neighborhood for an uncharacterized enzyme may provide insights into its in vivo activity and in vivo metabolic function.</p>
 
-<p><br>In order to reduce resources consumed in the turning on and off of
-gene transcription, bacterial genes often are organized into operons.
-A single operon may contain several genes under the transcriptional
-regulation of a single promoter. These genes are often related in
-that their gene products, often enzymes, form a biochemical pathway.
-For example, the product of Enzyme A is then the substrate for Enzyme
-B, which produces yet another molecule that is acted on by Enzyme C.
-These pathways are most often metabolic in nature. If the functions
-of Enzyme A and Enzyme C are known, but the function of Enzyme B is
-unknown – the knowledge that Enzyme A and C are sequentially
-located within the genome gives insight into the possible function of
-Enzyme B. Enzyme B most likely executes a chemical reaction that
-bridges the metabolites produced and consumed by Enzyme A and C,
-respectively. 
-</p>
-<p><img src='images/Tutorial_Figure1.jpeg' alt='Figure 1' width="580"></p>
-<p><i>Figure 1.</i> Genome organization is influenced by gene products that form a
-metabolic pathway.</p>
-<p><br>Sometimes genes that encode the proteins in biochemical pathways are organized in neighboring clusters of two or more transcriptional units that are controlled by the same regulator.  Their gene products may be similarly analyzed to deduce biochemical pathways and the functions of unknown proteins.</p>
+<p>For efficient regulation of transcription, bacterial and fungal genes often organized in operons and/or gene clusters. An operon may contain several genes under the transcriptional regulation of a single promoter. Their gene products, usually enzymes, constitute a metabolic pathway.  In the example below, the product of Enzyme A is the substrate for Enzyme B, which produces a product that is the substrate for Enzyme C.  If the functions of Enzyme A and Enzyme C are known, but the function of Enzyme B is unknown, the colocation of their genes can provide insights into the possible function of Enzyme B.  Enzyme B most likely catalyzes a reaction that utilizes the product of Enzyme A to generate the substrate for Enzyme C.</p>
+<p><img src='new_images/gnn_figure_1.jpg'></p>
 
-<p><br>Using the family information in Sequence Similarity Networks (SSNs) as input, the Genome Neighborhood Network (GNN) organizes the proteins encoded by the genome neighborhoods for each query sequence according to Pfam family. Unlike traditional genome neighborhood analysis, which can be extremely time-consuming when conducted on more than a handful of genes at a time, the GNN acquires and organizes genome neighborhood information for thousands of query genes in a high throughput and rapid fashion. The resulting network allows a user to quickly identify the protein families (using Pfam-defined homology-based classifications) that are encoded by the genes within close proximity to genes that encode the proteins in the SSN dataset. From this GNN network, one can distinguish between commonly occurring protein classes and rarely occurring protein classes, as well as protein classes that are shared among SSN-clusters. One can also filter this network to examine only the neighbors of specific clusters from the original SSN, in order to quickly assign function to clusters of un-annotated protein sequences.</p>        
+<p><i>Figure 1.</i> Genome context may allow prediction of a metabolic pathway.</p>
+
+<p>Sometimes genes that encode the enzymes in a pathway are organized in neighboring clusters of two or more transcriptional units that are controlled by the same transcriptional regulator. Their gene products may be similarly analyzed to deduce biochemical pathways and the functions of unknown proteins.</p>
+
+<p>Using the sequences in an input Sequence Similarity Network (SSN) as queries, the Genome Neighborhood Network (GNN) organizes the proteins encoded by the genome neighborhood for each query sequence according to Pfam family.  Unlike manual analysis of individual genome neighborhoods, which can be extremely time-consuming when conducted on more than a handful of genes, EFI-GNT can rapidly acquire and organize genome neighborhood information for thousands of query genes in a high throughput fashion.  Because the genome contexts for orthologous enzymes (same in vitro activity and in vivo metabolic function) often are not conserved phylogenetically, the large-scale collection and organization of genome context enabled by EFI-GNT may allow the identification of the enzymes in metabolic pathways that are not co-organized in the user’s “target” organism.</p>
+
+<p>The GNNs generated by EFI-GNT identify the protein families (using Pfam-defined homology-based classifications) that are encoded by the genes proximal to genes that encode the proteins in the input/query SSN dataset.  The identities of these families often provide valuable information about the types of reactions catalyzed by the genome neighbors.</p>
+
+<p>Two formats for the GNN information are provided:</p>
+
+<p>1.  Each SSN cluster with queries that  found neighbors is depicted as the hub-node in a cluster in the GNN; the identities of the Pfam families of the neighbors are depicted as the spoke-nodes.  This format enables identification of potential pathway members that are functionally linked to the query sequences in the cluster and, with the identities of the Pfam families, inference of the reactions in the pathway.  In this format, “over-fractionation” of the SSN may result in the identification of incomplete pathways, i.e., the power of the large-scale analysis is that phylogenetically diverse genome organizations can be identified for orthologues.  Synergistic interpretation of both formats may allow this situation to be identified.</p>
+
+<p>2.  Each neighborhood Pfam family that was found is depicted as the hub-node in a cluster in the GNN; the identities of the SSN clusters with queries that  “found” neighbors in the family are depicted as the spoke-nodes in the cluster.  This format enables an assessment of whether the clusters in the query SSN are isofunctional, i.e., if multiple clusters find the same Pfam family, the SSN may be “over-fractionated” so that orthologues are found in multiple clusters.  Or, the Pfam family may contain members with different functions that are found by different clusters in the input SSN.</p>
+
+<p>The GNNs from both formats can be filtered using Cytoscape to extract information involving specific Pfam families and/or specific query clusters from the input SSN:  given the large-scale nature/amount of information in a GNN, simplification often is desirable.  However, the considerable utility of GNNs is made possible by the large amount of information that is accessible to the user.</p>
 
 </div>
     </div>
