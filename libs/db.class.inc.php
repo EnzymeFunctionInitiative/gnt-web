@@ -101,7 +101,7 @@ class db {
 		}
 		$values_sql .= ")";
 		$columns_sql .= ")";
-		$sql = $sql . $columns_sql . " " . $values_sql;
+        $sql = $sql . $columns_sql . " " . $values_sql;
 		return $this->insert_query($sql);
 	}
 	
