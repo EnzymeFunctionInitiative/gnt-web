@@ -26,6 +26,7 @@ else {
 }
 
 $baseUrl = settings::get_web_address();
+$gnnId = $gnn->get_id();
 
 $ssnFile = $gnn->get_relative_color_ssn();
 $ssnZipFile = str_replace(".xgmml", ".zip", $ssnFile);
@@ -55,6 +56,9 @@ $pfamNoneZipFilesize = $gnn->get_pfam_none_zip_filesize();
     <h4>Network Information</h4>
     <table width="100%" border="1">
         <tr>
+            <td>Job Number:</td><td><?php echo $gnnId; ?></td>
+        </tr>
+        <tr>
             <td>Uploaded Filename:</td><td><?php echo $gnn->get_filename(); ?></td>
         </tr>
         <tr>
@@ -77,7 +81,7 @@ $pfamNoneZipFilesize = $gnn->get_pfam_none_zip_filesize();
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$ssnFile" ?>"><button>Download</button></a>
-                <a href="<?php echo "$baseUrl/$ssnFileZip"; ?>"><button>Download ZIP</button></a>
+                <a href="<?php echo "$baseUrl/$ssnZipFile"; ?>"><button>Download ZIP</button></a>
             </td>
             <td><?php echo number_format($gnn->get_ssn_nodes()); ?></td>
             <td><?php echo number_format($gnn->get_ssn_edges()); ?></td>
@@ -97,7 +101,7 @@ $pfamNoneZipFilesize = $gnn->get_pfam_none_zip_filesize();
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$gnnFile"; ?>"><button>Download</button></a>
-                <a href="<?php echo "$baseUrl/$gnnFileZip"; ?>"><button>Download ZIP</button></a>
+                <a href="<?php echo "$baseUrl/$gnnZipFile"; ?>"><button>Download ZIP</button></a>
             </td>
             <td><?php echo $gnn->get_gnn_filesize(); ?>MB</td>
         </tr>
@@ -112,7 +116,7 @@ $pfamNoneZipFilesize = $gnn->get_pfam_none_zip_filesize();
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$pfamFile"; ?>"><button>Download</button></a>
-                <a href="<?php echo "$baseUrl/$pfamFileZip"; ?>"><button>Download ZIP</button></a>
+                <a href="<?php echo "$baseUrl/$pfamZipFile"; ?>"><button>Download ZIP</button></a>
             </td>
             <td><?php echo $pfamFilesize; ?> MB</td>
         </tr>
