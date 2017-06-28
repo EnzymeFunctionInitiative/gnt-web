@@ -41,24 +41,27 @@ require_once('includes/header.inc.php');
 <hr>
 <img src="images/quest_stages_a.jpg" width="990" height="119" alt="stage 1">
 <hr>
-<h4>Input<a href="#" class="question" target="_blank">?</a></h4>
-<h4><strong  class="blue">Upload a Sequence Similarity Network (SSN). The acceptable format is
-xgmml; the maximum size is <?php echo ini_get('post_max_size'); ?>.
 
-<br>The SSN must be generated using either Option A or Option B of <a href='http://efi.igb.illinois.edu/efi-est'>EFI-EST</a>;
-Cytoscape can be used to edit/modify the SSN.</strong></h4>
+<h4>Input<a href="#" class="question" target="_blank">?</a></h4>
+
+<h4><strong  class="blue">Upload a Sequence Similarity Network (SSN). The acceptable format is
+uncompressed or zipped xgmml.</strong></h4>
+
+<h4><strong  class="blue">The SSN must be generated using Option A, Option B, Option C (reading FASTA headers), or
+Option D of <a href='http://efi.igb.illinois.edu/efi-est'>EFI-EST</a>.</strong></h4>
+<h4>Cytoscape can be used to edit/modify the SSN.</h4>
+
 <form name="upload_form" id='upload_form' method="post" action="" enctype="multipart/form-data">
 <input type="hidden" id='MAX_FILE_SIZE' name="MAX_FILE_SIZE" value="2147483648" />
 <label for="fileToUpload">Select a File to Upload</label><br />
-<input type="file" id='ssn_file' name="ssn_file" data-url='server/php/' class="blast_inputs email border"><br><br>
+<input type="file" id='ssn_file' name="ssn_file" data-url='server/php/' class="blast_inputs email border"><br>
+(Maximum size is <?php echo ini_get('post_max_size'); ?>.)
+<br><br>
 <p>Neighborhood Size (default: <?php echo $default_neighbor_size; ?>)
 <select name='neighbor_size' id='neighbor_size'>
 <?php echo $neighbor_size_html; ?>
-
 </select>
-<p>
-<input type='checkbox' id='newneighbormethod' name='newneighbormethod' value='1' checked> Use new starting genome determination method
-</p>
+
 <p>
 <label for='cooccurrence_input'>Input % Co-Occurrence Lower Limit (Default: <?php echo settings::get_default_cooccurrence(); ?>, Valid 1-100):</label>
 <input type='text' id='cooccurrence' name='cooccurrence' maxlength='3'><br>

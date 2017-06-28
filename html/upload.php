@@ -42,14 +42,8 @@ if (isset($_POST['submit'])) {
         $message .= "<br><b>Invalid % Co-Occurrence.  It must be an integer between 0 and 100.</b>";
     }
 
-    $useNewNeighborMethod = 0;
-    if ($_POST['newneighbormethod'] == "true") {
-        $useNewNeighborMethod = 1;
-    }
-
     if ($valid) {
-        error_log($useNewNeighborMethod);
-        $id = gnn::create($db,$_POST['email'],$_POST['neighbor_size'],$_FILES['ssn_file']['tmp_name'],$_FILES['ssn_file']['name'],$cooccurrence,$useNewNeighborMethod);
+        $id = gnn::create($db,$_POST['email'],$_POST['neighbor_size'],$_FILES['ssn_file']['tmp_name'],$_FILES['ssn_file']['name'],$cooccurrence);
         $gnn = new gnn($db,$id);
         $key = $gnn->get_key();
     }

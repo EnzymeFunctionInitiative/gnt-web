@@ -12,7 +12,6 @@ function uploadFile() {
 	fd.append('MAX_FILE_SIZE',document.getElementById('MAX_FILE_SIZE').value);
 	fd.append('cooccurrence',document.getElementById('cooccurrence').value);
 	fd.append('submit',document.getElementById('submit').value);
-    fd.append('newneighbormethod',document.getElementById('newneighbormethod').checked);
 	disableForm();
         xhr.open("POST", "upload.php",true);
         xhr.send(fd);

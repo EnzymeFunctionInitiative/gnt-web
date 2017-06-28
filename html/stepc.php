@@ -28,10 +28,13 @@ else {
 $baseUrl = settings::get_web_address();
 
 $ssnFile = $gnn->get_relative_color_ssn();
+$ssnZipFile = str_replace(".xgmml", ".zip", $ssnFile);
 $ssnFilesize = $gnn->get_color_ssn_filesize();
 $gnnFile = $gnn->get_relative_gnn();
+$gnnZipFile = str_replace(".xgmml", ".zip", $gnnFile);
 $gnnFilesize = $gnn->get_gnn_filesize();
 $pfamFile = $gnn->get_relative_pfam_hub();
+$pfamZipFile = str_replace(".xgmml", ".zip", $pfamFile);
 $pfamFilesize = $gnn->get_pfam_hub_filesize();
 $idDataZip = $gnn->get_relative_cluster_data_zip_file();
 $idDataZipFilesize = $gnn->get_cluster_data_zip_filesize();
@@ -41,6 +44,8 @@ $warningFile = $gnn->get_relative_warning_file();
 $warningFilesize = $gnn->get_warning_filesize();
 $idTableFile = $gnn->get_relative_id_table_file();
 $idTableFilesize = $gnn->get_id_table_filesize();
+$pfamNoneZip = $gnn->get_relative_pfam_none_zip_file();
+$pfamNoneZipFilesize = $gnn->get_pfam_none_zip_filesize();
 
 ?>
 
@@ -72,7 +77,7 @@ $idTableFilesize = $gnn->get_id_table_filesize();
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$ssnFile" ?>"><button>Download</button></a>
-                <a href="<?php echo "$baseUrl/$ssnFile.zip"; ?>"><button>Download ZIP</button></a>
+                <a href="<?php echo "$baseUrl/$ssnFileZip"; ?>"><button>Download ZIP</button></a>
             </td>
             <td><?php echo number_format($gnn->get_ssn_nodes()); ?></td>
             <td><?php echo number_format($gnn->get_ssn_edges()); ?></td>
@@ -82,7 +87,7 @@ $idTableFilesize = $gnn->get_id_table_filesize();
 
     <p>&nbsp;</p>
     <div class="align_left">
-    <h4>Genome Neighborhood Network (GNN): SSN Cluster Hub-Nodes</h4>
+    <h4>SSN Cluster Hub-Nodes: Genome Neighborhood Network (GNN)</h4>
     <p>Each hub-node in the network represents an SSN cluster that identified neighbors, with spoke-nodes for Pfam family with neighbors.</p>
     </div>
 
@@ -92,15 +97,14 @@ $idTableFilesize = $gnn->get_id_table_filesize();
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$gnnFile"; ?>"><button>Download</button></a>
-                <a href="<?php echo "$baseUrl/$gnnFile.zip"; ?>"><button>Download ZIP</button></a>
+                <a href="<?php echo "$baseUrl/$gnnFileZip"; ?>"><button>Download ZIP</button></a>
             </td>
             <td><?php echo $gnn->get_gnn_filesize(); ?>MB</td>
         </tr>
     </table>
    
-    <h4>Genome Neighborhood Network (GNN): Pfam Family Hub-Nodes</h4>
+    <h4>Pfam Family Hub-Nodes Genome Neighborhood Network (GNN)</h4>
     <p>Each hub-node in the network represents a Pfam family of neighbors, with spoke-nodes for each SSN cluster that identified the Pfam family.</p>
-    </div>
 
     <table width="100%" border="1">
         <th></th>
@@ -108,31 +112,22 @@ $idTableFilesize = $gnn->get_id_table_filesize();
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$pfamFile"; ?>"><button>Download</button></a>
-                <a href="<?php echo "$baseUrl/$pfamFile.zip"; ?>"><button>Download ZIP</button></a>
+                <a href="<?php echo "$baseUrl/$pfamFileZip"; ?>"><button>Download ZIP</button></a>
             </td>
             <td><?php echo $pfamFilesize; ?> MB</td>
         </tr>
     </table>
  
     <h4>Other Files</h4>
-        <p>As described in the tutorial, additional files will soon be available</p>
-    </div>
     <table width="100%" border="1">
         <th></th>
         <th>File</th>
         <th>File Size (MB)</th>
         <tr style='text-align:center;'>
             <td>
-                <a href="<?php echo "$baseUrl/$warningFile"; ?>"><button>Download</button></a>
-            </td>
-            <td>No Matches/No Neighbors File</td>
-            <td><?php echo $warningFilesize; ?> MB</td>
-        </tr>
-        <tr style='text-align:center;'>
-            <td>
                 <a href="<?php echo "$baseUrl/$idTableFile"; ?>"><button>Download</button></a>
             </td>
-            <td>UniProt ID-Color-Cluster Number Table</td>
+            <td>UniProt ID-Color-Cluster Number Mapping Table</td>
             <td><?php echo $idTableFilesize; ?> MB</td>
         </tr>
         <tr style='text-align:center;'>
@@ -144,7 +139,7 @@ $idTableFilesize = $gnn->get_id_table_filesize();
         </tr>
         <tr style='text-align:center;'>
             <td>
-                <a href=""><button>Download All (ZIP)</button></a>
+                <button>Download All (ZIP)</button>
             </td>
             <td><b>TODO:</b> FASTA Files per Cluster</td>
             <td></td>
@@ -153,8 +148,22 @@ $idTableFilesize = $gnn->get_id_table_filesize();
             <td>
                 <a href="<?php echo "$baseUrl/$pfamDataZip"; ?>"><button>Download All (ZIP)</button></a>
             </td>
-            <td>PFAM/UniProt ID Lists per Cluster</td>
+            <td>PFAM Neighbor Mapping Tables</td>
             <td><?php echo $pfamDataZipFilesize; ?> MB</td>
+        </tr>
+        <tr style='text-align:center;'>
+            <td>
+                <a href="<?php echo "$baseUrl/$pfamNoneZip"; ?>"><button>Download All (ZIP)</button></a>
+            </td>
+            <td>Neighbors without PFAM assigned per Cluster</td>
+            <td><?php echo $pfamNoneZipFilesize; ?> MB</td>
+        </tr>
+        <tr style='text-align:center;'>
+            <td>
+                <a href="<?php echo "$baseUrl/$warningFile"; ?>"><button>Download</button></a>
+            </td>
+            <td>No Matches/No Neighbors File</td>
+            <td><?php echo $warningFilesize; ?> MB</td>
         </tr>
     </table>
     

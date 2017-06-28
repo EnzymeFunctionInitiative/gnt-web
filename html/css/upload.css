@@ -12,9 +12,9 @@
     overflow:hidden;
 }
 #upload_form {
-    float:left;
+/*    float:left;*/
     padding:20px;
-    width:700px;
+/*    width:700px;*/
 }
 #preview {
     background-color:#fff;

@@ -52,21 +52,19 @@ class gnn {
     public function get_gnn_pfams() { return $this->gnn_pfams; }
     public function get_gnn_nodes() { return $this->gnn_nodes; }
     public function get_gnn_edges() { return $this->gnn_edges; }
-    public function get_use_new_neighbor_method() { return $this->use_new_neighbor_method; }
 
     public function get_full_path() {
         $uploads_dir = settings::get_uploads_dir();
         return $uploads_dir . "/" . $this->get_id() . "." . pathinfo($this->filename, PATHINFO_EXTENSION);
     }
 
-    public static function create($db,$email,$size,$tmp_filename,$filename,$cooccurrence,$useNewNeighborMethod) {
+    public static function create($db,$email,$size,$tmp_filename,$filename,$cooccurrence) {
         $result = false;
         $insert_array = array('gnn_email'=>$email,
             'gnn_size'=>$size,
             'gnn_key'=>self::generate_key(),
             'gnn_filename'=>$filename,
-            'gnn_cooccurrence'=>$cooccurrence,
-            'gnn_new_neighbor_method'=>$useNewNeighborMethod);
+            'gnn_cooccurrence'=>$cooccurrence);
         $result = $db->build_insert('gnn',$insert_array);
         if ($result) {	
             self::copy_to_uploads_dir($tmp_filename, $filename, $result);
@@ -140,8 +138,6 @@ class gnn {
         $exec .= " -ssnout " . $this->get_color_ssn();
         $exec .= " -incfrac " . $this->get_cooccurrence();
         $exec .= " -stats " . $this->get_stats();
-#        $exec .= " -nomatch " . $this->get_no_matches();
-#        $exec .= " -noneigh " . $this->get_no_neighbors();
         $exec .= " -warning-file " . $this->get_warning_file();
         $exec .= " -pfam " . $this->get_pfam_hub();
         $exec .= " -pfam-dir " . $this->get_pfam_data_dir() ;
@@ -149,9 +145,8 @@ class gnn {
         $exec .= " -id-dir " . $this->get_cluster_data_dir() ;
         $exec .= " -id-zip " . $this->get_cluster_data_zip_file();
         $exec .= " -id-out " . $this->get_id_table_file();
-        if (!$this->get_use_new_neighbor_method()) {
-            $exec .= " -disable-nnm";
-        }
+        $exec .= " -none-dir " . $this->get_pfam_none_dir();
+        $exec .= " -none-zip " . $this->get_pfam_none_zip_file();
         
         error_log("Job ID: " . $this->get_id());
         error_log("Exec: " . $exec);
@@ -189,28 +184,28 @@ class gnn {
 
     }
     public function get_color_ssn() {
-        $filename = $this->get_id() . "_color_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $filename = $this->get_id() . "_coloredssn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
         $output_dir = settings::get_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
 
     }
     public function get_relative_color_ssn() {
-        $filename = $this->get_id() . "_color_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $filename = $this->get_id() . "_coloredssn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
         $output_dir = settings::get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
 
     }
     public function get_gnn() {
-        $filename = $this->get_id() . "_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $filename = $this->get_id() . "_ssn_cluster_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
         $output_dir = settings::get_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
 
     }
     public function get_relative_gnn() {
-        $filename = $this->get_id() . "_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $filename = $this->get_id() . "_ssn_cluster_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
         $output_dir = settings::get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
@@ -218,56 +213,28 @@ class gnn {
     }
 
     public function get_pfam_hub() {
-        $filename = $this->get_id() . "_pfam_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $filename = $this->get_id() . "_pfam_family_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
         $output_dir = settings::get_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
 
     }
     public function get_relative_pfam_hub() {
-        $filename = $this->get_id() . "_pfam_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $filename = $this->get_id() . "_pfam_family_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
         $output_dir = settings::get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
 
-    }
-
-    public function get_no_matches() {
-        $filename = $this->get_id() . "_no_matches_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-        return $full_path;
-
-    }
-    public function get_relative_no_matches() {
-        $filename = $this->get_id() . "_no_matches_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-        $output_dir = settings::get_rel_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-        return $full_path;
-
-    }
-
-    public function get_no_neighbors() {
-        $filename = $this->get_id() . "_no_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-        return $full_path;
-    }
-    public function get_relative_no_neighbors() {
-        $filename = $this->get_id() . "_no_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-        $output_dir = settings::get_rel_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-        return $full_path;
     }
 
     public function get_warning_file() {
-        $filename = $this->get_id() . "_warnings_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".tab";
+        $filename = $this->get_id() . "_nomatches_noneighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
         $output_dir = settings::get_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
     public function get_relative_warning_file() {
-        $filename = $this->get_id() . "_warnings_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".tab";
+        $filename = $this->get_id() . "_nomatches_noneighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
         $output_dir = settings::get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
@@ -283,54 +250,72 @@ class gnn {
         $full_path = $output_dir . "/" . $this->get_id() . "/pfam-data";
         return $full_path;
     }
+    public function get_pfam_none_dir() {
+        $output_dir = settings::get_output_dir();
+        $full_path = $output_dir . "/" . $this->get_id() . "/pfam-none";
+        return $full_path;
+    }
 
     public function get_cluster_data_zip_file() {
-        $filename = $this->get_id() . "_cluster_data_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
+        $filename = $this->get_id() . "_UniProt_IDs_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
         $output_dir = settings::get_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
     public function get_relative_cluster_data_zip_file() {
-        $filename = $this->get_id() . "_cluster_data_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
+        $filename = $this->get_id() . "_UniProt_IDs_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
+        $output_dir = settings::get_rel_output_dir();
+        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        return $full_path;
+    }
+
+    public function get_pfam_none_zip_file() {
+        $filename = $this->get_id() . "_no_pfam_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
+        $output_dir = settings::get_output_dir();
+        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        return $full_path;
+    }
+    public function get_relative_pfam_none_zip_file() {
+        $filename = $this->get_id() . "_no_pfam_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
         $output_dir = settings::get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
 
     public function get_pfam_data_zip_file() {
-        $filename = $this->get_id() . "_pfam_data_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
+        $filename = $this->get_id() . "_pfam_mapping_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
         $output_dir = settings::get_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
     public function get_relative_pfam_data_zip_file() {
-        $filename = $this->get_id() . "_pfam_data_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
+        $filename = $this->get_id() . "_pfam_mapping_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
         $output_dir = settings::get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
 
     public function get_id_table_file() {
-        $filename = $this->get_id() . "_id_table_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".tab";
+        $filename = $this->get_id() . "_mapping_table_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
         $output_dir = settings::get_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
     public function get_relative_id_table_file() {
-        $filename = $this->get_id() . "_id_table_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".tab";
+        $filename = $this->get_id() . "_mapping_table_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
         $output_dir = settings::get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
 
     public function get_stats() {
-        $filename = $this->get_id() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".tab";
+        $filename = $this->get_id() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
         $output_dir = settings::get_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
     public function get_relative_stats() {
-        $filename = $this->get_id() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".tab";
+        $filename = $this->get_id() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
         $output_dir = settings::get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/".  $filename;
         return $full_path;
@@ -343,17 +328,14 @@ class gnn {
     public function get_gnn_filesize() {
         return round(filesize($this->get_gnn()) / 1048576,2);
     }
-    public function get_no_matches_filesize() {
-        return round(filesize($this->get_no_matches()) / 1048576,2);
-    }
-    public function get_no_neighbors_filesize() {
-        return round(filesize($this->get_no_neighbors()) / 1048576,2);
-    }
     public function get_warning_filesize() {
         return round(filesize($this->get_warning_file()) / 1048576,2);
     }
     public function get_cluster_data_zip_filesize() {
         return round(filesize($this->get_cluster_data_zip_file()) / 1048576,2);
+    }
+    public function get_pfam_none_zip_filesize() {
+        return round(filesize($this->get_pfam_none_zip_file()) / 1048576,2);
     }
     public function get_pfam_data_zip_filesize() {
         return round(filesize($this->get_pfam_data_zip_file()) / 1048576,2);
@@ -439,9 +421,7 @@ class gnn {
             $this->gnn_nodes = $result[0]['gnn_gnn_nodes'];
             $this->gnn_edges = $result[0]['gnn_gnn_edges'];
             $this->gnn_pfams = $result[0]['gnn_gnn_pfams'];
-            $this->use_new_neighbor_method = $result[0]['gnn_new_neighbor_method'];
         }	
-
     }
 
     protected function generate_key() {
@@ -461,8 +441,8 @@ class gnn {
         if (file_exists($this->get_gnn())) {
             unlink($this->get_gnn());
         }
-        if (file_exists($this->get_no_matches())) {
-            unlink($this->get_no_matches());
+        if (file_exists($this->get_warning_file())) {
+            unlink($this->get_warning_file());
         }
 
     }

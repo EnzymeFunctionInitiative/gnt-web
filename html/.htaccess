@@ -11,6 +11,14 @@ Header set Content-Disposition attachment
 
 
 <Files *.tab>
-ForceType text/xml
+ForceType text/plain
 Header set Content-Disposition attachment
 </Files>
+
+
+<Files *.txt>
+    ForceType application/octet-stream
+    Header set Content-Disposition attachment
+</Files>
+
+
