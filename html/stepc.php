@@ -29,13 +29,13 @@ $baseUrl = settings::get_web_address();
 $gnnId = $gnn->get_id();
 
 $ssnFile = $gnn->get_relative_color_ssn();
-$ssnZipFile = str_replace(".xgmml", ".zip", $ssnFile);
+$ssnZipFile = preg_replace("/\.xgmml$/", ".zip", $ssnFile);
 $ssnFilesize = $gnn->get_color_ssn_filesize();
 $gnnFile = $gnn->get_relative_gnn();
-$gnnZipFile = str_replace(".xgmml", ".zip", $gnnFile);
+$gnnZipFile = preg_replace("/\.xgmml$/", ".zip", $gnnFile);
 $gnnFilesize = $gnn->get_gnn_filesize();
 $pfamFile = $gnn->get_relative_pfam_hub();
-$pfamZipFile = str_replace(".xgmml", ".zip", $pfamFile);
+$pfamZipFile = preg_replace("/\.xgmml$/", ".zip", $pfamFile);
 $pfamFilesize = $gnn->get_pfam_hub_filesize();
 $idDataZip = $gnn->get_relative_cluster_data_zip_file();
 $idDataZipFilesize = $gnn->get_cluster_data_zip_filesize();
