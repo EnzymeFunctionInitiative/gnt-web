@@ -21,6 +21,10 @@ else {
                 $gnn->complete_gnn();
                 $msg = "GNN ID: " . $job['gnn_id'] . " - Job Completed Successfully";
                 functions::log_message($msg);
+            } else if (!$finish_file_exists && !$job_running) {
+                $gnn->error_gnn();
+                $msg = "GNN ID: " . $job['gnn_id'] . " - Job Failed";
+                functions::log_message($msg);
             }
         }
     }

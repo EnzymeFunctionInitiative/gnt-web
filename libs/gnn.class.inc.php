@@ -268,7 +268,7 @@ class gnn {
     }
 
     public function get_file_prefix() {
-        return $this->basefilename;
+        return $this->get_id() . "_" . $this->basefilename;
         #return $this->get_id();
     }
 
@@ -646,7 +646,6 @@ class gnn {
 
         //plain text email
         $plain_email .= "The GNN computation has completed. To view results, go to THE_URL" . $this->eol . $this->eol;
-        $plain_email .= "to get further assistance." . $this->eol . $this->eol;
         $plain_email .= "Submission Summary:" . $this->eol . $this->eol;
         $plain_email .= $this->get_job_info() . $this->eol . $this->eol;
         $plain_email .= "These data will only be retained for " . settings::get_retention_days() . " days." . $this->eol . $this->eol;
@@ -723,7 +722,7 @@ class gnn {
         $message .= "Neighborhood Size: " . $this->get_size() . $this->eol;
         $message .= "% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%" . $this->eol;
         $message .= "Time Submitted: " . $this->get_time_created() . $this->eol;
-        $message .= "Time Completed: " . $this->get_time_completed() . $this->eol . $this->eol;
+        //$message .= "Time Completed: " . $this->get_time_completed() . $this->eol . $this->eol;
         return $message;
     }
 }
