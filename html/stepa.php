@@ -1,5 +1,5 @@
 <?php 
-require_once 'includes/main.inc.php';
+require_once '../includes/main.inc.php';
 
 $email = "do-not-reply@enzymefunction.org";
 $file1 = "TEST1-PeptidaseS46-55percent-full.xgmml";

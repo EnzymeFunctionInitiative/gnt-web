@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/main.inc.php';
+require_once '../includes/main.inc.php';
 $message = "";
 $valid = 0;
 $id = 0;
@@ -17,7 +17,7 @@ if ((isset($_POST['id'])) && (is_numeric($_POST['id']))) {
                 if ($gnn->get_time_created() + settings::get_timeout() < time()) {
                         $result = $gnn->run_gnn();
                         if ($result['RESULT']) {
-                                $gnn->email_user();
+                                $gnn->email_complete();
 				$message = "<b>EFI-GNN successfully created</b>";
 				$valid = 1;
 

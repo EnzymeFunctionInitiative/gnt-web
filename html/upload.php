@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/main.inc.php';
+require_once '../includes/main.inc.php';
 $id = 0;
 $key = 0;
 $message = "";

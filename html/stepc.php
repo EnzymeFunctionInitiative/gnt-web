@@ -1,5 +1,5 @@
 <?php 
-require_once 'includes/main.inc.php';
+require_once '../includes/main.inc.php';
 require_once('includes/header.inc.php'); 
 
 $message = "";

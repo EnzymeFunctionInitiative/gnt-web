@@ -37,4 +37,15 @@ define("__ENA_VERSION__","122");
 define("__CLUSTER_USER__","");
 define("__CLUSTER_SCHEDULER__","local"); //local,torque,slurm
 
+///////Status/////////////
+define("__NEW__","NEW");
+define("__RUNNING__","RUNNING");
+define("__FINISH__","FINISH");
+define("__FAILED__","FAILED");
+
+define("__BETA_RELEASE__","");
+define("__ENABLE_LOG__",false);
+define("__LOG_FILE__","");
+define("__WEB_ROOT__","");
+
 ?>

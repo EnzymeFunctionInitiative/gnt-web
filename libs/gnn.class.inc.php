@@ -1,5 +1,6 @@
 <?php
 
+require_once('../includes/main.inc.php');
 require_once('Mail.php');
 require_once('Mail/mime.php');
 
@@ -25,6 +26,11 @@ class gnn {
     protected $gnn_pfams;
     protected $log_file = "log.txt";
     protected $eol = PHP_EOL;
+    protected $finish_file = "gnn.completed";
+    protected $pbs_number;
+    protected $status;
+    protected $beta;
+
     ///////////////Public Functions///////////
 
     public function __construct($db,$id = 0) {
@@ -33,6 +39,8 @@ class gnn {
         if ($id) {
             $this->load_gnn($id);
         }
+
+        $this->beta = settings::get_release_status();
     }
 
     public function __destruct() {
@@ -64,7 +72,8 @@ class gnn {
             'gnn_size'=>$size,
             'gnn_key'=>self::generate_key(),
             'gnn_filename'=>$filename,
-            'gnn_cooccurrence'=>$cooccurrence);
+            'gnn_cooccurrence'=>$cooccurrence,
+            'gnn_status'=>__NEW__);
         $result = $db->build_insert('gnn',$insert_array);
         if ($result) {	
             self::copy_to_uploads_dir($tmp_filename, $filename, $result);
@@ -173,6 +182,89 @@ class gnn {
             return array('RESULT'=>false,'OUTPUT'=>$formatted_output);
         }
 
+    }
+
+    public function run_gnn_async($is_debug = false) {
+
+        $ssnin = $this->get_full_path();
+        
+        $binary = settings::get_gnn_script();
+
+        $out_dir = settings::get_output_dir() . "/" . $this->get_id();
+        $target_ssnin = $out_dir . "/" . $this->get_id() . "." . pathinfo($ssnin, PATHINFO_EXTENSION);
+
+        if (@file_exists($out_dir))
+            functions::rrmdir($out_dir);
+        if (!$is_debug && !file_exists($out_dir))
+            mkdir($out_dir);
+        chdir($out_dir);
+        copy($ssnin, $target_ssnin);
+        
+        $exec = "source /etc/profile.d/modules.sh; ";
+        $exec .= "module load " . settings::get_efidb_module() . "; ";
+        $exec .= "module load " . settings::get_gnn_module() . "; ";
+        $exec .= $binary . " ";
+        $exec .= " -ssnin " . $target_ssnin;
+        $exec .= " -n " . $this->get_size();
+        $exec .= " -gnn " . $this->get_gnn();
+        $exec .= " -ssnout " . $this->get_color_ssn();
+        $exec .= " -incfrac " . $this->get_cooccurrence();
+        $exec .= " -stats " . $this->get_stats();
+        $exec .= " -warning-file " . $this->get_warning_file();
+        $exec .= " -pfam " . $this->get_pfam_hub();
+        $exec .= " -pfam-dir " . $this->get_pfam_data_dir() ;
+        $exec .= " -pfam-zip " . $this->get_pfam_data_zip_file();
+        $exec .= " -id-dir " . $this->get_cluster_data_dir() ;
+        $exec .= " -id-zip " . $this->get_cluster_data_zip_file();
+        $exec .= " -id-out " . $this->get_id_table_file();
+        $exec .= " -none-dir " . $this->get_pfam_none_dir();
+        $exec .= " -none-zip " . $this->get_pfam_none_zip_file();
+
+        //TODO: remove this debug message
+        error_log("Job ID: " . $this->get_id());
+        error_log("Exec: " . $exec);
+
+        $exit_status = 1;
+        
+        file_put_contents($this->get_log_file(), $exec . "\n");
+
+        $output_array = array();
+        $output = exec($exec, $output_array, $exit_status);
+        $output = trim(rtrim($output));
+
+        $pbs_job_number = substr($output, 0, strpos($output, "."));
+
+        if ($pbs_job_number && !$exit_status) {
+            if (!$is_debug) {
+                $this->set_pbs_number($pbs_job_number);
+                $this->set_time_started();
+                $this->email_started();
+                $this->set_status(__RUNNING__);
+            }
+
+            //TODO: remove this debug message
+            error_log("Job ID: " . $this->get_id() . ", Exit Status: " . $exit_status);
+
+            return array('RESULT' => true, 'PBS_NUMBER' => $pbs_job_number, 'EXIT_STATUS' => $exit_status, 'MESSAGE' => 'Job Successfully Submitted');
+        }
+        else {
+            error_log("There was an error submitting the GNN job: $output  // exit status: $exit_status  " . join(',', $output_array));
+            return array('RESULT' => false, 'EXIT_STATUS' => $exit_status, 'MESSAGE' => $output_array[18]);
+        }
+    }
+
+    public function complete_gnn() {
+        $this->set_gnn_stats();
+        $this->set_ssn_stats();
+
+        $this->set_status(__FINISH__); 
+        $this->set_time_completed();
+        $this->email_complete();
+    }
+
+    public function error_gnn() {
+        $this->set_status(__FAILED__);
+        $this->email_error();
     }
 
     public function get_file_prefix() {
@@ -426,6 +518,8 @@ class gnn {
             $this->gnn_nodes = $result[0]['gnn_gnn_nodes'];
             $this->gnn_edges = $result[0]['gnn_gnn_edges'];
             $this->gnn_pfams = $result[0]['gnn_gnn_pfams'];
+            $this->pbs_number = $result[0]['gnn_pbs_number'];
+            $this->status = $result[0]['gnn_status'];
 
             $parts = pathinfo($this->filename);
             if (substr_compare($parts['filename'], ".xgmml", -strlen(".xgmml")) === 0) {
@@ -454,55 +548,6 @@ class gnn {
 
     }
 
-    public function email_user() {
-
-        $subject = "EFI-GNN Complete";
-        $from = settings::get_admin_email();
-        $to = $this->get_email();
-        $url = settings::get_web_root() . "/stepc.php";
-        $full_url = $url . "?" . http_build_query(array('id'=>$this->get_id(),
-            'key'=>$this->get_key()));
-
-        //html email
-        $html_email = "<br>Your EFI-GNN is Complete" . $this->eol;
-        $html_email .= "<br>To view results, please go to <a href='" . htmlentities($full_url) . "'>" . $full_url . "</a>" . $this->eol;
-        $html_email .= "<br>EFI-GNN ID: " . $this->get_id() . $this->eol;
-        $html_email .= "<br>Uploaded Filename: " . $this->get_filename() . $this->eol;	
-        $html_email .= "<br>Neighborhood Size: " . $this->get_size() . $this->eol;
-        $html_email .= "<br>% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%" . $this->eol;
-        $html_email .= "<br>Time Submitted: " . $this->get_time_created() . $this->eol;
-        $html_email .= "<br>Time Completed: " . $this->get_time_completed() . $this->eol;
-        $html_email .= "<br><br>This data will only be retained for " . settings::get_retention_days() . " days." . $this->eol;
-        $html_email .= "<br>";
-        $html_email .= nl2br(settings::get_email_footer(),false) . $this->eol;
-
-        //plain text email
-        $plain_email = "Your EFI-GNN is Complete" . $this->eol;
-        $plain_email .= "To view results, please go to " . $full_url . $this->eol;
-        $plain_email .= "EFI-GNN ID: " . $this->get_id() . $this->eol;
-        $plain_email .= "Uploaded Filename: " . $this->get_filename() . $this->eol;
-        $plain_email .= "Neighborhood Size: " . $this->get_size() . $this->eol;
-        $plain_email .= "% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%" . $this->eol;
-        $plain_email .= "Time Submitted: " . $this->get_time_created() . $this->eol;
-        $plain_email .= "Time Completed: " . $this->get_time_completed() . $this->eol . $this->eol;
-        $plain_email .= "This data will only be retained for " . settings::get_retention_days() . " days." . $this->eol . $this->eol;
-        $plain_email .= settings::get_email_footer() . $this->eol;
-
-        $message = new Mail_mime(array("eol"=>$this->eol));
-        $message->setTXTBody($plain_email);
-        $message->setHTMLBody($html_email);
-        $body = $message->get();
-        $extraheaders = array("From"=>$from,
-            "Subject"=>$subject
-        );
-        $headers = $message->headers($extraheaders);
-
-        $mail = Mail::factory("mail");
-        $mail->send($to,$headers,$body);
-
-
-    }
-
 
     public function count_nodes_edges($xgmml_file) {
         $result = array('nodes'=>0,
@@ -526,36 +571,23 @@ class gnn {
 
     }
 
-    private function email_error($error_message) {
-        $subject = "EFI-GNN Failed";
-        $from = settings::get_admin_email();
-        //$to = $this->get_admin_email();
-        $to = "dslater@igb.illinois.edu";
+    private function email_error() {
+        $subject = $this->beta . "EFI-GNT - GNN computation failed";
+        $to = $this->get_email();
+        $from = "EFI GNT <" . settings::get_admin_email() . ">";
 
-        //html email
-        $html_email = "<br>Your EFI-GNN failed" . $this->eol;
-        $html_email .= "<br>EFI-GNN ID: " . $this->get_id() . $this->eol;
-        $html_email .= "<br>Uploaded Filename: " . $this->get_filename() . $this->eol;
-        $html_email .= "<br>Neighborhood Size: " . $this->get_size() . $this->eol;
-        $html_email .= "<br>% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%" . $this->eol;
-        $html_email .= "<br>Time Submitted: " . $this->get_time_created() . $this->eol;
-        $html_email .= "<br>Time Completed: " . $this->get_time_completed() . $this->eol;
-        $html_email .= "<br>Error: " . $error_message . $this->eol;
-        $html_email .= "<br>";
-        $html_email .= "<br>";
-        $html_email .= nl2br(settings::get_email_footer(),false) . $this->eol;
+        $plain_email = "";
 
-        //text email
-        $plain_email = "Your EFI-GNN failed" . $this->eol;
-        $plain_email .= "EFI-GNN ID: " . $this->get_id() . $this->eol;
-        $plain_email .= "Uploaded Filename: " . $this->get_filename() . $this->eol;
-        $plain_email .= "Neighborhood Size: " . $this->get_size() . $this->eol;
-        $plain_email .= "% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%" . $this->eol;
-        $plain_email .= "Time Submitted: " . $this->get_time_created() . $this->eol;
-        $plain_email .= "Time Completed: " . $this->get_time_completed() . $this->eol;
-        $plain_email .= "Error: " . $error_message . $this->eol;
-        $plain_email .= $this->eol . $this->eol;
-        $plain_email .= settings::get_email_footer() . $this->eol;
+        if ($this->beta) $plain_email = "Thank you for using the beta site of EFI-GNT." . $this->eol;
+
+        //plain text email
+        $plain_email .= "The GNN computation for " . $this->get_id() . " failed. Please contact us ";
+        $plain_email .= "to get further assistance." . $this->eol . $this->eol;
+        $plain_email .= "Submission Summary:" . $this->eol . $this->eol;
+        $plain_email .= $this->get_job_info() . $this->eol . $this->eol;
+        $plain_email .= settings::get_email_footer();
+
+        $html_email = nl2br($plain_email, false);
 
         $message = new Mail_mime(array("eol"=>$this->eol));
         $message->setTXTBody($plain_email);
@@ -570,5 +602,129 @@ class gnn {
         $mail->send($to,$headers,$body);
     }
 
+    private function email_started() {
+        $subject = $this->beta . "EFI-GNT - SSN submission received";
+        $to = $this->get_email();
+        $from = "EFI GNT <" . settings::get_admin_email() . ">";
+
+        $plain_email = "";
+
+        if ($this->beta) $plain_email = "Thank you for using the beta site of EFI-GNT." . $this->eol;
+
+        //plain text email
+        $plain_email .= "The SSN that is the input needed to generate a GNN has been received and is being processed." . $this->eol . $this->eol;
+        $plain_email .= "You will receive an email once the job has been completed." . $this->eol . $this->eol;
+        $plain_email .= "Submission Summary:" . $this->eol . $this->eol;
+        $plain_email .= $this->get_job_info() . $this->eol . $this->eol;
+        $plain_email .= settings::get_email_footer();
+
+        $html_email = nl2br($plain_email, false);
+
+        $message = new Mail_mime(array("eol"=>$this->eol));
+        $message->setTXTBody($plain_email);
+        $message->setHTMLBody($html_email);
+        $body = $message->get();
+        $extraheaders = array("From"=>$from,
+            "Subject"=>$subject
+        );
+        $headers = $message->headers($extraheaders);
+
+        $mail = Mail::factory("mail");
+        $mail->send($to,$headers,$body);
+    }
+
+    public function email_complete() {
+        $subject = $this->beta . "EFI-GNT - GNN computation completed";
+        $to = $this->get_email();
+        $from = "EFI GNT <" . settings::get_admin_email() . ">";
+        $url = settings::get_web_root() . "/stepc.php";
+        $full_url = $url . "?" . http_build_query(array('id'=>$this->get_id(), 'key'=>$this->get_key()));
+
+        $plain_email = "";
+
+        if ($this->beta) $plain_email = "Thank you for using the beta site of EFI-GNT." . $this->eol;
+
+        //plain text email
+        $plain_email .= "The GNN computation has completed. To view results, go to THE_URL" . $this->eol . $this->eol;
+        $plain_email .= "to get further assistance." . $this->eol . $this->eol;
+        $plain_email .= "Submission Summary:" . $this->eol . $this->eol;
+        $plain_email .= $this->get_job_info() . $this->eol . $this->eol;
+        $plain_email .= "These data will only be retained for " . settings::get_retention_days() . " days." . $this->eol . $this->eol;
+        $plain_email .= settings::get_email_footer();
+
+        $html_email = nl2br($plain_email, false);
+
+        $plain_email = str_replace("THE_URL", $full_url, $plain_email);
+        $html_email = str_replace("THE_URL", "<a href='" . htmlentities($full_url) . "'>" . $full_url . "</a>", $html_email);
+
+        $message = new Mail_mime(array("eol"=>$this->eol));
+        $message->setTXTBody($plain_email);
+        $message->setHTMLBody($html_email);
+        $body = $message->get();
+        $extraheaders = array("From"=>$from,
+            "Subject"=>$subject
+        );
+        $headers = $message->headers($extraheaders);
+
+        $mail = Mail::factory("mail");
+        $mail->send($to,$headers,$body);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // Code to support asynchronous, cluster queued execution
+
+    public function check_finish_file() {
+        return file_exists($this->get_finish_file());
+    }
+
+    public function get_finish_file() {
+        return $this->get_output_dir() . "/" . $this->finish_file;
+    }
+
+    public function get_output_dir() {
+        return settings::get_output_dir() . "/" . $this->get_id();
+    }
+
+    public function get_pbs_number() { return $this->pbs_number; }
+
+    public function set_pbs_number($pbs_number) {
+        $sql = "UPDATE gnn SET gnn_pbs_number='" . $pbs_number . "' ";
+        $sql .= "WHERE gnn_id='" . $this->get_id() . "' LIMIT 1";
+        $this->db->non_select_query($sql);
+        $this->pbs_number = $pbs_number;
+    }
+
+    public function check_pbs_running() {
+        $output;
+        $exit_status;
+        $exec = "qstat " . $this->get_pbs_number() . " 2> /dev/null | grep " . $this->get_pbs_number();
+        exec($exec,$output,$exit_status);
+        if (count($output) == 1) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public function set_status($status) {
+        $sql = "UPDATE gnn ";
+        $sql .= "SET gnn_status='" . $status . "' ";
+        $sql .= "WHERE gnn_id='" . $this->get_id() . "' LIMIT 1";
+        $result = $this->db->non_select_query($sql);
+        if ($result) {
+            $this->status = $status;
+        }
+    }
+
+    public function get_job_info($eol = "\r\n") {
+        $message = "EFI-GNT Job ID: " . $this->get_id() . $eol;
+        $message .= "Uploaded Filename: " . $this->get_filename() . $this->eol;
+        $message .= "Neighborhood Size: " . $this->get_size() . $this->eol;
+        $message .= "% Co-Occurrence Lower Limit (Default: " . settings::get_default_cooccurrence() . "%): " . $this->get_cooccurrence() . "%" . $this->eol;
+        $message .= "Time Submitted: " . $this->get_time_created() . $this->eol;
+        $message .= "Time Completed: " . $this->get_time_completed() . $this->eol . $this->eol;
+        return $message;
+    }
 }
 ?>

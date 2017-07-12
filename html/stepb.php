@@ -1,5 +1,5 @@
 <?php 
-require_once 'includes/main.inc.php';
+require_once '../includes/main.inc.php';
 require_once('includes/header.inc.php'); 
 
 $message = "<br><b>No EFI-GNN Selected. Please go <a href='index.php'>back</a></b>";
@@ -13,18 +13,23 @@ if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
 
 ?>
 
-<hr>
-        <img src="images/quest_stages_b.jpg" width="990" height="119" alt="stage 1">
+
+<img src="images/quest_stages_b.jpg" width="990" height="119" alt="stage B">
    <hr>
-		<h4 class='center'><strong class='blue'>Your GNN is being generated.</strong></h4>
-        	<h4 class="center"><strong class="blue">This page will refresh automatically.</strong></h4>
-		<h4 class="center"><strong class="blue">Do not close this page or the processing will stop.</strong></h4>
-	<h4 class='center'><progress id='progress_bar'></progress></h4>
-	<div id='message'><?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?></div>
+
+	<h3>Completing Generation of GNN </h3>
+	<p>&nbsp;</p>
+	<p>An email will be sent when your GNN generation is complete.</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p></p>
+    <p>&nbsp;</p>
+  </div>
+  
+  <div class="clear"></div>
+</div>
 
 
-  <?php require_once('includes/footer.inc.php'); ?>
+<?php include_once 'includes/footer.inc.php'; ?>
 
-<script>
-window.onload = computeGNN(<?php echo "'" . $_GET['id'] . "','" . $_GET['key'] . "'"; ?>);
-</script>
+
