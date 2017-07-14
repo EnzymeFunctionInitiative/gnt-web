@@ -674,7 +674,8 @@ class gnn {
         if ($this->beta) $plain_email = "Thank you for using the beta site of EFI-GNT." . $this->eol;
 
         //plain text email
-        $plain_email .= "The GNN computation has completed. To view results, go to THE_URL" . $this->eol . $this->eol;
+        $plain_email .= "The GNN computation has completed." . $this->eol . $this->eol;
+        $plain_email .= "To view results, go to THE_URL" . $this->eol . $this->eol;
         $plain_email .= "Submission Summary:" . $this->eol . $this->eol;
         $plain_email .= $this->get_job_info() . $this->eol . $this->eol;
         $plain_email .= "These data will only be retained for " . settings::get_retention_days() . " days." . $this->eol . $this->eol;
