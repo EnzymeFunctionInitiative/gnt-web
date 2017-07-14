@@ -204,21 +204,23 @@ class gnn {
         $exec .= "module load " . settings::get_efidb_module() . "; ";
         $exec .= "module load " . settings::get_gnn_module() . "; ";
         $exec .= $binary . " ";
-        $exec .= " -ssnin " . $target_ssnin;
-        $exec .= " -n " . $this->get_size();
-        $exec .= " -gnn " . $this->get_gnn();
-        $exec .= " -ssnout " . $this->get_color_ssn();
-        $exec .= " -incfrac " . $this->get_cooccurrence();
-        $exec .= " -stats " . $this->get_stats();
-        $exec .= " -warning-file " . $this->get_warning_file();
-        $exec .= " -pfam " . $this->get_pfam_hub();
-        $exec .= " -pfam-dir " . $this->get_pfam_data_dir() ;
-        $exec .= " -pfam-zip " . $this->get_pfam_data_zip_file();
-        $exec .= " -id-dir " . $this->get_cluster_data_dir() ;
-        $exec .= " -id-zip " . $this->get_cluster_data_zip_file();
-        $exec .= " -id-out " . $this->get_id_table_file();
-        $exec .= " -none-dir " . $this->get_pfam_none_dir();
-        $exec .= " -none-zip " . $this->get_pfam_none_zip_file();
+        $exec .= " -ssnin \"" . $target_ssnin . "\"";
+        $exec .= " -nb-size " . $this->get_size();
+        $exec .= " -cooc " . $this->get_cooccurrence();
+        $exec .= " -gnn \"" . $this->get_gnn() . "\"";
+        $exec .= " -ssnout \"" . $this->get_color_ssn() . "\"";
+        $exec .= " -stats \"" . $this->get_stats() . "\"";
+        $exec .= " -warning-file \"" . $this->get_warning_file() . "\"";
+        $exec .= " -pfam \"" . $this->get_pfam_hub() . "\"";
+        $exec .= " -pfam-dir \"" . $this->get_pfam_data_dir()  . "\"";
+        $exec .= " -pfam-zip \"" . $this->get_pfam_data_zip_file() . "\"";
+        $exec .= " -id-dir \"" . $this->get_cluster_data_dir()  . "\"";
+        $exec .= " -id-zip \"" . $this->get_cluster_data_zip_file() . "\"";
+        $exec .= " -id-out \"" . $this->get_id_table_file() . "\"";
+        $exec .= " -none-dir \"" . $this->get_pfam_none_dir() . "\"";
+        $exec .= " -none-zip \"" . $this->get_pfam_none_zip_file() . "\"";
+        $exec .= " -fasta-dir \"" . $this->get_fasta_dir() . "\"";
+        $exec .= " -fasta-zip \"" . $this->get_fasta_zip_file() . "\"";
 
         //TODO: remove this debug message
         error_log("Job ID: " . $this->get_id());
@@ -352,6 +354,11 @@ class gnn {
         $full_path = $output_dir . "/" . $this->get_id() . "/pfam-none";
         return $full_path;
     }
+    public function get_fasta_dir() {
+        $output_dir = settings::get_output_dir();
+        $full_path = $output_dir . "/" . $this->get_id() . "/fasta";
+        return $full_path;
+    }
 
     public function get_cluster_data_zip_file() {
         $filename = $this->get_file_prefix() . "_UniProt_IDs_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
@@ -361,6 +368,19 @@ class gnn {
     }
     public function get_relative_cluster_data_zip_file() {
         $filename = $this->get_file_prefix() . "_UniProt_IDs_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
+        $output_dir = settings::get_rel_output_dir();
+        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        return $full_path;
+    }
+
+    public function get_fasta_zip_file() {
+        $filename = $this->get_file_prefix() . "_FASTA_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
+        $output_dir = settings::get_output_dir();
+        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        return $full_path;
+    }
+    public function get_relative_fasta_zip_file() {
+        $filename = $this->get_file_prefix() . "_FASTA_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
         $output_dir = settings::get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
@@ -430,6 +450,9 @@ class gnn {
     }
     public function get_cluster_data_zip_filesize() {
         return round(filesize($this->get_cluster_data_zip_file()) / 1048576,2);
+    }
+    public function get_fasta_zip_filesize() {
+        return round(filesize($this->get_fasta_zip_file()) / 1048576,2);
     }
     public function get_pfam_none_zip_filesize() {
         return round(filesize($this->get_pfam_none_zip_file()) / 1048576,2);
@@ -521,11 +544,17 @@ class gnn {
             $this->pbs_number = $result[0]['gnn_pbs_number'];
             $this->status = $result[0]['gnn_status'];
 
-            $parts = pathinfo($this->filename);
-            if (substr_compare($parts['filename'], ".xgmml", -strlen(".xgmml")) === 0) {
-                $parts = pathinfo($parts['filename']);
-            }
-            $this->basefilename = $parts['filename'];
+            // Sanitize the filename
+            $this->filename = mb_ereg_replace("([\._]{2,})", '', mb_ereg_replace("([^a-zA-Z0-9\-_\.])", '', $this->filename));
+
+            $fname = strtolower($this->filename);
+            $ext_pos = strpos($fname, ".xgmml");
+            if ($ext_pos === false)
+                $ext_pos = strpos($fname, ".zip");
+            if ($ext_pos !== false)
+                $this->basefilename = substr($this->filename, 0, $ext_pos);
+            else
+                $this->basefilename = $this->filename;
         }	
     }
 

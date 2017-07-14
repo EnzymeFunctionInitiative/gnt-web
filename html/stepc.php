@@ -47,6 +47,8 @@ $idTableFile = $gnn->get_relative_id_table_file();
 $idTableFilesize = $gnn->get_id_table_filesize();
 $pfamNoneZip = $gnn->get_relative_pfam_none_zip_file();
 $pfamNoneZipFilesize = $gnn->get_pfam_none_zip_filesize();
+$fastaZip = $gnn->get_relative_fasta_zip_file();
+$fastaZipFilesize = $gnn->get_fasta_zip_filesize();
 
 ?>
 
@@ -143,10 +145,10 @@ $pfamNoneZipFilesize = $gnn->get_pfam_none_zip_filesize();
         </tr>
         <tr style='text-align:center;'>
             <td>
-                <button>Download All (ZIP)</button>
+                <a href="<?php echo "$baseUrl/$fastaZip"; ?>"><button>Download All (ZIP)</button></a>
             </td>
-            <td><b>TODO:</b> FASTA Files per Cluster</td>
-            <td></td>
+            <td>FASTA Files per Cluster</td>
+            <td><?php echo $fastaZipFilesize; ?> MB</td>
         </tr>
         <tr style='text-align:center;'>
             <td>
