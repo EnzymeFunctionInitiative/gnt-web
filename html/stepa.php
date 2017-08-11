@@ -30,6 +30,21 @@ for ($i=3;$i<=20;$i++) {
 
 }
 
+function make_upload_box($title, $file_id, $progress_bar_id, $progress_num_id, $other) {
+    global $maxFileSize;
+    return <<<HTML
+                <div>
+                    $title
+                    <input type='file' name='$file_id' id='$file_id' data-url='server/php/' class="input_file">
+                    <label for="$file_id" class="file_upload"><img src="images/upload.svg" /> <span>Choose a file&hellip;</span></label>
+                </div>
+                $other
+                Maximum size is $maxFileSize.
+HTML;
+}
+
+$maxFileSize = ini_get('post_max_size');
+
 require_once('includes/header.inc.php'); 
 
 ?>
@@ -70,9 +85,12 @@ Option D of <a href='http://efi.igb.illinois.edu/efi-est'>EFI-EST</a>.</strong><
 <input type="hidden" id='MAX_FILE_SIZE' name="MAX_FILE_SIZE" value="2147483648" />
 
 <p>
+<?php echo make_upload_box("<b>Select a File to Upload:</b><br>", "ssn_file", "progress_bar", "progressNumber", "The acceptable format is uncompressed or zipped xgmml."); ?>
+<!--
     <label for="fileToUpload"><b>Select a File to Upload</b></label><br />
     <input type="file" id='ssn_file' name="ssn_file" data-url='server/php/' class="blast_inputs email border"><br>
-    The acceptable format is uncompressed or zipped xgmml. Maximum file size is <?php echo ini_get('post_max_size'); ?>b.
+    The acceptable format is uncompressed or zipped xgmml. Maximum file size is <?php echo $maxFileSize; ?>b.
+-->
     <!--(Maximum size is <?php echo ini_get('post_max_size'); ?>.)-->
 </p>
 
@@ -101,7 +119,7 @@ Used for data retrieval only
 
 <div id='message' style="color: red"><?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?></div>
 <!--<h3>Currently Disabled for maintanance</h3>-->
-<center><input type="button" id='submit' name="submit" value="Generate GNN" class="css_btn_class" onclick="uploadFile()"></center>
+<center><input type="button" id='submit' name="submit" value="Generate GNN" class="css_btn_class_recalc" onclick="uploadFile()"></center>
 
 <hr>
 
@@ -118,4 +136,7 @@ Used for data retrieval only
 <p>ENA Version: <b><?php echo settings::get_ena_version(); ?></b></p>
 </div>
 </form>
+
+<script src="includes/custom-file-input.js" type="text/javascript"></script>
+
 <?php require_once('includes/footer.inc.php'); ?>

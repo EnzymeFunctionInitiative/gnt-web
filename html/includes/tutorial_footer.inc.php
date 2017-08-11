@@ -1,6 +1,6 @@
-<p style='text-align:center;'><a href='stepa.php'><button class="css_btn_class">Begin EFI-GNT</button></a></p>
+<p style='text-align:center;'><a href='stepa.php'><button class="css_btn_class_recalc">Begin EFI-GNT</button></a></p>
   <div class="clear"></div>
-<p class="suggestions"><a href="http://enzymefunction.org/content/sequence-similarity-networks-tool-feedback" target="_blank">Need help or have suggestions or comments?   Please provide it here &raquo;</a></p>
+<p class="suggestions" style="font-size:20px"><a href="http://enzymefunction.org/content/sequence-similarity-networks-tool-feedback" target="_blank"><b>Need help or have suggestions or comments?   Please click here to submit.</b></a></p>
 </div>
 
 <div class="clear"></div>
