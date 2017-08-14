@@ -179,8 +179,9 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
     
   </div>
 
+<?php if (settings::is_beta_release()) { ?>
     <div><center><h4><b><span style="color: red">BETA</span></b></h4></center></div>
-  
+<?php } ?>
 
 <?php require_once('includes/footer.inc.php'); ?>
 

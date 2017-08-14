@@ -125,7 +125,9 @@ Used for data retrieval only
 
 <div align="center">
 
+<?php if (settings::is_beta_release()) { ?>
 <h4><b><span style="color: red">BETA</span></b></h4>
+<?php } ?>
 
 <h4><br><progress id='progress_bar' max='100' value='0'></progress></h4>
 <br><div id="progressNumber"></div> 

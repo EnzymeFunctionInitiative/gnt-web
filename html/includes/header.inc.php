@@ -1,3 +1,7 @@
+<?php
+include_once("../libs/settings.class.inc.php");
+?>
+
 <!doctype html>
 <head>
 <!--<script src="includes/jquery-2.1.1.min.js" type="text/javascript"></script>-->
@@ -41,5 +45,7 @@
 				<div class="content_widecontent">
 
 <h2>Genome Neighborhood Networks</h2>
+<?php if (settings::is_beta_release()) { ?>
 <center><h4><b><span style="color: red">BETA</span></b></h4></center>
+<?php } ?>
 
