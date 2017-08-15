@@ -30,7 +30,7 @@ class gnn {
     protected $pbs_number;
     protected $status;
     protected $beta;
-    protected $is_legacy;
+    protected $is_legacy = false;
 
     ///////////////Public Functions///////////
 
@@ -644,8 +644,8 @@ class gnn {
             $this->gnn_edges = $result[0]['gnn_gnn_edges'];
             $this->gnn_pfams = $result[0]['gnn_gnn_pfams'];
             $this->pbs_number = $result[0]['gnn_pbs_number'];
-            $this->is_legacy = is_null($this->pbs_number);
             $this->status = $result[0]['gnn_status'];
+            $this->is_legacy = is_null($this->status);
 
             // Sanitize the filename
             $this->filename = mb_ereg_replace("([\._]{2,})", '', mb_ereg_replace("([^a-zA-Z0-9\-_\.])", '', $this->filename));
