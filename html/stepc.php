@@ -25,17 +25,19 @@ else {
         exit;
 }
 
+$isLegacy = is_null($gnn->get_pbs_number());
+
 $baseUrl = settings::get_web_address();
 $gnnId = $gnn->get_id();
 
 $ssnFile = $gnn->get_relative_color_ssn();
-$ssnZipFile = preg_replace("/\.xgmml$/", ".zip", $ssnFile);
+$ssnZipFile = $gnn->get_relative_color_ssn_zip_file();
 $ssnFilesize = $gnn->get_color_ssn_filesize();
 $gnnFile = $gnn->get_relative_gnn();
-$gnnZipFile = preg_replace("/\.xgmml$/", ".zip", $gnnFile);
+$gnnZipFile = $gnn->get_relative_gnn_zip_file();
 $gnnFilesize = $gnn->get_gnn_filesize();
 $pfamFile = $gnn->get_relative_pfam_hub();
-$pfamZipFile = preg_replace("/\.xgmml$/", ".zip", $pfamFile);
+$pfamZipFile = $gnn->get_relative_pfam_hub_zip_file();
 $pfamFilesize = $gnn->get_pfam_hub_filesize();
 $idDataZip = $gnn->get_relative_cluster_data_zip_file();
 $idDataZipFilesize = $gnn->get_cluster_data_zip_filesize();
@@ -49,6 +51,12 @@ $pfamNoneZip = $gnn->get_relative_pfam_none_zip_file();
 $pfamNoneZipFilesize = $gnn->get_pfam_none_zip_filesize();
 $fastaZip = $gnn->get_relative_fasta_zip_file();
 $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
+
+// Legacy jobs
+$noMatchesFile = $gnn->get_relative_no_matches_file();
+$noMatchesFilesize = $gnn->get_no_matches_filesize();
+$noNeighborsFile = $gnn->get_relative_no_neighbors_file();
+$noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
 
 ?>
 
@@ -83,7 +91,9 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$ssnFile" ?>"><button>Download</button></a>
+<?php if ($ssnZipFile) { ?>
                 <a href="<?php echo "$baseUrl/$ssnZipFile"; ?>"><button>Download ZIP</button></a>
+<?php } ?>
             </td>
             <td><?php echo number_format($gnn->get_ssn_nodes()); ?></td>
             <td><?php echo number_format($gnn->get_ssn_edges()); ?></td>
@@ -103,9 +113,11 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$gnnFile"; ?>"><button>Download</button></a>
+<?php if ($gnnZipFile) { ?>
                 <a href="<?php echo "$baseUrl/$gnnZipFile"; ?>"><button>Download ZIP</button></a>
+<?php } ?>
             </td>
-            <td><?php echo $gnn->get_gnn_filesize(); ?>MB</td>
+            <td><?php echo $gnnFilesize; ?>MB</td>
         </tr>
     </table>
    
@@ -118,7 +130,9 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$pfamFile"; ?>"><button>Download</button></a>
+<?php if ($pfamZipFile) { ?>
                 <a href="<?php echo "$baseUrl/$pfamZipFile"; ?>"><button>Download ZIP</button></a>
+<?php } ?>
             </td>
             <td><?php echo $pfamFilesize; ?> MB</td>
         </tr>
@@ -129,6 +143,7 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
         <th></th>
         <th>File</th>
         <th>File Size (MB)</th>
+<?php if ($idTableFile) { ?>
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$idTableFile"; ?>"><button>Download</button></a>
@@ -136,6 +151,8 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
             <td>UniProt ID-Color-Cluster Number Mapping Table</td>
             <td><?php echo $idTableFilesize; ?> MB</td>
         </tr>
+<?php } ?>
+<?php if ($idDataZip) { ?>
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$idDataZip"; ?>"><button>Download All (ZIP)</button></a>
@@ -143,6 +160,8 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
             <td>UniProt ID Lists per Cluster</td>
             <td><?php echo $idDataZipFilesize; ?> MB</td>
         </tr>
+<?php } ?>
+<?php if ($fastaZip) { ?>
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$fastaZip"; ?>"><button>Download All (ZIP)</button></a>
@@ -150,6 +169,8 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
             <td>FASTA Files per Cluster</td>
             <td><?php echo $fastaZipFilesize; ?> MB</td>
         </tr>
+<?php } ?>
+<?php if ($pfamDataZip) { ?>
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$pfamDataZip"; ?>"><button>Download All (ZIP)</button></a>
@@ -157,6 +178,8 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
             <td>PFAM Neighbor Mapping Tables</td>
             <td><?php echo $pfamDataZipFilesize; ?> MB</td>
         </tr>
+<?php } ?>
+<?php if ($pfamNoneZip) { ?>
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$pfamNoneZip"; ?>"><button>Download All (ZIP)</button></a>
@@ -164,6 +187,8 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
             <td>Neighbors without PFAM assigned per Cluster</td>
             <td><?php echo $pfamNoneZipFilesize; ?> MB</td>
         </tr>
+<?php } ?>
+<?php if ($warningFile) { ?>
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$warningFile"; ?>"><button>Download</button></a>
@@ -171,6 +196,25 @@ $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
             <td>No Matches/No Neighbors File</td>
             <td><?php echo $warningFilesize; ?> MB</td>
         </tr>
+<?php } ?>
+<?php if ($noMatchesFile) { ?>
+        <tr style='text-align:center;'>
+            <td>
+                <a href="<?php echo "$baseUrl/$noMatchesFile"; ?>"><button>Download</button></a>
+            </td>
+            <td>No Matches</td>
+            <td><?php echo $noMatchesFilesize; ?> MB</td>
+        </tr>
+<?php } ?>
+<?php if ($noNeighborsFile) { ?>
+        <tr style='text-align:center;'>
+            <td>
+                <a href="<?php echo "$baseUrl/$noNeighborsFile"; ?>"><button>Download</button></a>
+            </td>
+            <td>No Neighbors File</td>
+            <td><?php echo $noNeighborsFilesize; ?> MB</td>
+        </tr>
+<?php } ?>
     </table>
     
     <hr>

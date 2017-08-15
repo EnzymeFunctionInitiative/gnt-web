@@ -30,6 +30,7 @@ class gnn {
     protected $pbs_number;
     protected $status;
     protected $beta;
+    protected $is_legacy;
 
     ///////////////Public Functions///////////
 
@@ -130,13 +131,13 @@ class gnn {
     public function run_gnn() {
         $this->delete_outputs();
         $this->set_time_started();
-        
+
         $ssnin = $this->unzip_file();
 
         $binary = settings::get_gnn_script();
-        
+
         mkdir(settings::get_output_dir() . "/" . $this->get_id());
-        
+
         $exec = "source /etc/profile.d/modules.sh; ";
         $exec .= "module load " . settings::get_efidb_module() . "; ";
         $exec .= "module load " . settings::get_gnn_module() . "; ";
@@ -156,22 +157,22 @@ class gnn {
         $exec .= " -id-out " . $this->get_id_table_file();
         $exec .= " -none-dir " . $this->get_pfam_none_dir();
         $exec .= " -none-zip " . $this->get_pfam_none_zip_file();
-        
+
         error_log("Job ID: " . $this->get_id());
         error_log("Exec: " . $exec);
-        
+
         $output_array = array();
         $output = exec($exec,$output_array,$exit_status);
         $output = trim(rtrim($output));
-        
+
         error_log("Job ID: " . $this->get_id() . ", Exit Status: " . $exit_status);
-        
+
         $this->set_time_completed();
         $formatted_output = implode("\n",$output_array);
 
         file_put_contents($this->get_log_file(), $exec . "\n");
         file_put_contents($this->get_log_file(), $formatted_output, FILE_APPEND);
-        
+
         if (($exit_status == 0) && (strpos($output,'clustergnn.pl finished') !== false)) {
             $this->set_gnn_stats();
             $this->set_ssn_stats();
@@ -187,7 +188,7 @@ class gnn {
     public function run_gnn_async($is_debug = false) {
 
         $ssnin = $this->get_full_path();
-        
+
         $binary = settings::get_gnn_script();
 
         $out_dir = settings::get_output_dir() . "/" . $this->get_id();
@@ -199,7 +200,7 @@ class gnn {
             mkdir($out_dir);
         chdir($out_dir);
         copy($ssnin, $target_ssnin);
-        
+
         $exec = "source /etc/profile.d/modules.sh; ";
         $exec .= "module load " . settings::get_efidb_module() . "; ";
         $exec .= "module load " . settings::get_gnn_module() . "; ";
@@ -227,7 +228,7 @@ class gnn {
         error_log("Exec: " . $exec);
 
         $exit_status = 1;
-        
+
         file_put_contents($this->get_log_file(), $exec . "\n");
 
         $output_array = array();
@@ -270,8 +271,10 @@ class gnn {
     }
 
     public function get_file_prefix() {
-        return $this->get_id() . "_" . $this->basefilename;
-        #return $this->get_id();
+        if ($this->is_legacy)
+            return $this->get_id();
+        else
+            return $this->get_id() . "_" . $this->basefilename;
     }
 
     public function get_log_file() {
@@ -279,161 +282,197 @@ class gnn {
         $output_dir = settings::get_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
-
-
     }
-    public function get_color_ssn() {
-        $filename = $this->get_file_prefix() . "_coloredssn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-        return $full_path;
 
+    public function get_color_ssn() {
+        $name = $this->is_legacy ? "color" : "coloredssn";
+        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/" . $filename;
+        return $full_path;
     }
     public function get_relative_color_ssn() {
-        $filename = $this->get_file_prefix() . "_coloredssn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-        $output_dir = settings::get_rel_output_dir();
+        $name = $this->is_legacy ? "color" : "coloredssn";
+        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $output_dir = $this->get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
-
     }
-    public function get_gnn() {
-        $filename = $this->get_file_prefix() . "_ssn_cluster_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-        return $full_path;
 
+    public function get_gnn() {
+        $name = $this->is_legacy ? "gnn" : "ssn_cluster_gnn";
+        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/" . $filename;
+        return $full_path;
     }
     public function get_relative_gnn() {
-        $filename = $this->get_file_prefix() . "_ssn_cluster_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-        $output_dir = settings::get_rel_output_dir();
+        $name = $this->is_legacy ? "gnn" : "ssn_cluster_gnn";
+        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $output_dir = $this->get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
-
     }
 
     public function get_pfam_hub() {
-        $filename = $this->get_file_prefix() . "_pfam_family_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        $name = $this->is_legacy ? "pfam" : "pfam_family_gnn";
+        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/" . $filename;
         return $full_path;
-
     }
     public function get_relative_pfam_hub() {
-        $filename = $this->get_file_prefix() . "_pfam_family_gnn_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-        $output_dir = settings::get_rel_output_dir();
+        $name = $this->is_legacy ? "pfam" : "pfam_family_gnn";
+        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $output_dir = $this->get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
-
     }
 
     public function get_warning_file() {
+        if ($this->is_legacy)
+            return "";
         $filename = $this->get_file_prefix() . "_nomatches_noneighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/" . $filename;
         return $full_path;
     }
     public function get_relative_warning_file() {
+        if ($this->is_legacy)
+            return "";
         $filename = $this->get_file_prefix() . "_nomatches_noneighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-        $output_dir = settings::get_rel_output_dir();
+        $output_dir = $this->get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
 
     public function get_cluster_data_dir() {
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/cluster-data";
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/cluster-data";
         return $full_path;
     }
     public function get_pfam_data_dir() {
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/pfam-data";
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/pfam-data";
         return $full_path;
     }
     public function get_pfam_none_dir() {
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/pfam-none";
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/pfam-none";
         return $full_path;
     }
     public function get_fasta_dir() {
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/fasta";
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/fasta";
         return $full_path;
     }
 
+    public function get_relative_color_ssn_zip_file() {
+        if ($this->is_legacy)
+            return "";
+        $ssnFile = $this->get_relative_color_ssn();
+        return preg_replace("/\.xgmml$/", ".zip", $ssnFile);
+    }
+    public function get_relative_gnn_zip_file() {
+        if ($this->is_legacy)
+            return "";
+        $gnnFile = $this->get_relative_gnn();
+        return preg_replace("/\.xgmml$/", ".zip", $gnnFile);
+    }
+    public function get_relative_pfam_hub_zip_file() {
+        if ($this->is_legacy)
+            return "";
+        $pfamFile = $this->get_relative_pfam_hub();
+        return preg_replace("/\.xgmml$/", ".zip", $pfamFile);
+    }
     public function get_cluster_data_zip_file() {
         $filename = $this->get_file_prefix() . "_UniProt_IDs_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/" . $filename;
         return $full_path;
     }
     public function get_relative_cluster_data_zip_file() {
+        if ($this->is_legacy)
+            return "";
         $filename = $this->get_file_prefix() . "_UniProt_IDs_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-        $output_dir = settings::get_rel_output_dir();
+        $output_dir = $this->get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
 
     public function get_fasta_zip_file() {
+        if ($this->is_legacy)
+            return "";
         $filename = $this->get_file_prefix() . "_FASTA_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/" . $filename;
         return $full_path;
     }
     public function get_relative_fasta_zip_file() {
+        if ($this->is_legacy)
+            return "";
         $filename = $this->get_file_prefix() . "_FASTA_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-        $output_dir = settings::get_rel_output_dir();
+        $output_dir = $this->get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
 
     public function get_pfam_none_zip_file() {
         $filename = $this->get_file_prefix() . "_no_pfam_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/" . $filename;
         return $full_path;
     }
     public function get_relative_pfam_none_zip_file() {
+        if ($this->is_legacy)
+            return "";
         $filename = $this->get_file_prefix() . "_no_pfam_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-        $output_dir = settings::get_rel_output_dir();
+        $output_dir = $this->get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
 
     public function get_pfam_data_zip_file() {
         $filename = $this->get_file_prefix() . "_pfam_mapping_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/" . $filename;
         return $full_path;
     }
     public function get_relative_pfam_data_zip_file() {
+        if ($this->is_legacy)
+            return "";
         $filename = $this->get_file_prefix() . "_pfam_mapping_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-        $output_dir = settings::get_rel_output_dir();
+        $output_dir = $this->get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
 
     public function get_id_table_file() {
         $filename = $this->get_file_prefix() . "_mapping_table_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/" . $filename;
         return $full_path;
     }
     public function get_relative_id_table_file() {
+        if ($this->is_legacy)
+            return "";
         $filename = $this->get_file_prefix() . "_mapping_table_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-        $output_dir = settings::get_rel_output_dir();
+        $output_dir = $this->get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
         return $full_path;
     }
 
     public function get_stats() {
         $filename = $this->get_file_prefix() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-        $output_dir = settings::get_output_dir();
-        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        $output_dir = $this->get_output_dir();
+        $full_path = $output_dir . "/" . $filename;
         return $full_path;
     }
     public function get_relative_stats() {
+        if ($this->is_legacy)
+            return "";
         $filename = $this->get_file_prefix() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-        $output_dir = settings::get_rel_output_dir();
+        $output_dir = $this->get_rel_output_dir();
         $full_path = $output_dir . "/" . $this->get_id() . "/".  $filename;
         return $full_path;
 
@@ -446,18 +485,28 @@ class gnn {
         return round(filesize($this->get_gnn()) / 1048576,2);
     }
     public function get_warning_filesize() {
+        if ($this->is_legacy)
+            return 0;
         return round(filesize($this->get_warning_file()) / 1048576,2);
     }
     public function get_cluster_data_zip_filesize() {
+        if ($this->is_legacy)
+            return 0;
         return round(filesize($this->get_cluster_data_zip_file()) / 1048576,2);
     }
     public function get_fasta_zip_filesize() {
+        if ($this->is_legacy)
+            return 0;
         return round(filesize($this->get_fasta_zip_file()) / 1048576,2);
     }
     public function get_pfam_none_zip_filesize() {
+        if ($this->is_legacy)
+            return 0;
         return round(filesize($this->get_pfam_none_zip_file()) / 1048576,2);
     }
     public function get_pfam_data_zip_filesize() {
+        if ($this->is_legacy)
+            return 0;
         return round(filesize($this->get_pfam_data_zip_file()) / 1048576,2);
     }
     public function get_stats_filesize() {
@@ -467,9 +516,62 @@ class gnn {
         return round(filesize($this->get_pfam_hub()) / 1048576,2);
     }
     public function get_id_table_filesize() {
+        if ($this->is_legacy)
+            return 0;
         return round(filesize($this->get_id_table_file()) / 1048576,2);
     }
-    
+
+    // Legacy Jobs
+    public function get_no_matches_file() {
+        $filename = $this->get_id() . "_no_matches_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $output_dir = settings::get_legacy_output_dir();
+        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        return $full_path;
+    }
+    public function get_relative_no_matches_file() {
+        if (!$this->is_legacy)
+            return "";
+        $filename = $this->get_id() . "_no_matches_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $output_dir = settings::get_legacy_rel_output_dir();
+        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        return $full_path;
+    }
+    public function get_no_matches_filesize() {
+        if (!$this->is_legacy)
+            return 0;
+        return round(filesize($this->get_no_matches_file()) / 1048576,2);
+    }
+    public function get_no_neighbors_file() {
+        $filename = $this->get_id() . "_no_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $output_dir = settings::get_legacy_output_dir();
+        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        return $full_path;
+    }
+    public function get_relative_no_neighbors_file() {
+        if (!$this->is_legacy)
+            return "";
+        $filename = $this->get_id() . "_no_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
+        $output_dir = settings::get_legacy_rel_output_dir();
+        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
+        return $full_path;
+    }
+    public function get_no_neighbors_filesize() {
+        if (!$this->is_legacy)
+            return 0;
+        return round(filesize($this->get_no_neighbors_file()) / 1048576,2);
+    }
+
+
+
+
+
+    public function get_rel_output_dir() {
+        if ($this->is_legacy)
+            return settings::get_legacy_rel_output_dir();
+        else
+            return settings::get_rel_output_dir();
+    }
+
     public function set_time_started() {
         $current_time = date("Y-m-d H:i:s",time());
         $sql = "UPDATE gnn SET gnn_time_started='" . $current_time . "' ";
@@ -542,6 +644,7 @@ class gnn {
             $this->gnn_edges = $result[0]['gnn_gnn_edges'];
             $this->gnn_pfams = $result[0]['gnn_gnn_pfams'];
             $this->pbs_number = $result[0]['gnn_pbs_number'];
+            $this->is_legacy = is_null($this->pbs_number);
             $this->status = $result[0]['gnn_status'];
 
             // Sanitize the filename
@@ -711,17 +814,20 @@ class gnn {
     }
 
     public function get_output_dir() {
-        return settings::get_output_dir() . "/" . $this->get_id();
+        if ($this->is_legacy)
+            return settings::get_legacy_output_dir() . "/" . $this->get_id();
+        else
+            return settings::get_output_dir() . "/" . $this->get_id();
     }
 
     public function get_pbs_number() { return $this->pbs_number; }
 
-    public function set_pbs_number($pbs_number) {
-        $sql = "UPDATE gnn SET gnn_pbs_number='" . $pbs_number . "' ";
-        $sql .= "WHERE gnn_id='" . $this->get_id() . "' LIMIT 1";
-        $this->db->non_select_query($sql);
-        $this->pbs_number = $pbs_number;
-    }
+        public function set_pbs_number($pbs_number) {
+            $sql = "UPDATE gnn SET gnn_pbs_number='" . $pbs_number . "' ";
+            $sql .= "WHERE gnn_id='" . $this->get_id() . "' LIMIT 1";
+            $this->db->non_select_query($sql);
+            $this->pbs_number = $pbs_number;
+        }
 
     public function check_pbs_running() {
         $output;
