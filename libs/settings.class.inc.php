@@ -4,14 +4,10 @@ class settings {
 
     public static function get_default_neighbor_size() {
         return __DEFAULT_NEIGHBOR_SIZE__;
-
-
     }
 
     public static function get_gnn_script() {
         return __GNN_SCRIPT__;
-
-
     }
 
     public static function get_uploads_dir() {
@@ -20,7 +16,6 @@ class settings {
             return $dir;
         }
         return false;
-
     }
 
     public static function get_valid_file_type() {
@@ -61,12 +56,9 @@ class settings {
 
     public static function get_web_address() {
         return dirname($_SERVER['PHP_SELF']);
-
     }
 
     public static function get_web_root() {
-        //$url = "http://" . $_SERVER['SERVER_NAME'] . dirname($_SERVER['PHP_SELF']);
-        //return $url;
         return __WEB_ROOT__;
     }
 
@@ -110,6 +102,14 @@ class settings {
 
     public static function get_ena_version() {
         return __ENA_VERSION__;
+    }
+
+    public static function get_est_version() {
+        return defined("__EST_VERSION__") && __EST_VERSION__ ? __EST_VERSION__ : "-";
+    }
+
+    public static function get_gnt_version() {
+        return defined("__GNT_VERSION__") && __GNT_VERSION__ ? __GNT_VERSION__ : "-";
     }
 
     public static function get_release_status() {
