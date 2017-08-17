@@ -10,9 +10,8 @@ include_once("../libs/settings.class.inc.php");
 <link rel="shortcut icon" href="images/favicon_efi.ico" type="image/x-icon">
 <title>Genome Neighborhood Networks Tool</title>
 
-<script src='includes/main.inc.js' type='text/javascript'></script>
-<script src='includes/upload.inc.js' type='text/javascript'></script>
-<script src='includes/compute.inc.js' type='text/javascript'></script>
+<script src='includes/main2.inc.js' type='text/javascript'></script>
+<script src='includes/upload2.inc.js' type='text/javascript'></script>
 </head>
 
 <body>
