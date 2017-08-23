@@ -22,7 +22,7 @@ include_once("../libs/settings.class.inc.php");
 
 	<div class="header_area">
 		<div class="efi_logo">
-			<a href="http://efi.igb.illinois.edu/efi-gnt-beta/">
+			<a href="http://efi.igb.illinois.edu/efi-gnt/">
 			<img src="images/efi-gnn_logo.png" width="250" height="75" alt="Enzyme Function Initiative Logo"></a><a href="http://enzymefunction.org">
 			<img src="images/efi_logo.png" class="efi_logo_small" width="80" height="24" alt="Enzyme Function Initiative Logo"></a><div class="clear">
 		</div>
