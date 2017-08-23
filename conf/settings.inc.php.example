@@ -51,5 +51,6 @@ define("__BETA_RELEASE__","");
 define("__ENABLE_LOG__",false);
 define("__LOG_FILE__","");
 define("__WEB_ROOT__","");
+define("__EST_URL__","");
 
 ?>

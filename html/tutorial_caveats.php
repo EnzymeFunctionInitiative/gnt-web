@@ -14,7 +14,7 @@ to its function <i>in vivo.</i> GNN noise can be detrimental to the
 functional discovery process by providing misleading genomic
 contexts. Thus, the GNN user should have a critical eye for gene
 neighbor consistency. Neighbor genes that occur more often and in
-closer proximity are less likely to be “noise”. 
+closer proximity are less likely to be "noise". 
 </p>
 <p><br>The consolidation of an SSN-cluster into a single representative
 spoke node necessitates that the degree of SSN fractionation be

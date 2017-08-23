@@ -6,6 +6,7 @@ include_once("../libs/settings.class.inc.php");
 <head>
 <!--<script src="includes/jquery-2.1.1.min.js" type="text/javascript"></script>-->
 <link rel="stylesheet" type="text/css" href="css/efi_tool.css">
+<link rel="stylesheet" type="text/css" href="/css/shared.css">
 <!--<link rel='stylesheet' type='text/css' href='css/upload.css'>-->
 <link rel="shortcut icon" href="images/favicon_efi.ico" type="image/x-icon">
 <title>Genome Neighborhood Networks Tool</title>

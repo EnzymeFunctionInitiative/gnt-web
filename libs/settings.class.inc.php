@@ -108,6 +108,10 @@ class settings {
         return defined("__EST_VERSION__") && __EST_VERSION__ ? __EST_VERSION__ : "-";
     }
 
+    public static function get_est_url() {
+        return __EST_URL__ ? __EST_URL__ : "#";
+    }
+
     public static function get_gnt_version() {
         return defined("__GNT_VERSION__") && __GNT_VERSION__ ? __GNT_VERSION__ : "-";
     }

@@ -377,7 +377,7 @@ padding: 0px;
 		.content_content p, .CSS1Compat p { line-height: 120%; margin: 15px 0px; }
 		.content_content h2 { background: #58585a; font-size: 175%; padding: 4px; color: #ebebeb; font-family: 'DINPro-bold', helvetica, sans-serif;  font-weight: normal; }
 			.content_content ul { margin-left: 35px; }
-			.content_content li { list-style: disc; }
+			.content_content ul li { list-style: disc; }
 			
 			.content_content a:link, .content_content a:visited { font-weight:bold; } 
 			
@@ -406,7 +406,7 @@ padding: 0px;
 		}
 		
 			.content_widecontent ul { margin-left: 35px; }
-			.content_widecontent li { list-style: disc; }
+			.content_widecontent ul li { list-style: disc; }
 			.content_widecontent .cke_wrapper ul { margin-left: 35px; }
 			.content_widecontent .cke_wrapper li { list-style: disc; }
 			
@@ -482,24 +482,5 @@ li.active  { background: #005591; }
 .bar {
     height: 18px;
     background: green;
-}
-
-.file_upload {
-    border: 1px solid #bbb;
-    background-color: #ddd;
-    display: inline-block;
-    padding: 6px 12px;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    cursor: pointer;
-}
-
-.input_file {
-    width: 0.1px;
-    height: 0.1px;
-    opacity: 0;
-    overflow: hidden;
-    position: absolute;
-    z-index: -1;
 }
 
