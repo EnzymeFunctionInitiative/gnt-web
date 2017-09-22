@@ -29,6 +29,7 @@ $isLegacy = is_null($gnn->get_pbs_number());
 
 $baseUrl = settings::get_web_address();
 $gnnId = $gnn->get_id();
+$gnnKey = $gnn->get_key();
 
 $ssnFile = $gnn->get_relative_color_ssn();
 $ssnZipFile = $gnn->get_relative_color_ssn_zip_file();
@@ -218,6 +219,23 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
     </table>
     
     <hr>
+    <h4 >Arrow Diagrams</h4>  
+
+    Input a list of UniProt IDs or a cluster number from the GNN to generate arrow diagrams:<br>
+    <div id="diagram-controls">
+        <div><textarea rows=4 cols=20 id="id-input"></textarea></div>
+        <div style="float:left"><button type="button" id="diagram-generate-button">Generate</button></div>
+        <div id="progress-loader" style="display:inline-block;margin-left:15px;visibility:hidden" class="loader"></div>
+        <div style="clear:both"><input type="checkbox" checked id="display-mode"> Align genes by coordinates</div>
+    </div>
+
+    <div id="arrow-container" style="width:900px;height:10px">
+        <br>
+
+        <svg id="arrow-canvas" style="width:100%;height:100%"></svg>
+    </div>
+
+    <hr>
     <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>  
     
     
@@ -226,6 +244,35 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
 <?php if (settings::is_beta_release()) { ?>
     <div><center><h4><b><span style="color: red">BETA</span></b></h4></center></div>
 <?php } ?>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/snap.svg/0.5.1/snap.svg-min.js" content-type="text/javascript"></script>
+    <script src="js/arrows.js" content-type="text/javascript"></script>
+    <script type="application/javascript">
+        $(document).ready(function() {
+            var popupIds = new PopupIds("info-popup", "info-popup-id", "info-popup-fam", "info-popup-coords",
+                    "info-popup-seqlen", "info-popup-dir", "info-popup-num");
+            var arrowDiagram = new ArrowDiagram("arrow-canvas", "display-mode", "arrow-container", popupIds, "id-input",
+                                                "diagram-controls", "progress-loader");
+            arrowDiagram.setJobInfo("<?php echo $gnnId; ?>", "<?php echo $gnnKey; ?>");
+
+            $("#diagram-generate-button").click(function() {
+                arrowDiagram.getArrowData();
+            });
+
+            $("#display-mode").click(function() {
+                arrowDiagram.toggleDisplayMode();
+            });
+        });
+    </script>
+
+<div id="info-popup" style="position:absolute;padding:5px;background-color:#555;color:#fff;">
+    <div id="info-popup-id">ID: <span class="popup-id"></span></div>
+    <div id="info-popup-fam">Family: <span class="popup-pfam"></span></div>
+    <div id="info-popup-coords">Coordinates: <span class="popup-pfam"></span></div>
+    <div id="info-popup-seqlen">Sequence Length: <span class="popup-pfam"></span></div>
+    <div id="info-popup-dir">Direction: <span class="popup-pfam"></span></div>
+    <div id="info-popup-num">Gene Index: <span class="popup-pfam"></span></div>
+</div>
 
 <?php require_once('includes/footer.inc.php'); ?>
 

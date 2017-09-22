@@ -6,6 +6,8 @@ include_once("../libs/settings.class.inc.php");
 <head>
 <!--<script src="includes/jquery-2.1.1.min.js" type="text/javascript"></script>-->
 <link rel="stylesheet" type="text/css" href="css/efi_tool.css">
+<link rel="stylesheet" type="text/css" href="css/popup.css">
+<link rel="stylesheet" type="text/css" href="css/loader.css">
 <link rel="stylesheet" type="text/css" href="/css/shared.css">
 <!--<link rel='stylesheet' type='text/css' href='css/upload.css'>-->
 <link rel="shortcut icon" href="images/favicon_efi.ico" type="image/x-icon">
@@ -13,6 +15,7 @@ include_once("../libs/settings.class.inc.php");
 
 <script src='includes/main2.inc.js' type='text/javascript'></script>
 <script src='includes/upload2.inc.js' type='text/javascript'></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 </head>
 
 <body>
