@@ -2,24 +2,6 @@
 include_once '../includes/main.inc.php';
 include_once '../libs/gnn.class.inc.php';
 
-//$result = array();
-//$rawData = file("proto/raw2.txt");
-//
-//$ND = array();
-//
-//foreach ($rawData as $row) {
-//    $parts = explode("\t", trim($row));
-//    $accId = $parts[0];
-//    $ND[$accId] = array('pfam' => $parts[5], 'start' => $parts[2], 'dir' => $parts[1], 'width' => $parts[3],
-//       'strain' => $parts[4], 'neighbors' => array());
-//    if (count($parts) > 6) {
-//        $neighbors = explode("|", $parts[6]);
-//        foreach ($neighbors as $neighborData) {
-//            $parts = explode(";", $neighborData);
-//            array_push($ND[$accId]['neighbors'], $parts);
-//        }
-//    }
-//}
 
 $output = array();
 
@@ -77,11 +59,11 @@ else {
 }
 
 $resultsDb = new SQLite3($gnn->get_arrow_data_file());
-//$resultsDb->open($gnn->get_arrow_data_file());
 
-//$data_file_contents = file_get_contents($gnn->get_arrow_data_file());
-//$all_data = json_decode($data_file_contents, true);
-//var_dump($all_data);
+
+$minBp = 999999999999;
+$maxBp = -999999999999;
+$maxQueryWidth = -1;
 
 $output["data"] = array();
 foreach ($ids as $id) {
@@ -98,13 +80,26 @@ foreach ($ids as $id) {
     $attr['family'] = $row['family'];
     $attr['start'] = $row['start'];
     $attr['stop'] = $row['stop'];
-    $attr['rel_start'] = $row['rel_start'];
-    $attr['rel_width'] = $row['rel_width'];
+    $attr['rel_start_coord'] = $row['rel_start'];
+    $attr['rel_stop_coord'] = $row['rel_stop'];
     $attr['strain'] = $row['strain'];
     $attr['direction'] = $row['direction'];
     $attr['type'] = $row['type'];
     $attr['seq_len'] = $row['seq_len'];
     $attr['cluster_num'] = $row['cluster_num'];
+    $attr['organism'] = $row['organism'];
+    $attr['taxon_id'] = $row['taxon_id'];
+    $attr['anno_status'] = $row['anno_status'];
+    $attr['family_desc'] = $row['family_desc'];
+    $attr['desc'] = $row['desc'];
+
+    if ($attr['rel_start_coord'] < $minBp)
+        $minBp = $attr['rel_start_coord'];
+    if ($attr['rel_stop_coord'] > $maxBp)
+        $maxBp = $attr['rel_stop_coord'];
+    $queryWidth = $attr['rel_stop_coord'] - $attr['rel_start_coord'];
+    if ($queryWidth > $maxQueryWidth)
+        $maxQueryWidth = $queryWidth;
 
     $nbSql = "SELECT * FROM neighbors WHERE gene_key = '" . $row['sort_key'] . "'";
     $dbQuery = $resultsDb->query($nbSql);
@@ -118,12 +113,18 @@ foreach ($ids as $id) {
         $nb['family'] = $row['family'];
         $nb['start'] = $row['start'];
         $nb['stop'] = $row['stop'];
-        $nb['rel_start'] = $row['rel_start'];
-        $nb['rel_width'] = $row['rel_width'];
-        $nb['strain'] = $row['strain'];
+        $nb['rel_start_coord'] = $row['rel_start'];
+        $nb['rel_stop_coord'] = $row['rel_stop'];
         $nb['direction'] = $row['direction'];
         $nb['type'] = $row['type'];
         $nb['seq_len'] = $row['seq_len'];
+        $nb['anno_status'] = $row['anno_status'];
+        $nb['family_desc'] = $row['family_desc'];
+        $nb['desc'] = $row['desc'];
+        if ($nb['rel_start_coord'] < $minBp)
+            $minBp = $nb['rel_start_coord'];
+        if ($nb['rel_stop_coord'] > $maxBp)
+            $maxBp = $nb['rel_stop_coord'];
         array_push($neighbors, $nb);
     }
 
@@ -131,33 +132,32 @@ foreach ($ids as $id) {
                                  'neighbors' => $neighbors);
 }
 
+$maxSide = (abs($maxBp) > abs($minBp)) ? abs($maxBp) : abs($minBp);
+$maxWidth = $maxSide * 2 + $maxQueryWidth;
+$minBp = -$maxSide;
+$maxBp = $maxSide + $maxQueryWidth;
+
+foreach ($output["data"] as $accId => $data) {
+    $start = $output["data"][$accId]["attributes"]["rel_start_coord"];
+    $stop = $output["data"][$accId]["attributes"]["rel_stop_coord"];
+    $acStart = 0.5;
+    $acWidth = ($stop - $start) / $maxWidth;
+    $offset = 0.5 - ($start - $minBp) / $maxWidth;
+    $output["data"][$accId]["attributes"]["rel_start"] = $acStart;
+    $output["data"][$accId]["attributes"]["rel_width"] = $acWidth;
+
+    foreach ($output["data"][$accId]["neighbors"] as $idx => $data2) {
+        $nbStart = ($output["data"][$accId]["neighbors"][$idx]["rel_start_coord"] - $minBp) / $maxWidth;
+        $nbWidth = ($output["data"][$accId]["neighbors"][$idx]["rel_stop_coord"] - $output["data"][$accId]["neighbors"][$idx]["rel_start_coord"]) / $maxWidth;
+        $output["data"][$accId]["neighbors"][$idx]["rel_start"] = $nbStart + $offset;
+        $output["data"][$accId]["neighbors"][$idx]["rel_width"] = $nbWidth;
+    }
+}
+
+
 echo json_encode($output);
 
 
-//else if (array_key_exists("cluster-id", $_GET)) {
-//    $queryString = str_replace("\n", ",", $_GET["cluster-id"]);
-//    $queryString = str_replace("\r", ",", $queryString);
-//    $queryString = str_replace(" ", ",", $queryString);
-//    $clusters = explode(",", $queryString);
-//
-//    foreach ($clusters as $clusterId) {
-//        $ids = array_merge($ids, getIdsFromCluster($clusterId));
-//    }
-//}
-//else if (array_key_exists("ids", $_GET)) {
-//    $queryString = str_replace("\n", ",", $_GET["ids"]);
-//    $queryString = str_replace("\r", ",", $queryString);
-//    $queryString = str_replace(" ", ",", $queryString);
-//    $ids = explode(",", $queryString);
-//}
-//
-//foreach ($ids as $id) {
-//    $id = trim($id);
-//    if (array_key_exists($id, $ND)) {
-//        array_push($result, array($id, $ND[$id]));
-//    }
-//}
-//echo json_encode($result);
 
 
 

@@ -249,8 +249,17 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
     <script src="js/arrows.js" content-type="text/javascript"></script>
     <script type="application/javascript">
         $(document).ready(function() {
-            var popupIds = new PopupIds("info-popup", "info-popup-id", "info-popup-fam", "info-popup-coords",
-                    "info-popup-seqlen", "info-popup-dir", "info-popup-num");
+            var popupIds = {
+                "ParentId": "info-popup",
+                "IdId": "info-popup-id",
+                "FamilyId": "info-popup-fam",
+                "FamilyDescId": "info-popup-fam-desc",
+                "SpTrId": "info-popup-sptr",
+                "SeqLenId": "info-popup-seqlen",
+                "DescId": "info-popup-desc",
+            }; 
+//            var popupIds = new PopupIds("info-popup", "info-popup-id", "info-popup-fam", "info-popup-coords",
+//                    "info-popup-seqlen", "info-popup-dir", "info-popup-num");
             var arrowDiagram = new ArrowDiagram("arrow-canvas", "display-mode", "arrow-container", popupIds, "id-input",
                                                 "diagram-controls", "progress-loader");
             arrowDiagram.setJobInfo("<?php echo $gnnId; ?>", "<?php echo $gnnKey; ?>");
@@ -266,12 +275,15 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
     </script>
 
 <div id="info-popup" style="position:absolute;padding:5px;background-color:#555;color:#fff;">
-    <div id="info-popup-id">ID: <span class="popup-id"></span></div>
+    <div id="info-popup-id">UniProt ID: <span class="popup-id"></span></div>
+    <div id="info-popup-desc">Description: <span class="popup-pfam"></span></div>
+    <div id="info-popup-sptr">Annotation Status: <span class="popup-pfam"></span></div>
     <div id="info-popup-fam">Family: <span class="popup-pfam"></span></div>
-    <div id="info-popup-coords">Coordinates: <span class="popup-pfam"></span></div>
+    <div id="info-popup-fam-desc">Pfam Desc: <span class="popup-pfam"></span></div>
+<!--    <div id="info-popup-coords">Coordinates: <span class="popup-pfam"></span></div>-->
     <div id="info-popup-seqlen">Sequence Length: <span class="popup-pfam"></span></div>
-    <div id="info-popup-dir">Direction: <span class="popup-pfam"></span></div>
-    <div id="info-popup-num">Gene Index: <span class="popup-pfam"></span></div>
+<!--    <div id="info-popup-dir">Direction: <span class="popup-pfam"></span></div>-->
+<!--    <div id="info-popup-num">Gene Index: <span class="popup-pfam"></span></div>-->
 </div>
 
 <?php require_once('includes/footer.inc.php'); ?>

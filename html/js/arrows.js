@@ -2,7 +2,7 @@
 var DM_COORDS = 1;
 var DM_INDEX = 2;
 
-
+/*
 function PopupIds(parentId, idId, familyId, coordsId, seqLenId, directionId, indexId) {
     this.ParentId = parentId;
     this.IdId = idId;
@@ -12,6 +12,7 @@ function PopupIds(parentId, idId, familyId, coordsId, seqLenId, directionId, ind
     this.SeqLenId = seqLenId;
     this.IndexId = indexId;
 }
+*/
 
 function ArrowDiagram(canvasId, displayModeCbId, canvasContainerId, popupIds, inputId, controlsId, progressId) {
 
@@ -98,10 +99,13 @@ ArrowDiagram.prototype.makeArrowDiagram = function(data) {
 // Draw a diagram for a single arrow
 ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth) {
     var canvasHeight = canvas.getBoundingClientRect().height;
-    var ypos = index * this.diagramHeight + this.padding + this.fontHeight;
+    var ypos = index * this.diagramHeight + this.padding * 2 + this.fontHeight;
     if (ypos + this.diagramHeight + this.padding > canvasHeight)
         document.getElementById(this.canvasContainerId).setAttribute("style","width:900px;height:" + (ypos + this.diagramHeight + this.padding) + "px");
     this.drawAxis(ypos, drawingWidth);
+
+    // Orient the query arrows in the same direction (flip the diagram)
+    var orientSameDir = true;
 
     var indexGeneWidth = 1 / 21;
     var geneXpos = 0,
@@ -111,6 +115,8 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
     if (this.displayMode == DM_COORDS) {
         geneXpos = parseFloat(data.attributes.rel_start);
         geneWidth = parseFloat(data.attributes.rel_width);
+//        if (orientSameDir && isComplement)
+//            geneXpos = 1.0 - geneXpos;
     } else {
         var refGeneXpos = (isComplement ? 11 : 10);
         geneXpos = refGeneXpos * indexGeneWidth;
@@ -118,20 +124,27 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
     }
 
     var attrData = makeStruct(data.attributes);
-    var arrow = this.drawArrow(geneXpos, ypos, geneWidth, isComplement, drawingWidth, this.selectedGeneColor, attrData);
-
+    // Always face to the right which is why isComplement isn't provided, rather false is given in this call.
+    var arrow = this.drawArrow(geneXpos, ypos, geneWidth, orientSameDir ? false : isComplement,
+                               drawingWidth, this.selectedGeneColor, attrData);
+var debugAcc = attrData.accession;
+    var max_start = 0;
     for (var i = 0; i < data.neighbors.length; i++) {
         var N = data.neighbors[i];
         var neighborXpos = 0;
         var neighborWidth = indexGeneWidth;
-        var isComplement = N.direction == "complement";
+        var nIsComplement = N.direction == "complement";
 
         if (this.displayMode == DM_COORDS) {
             neighborXpos = parseFloat(N.rel_start);
             neighborWidth = parseFloat(N.rel_width);
+            if (orientSameDir && isComplement) {
+                nIsComplement = !nIsComplement;
+//                neighborXpos = 1 - neighborXpos;
+            }
         } else {
             neighborXpos = (parseInt(N.num) - geneXoffset) * indexGeneWidth;
-            if (isComplement)
+            if (nIsComplement)
                 neighborXpos += indexGeneWidth;
         }
 
@@ -145,12 +158,21 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
                 color = this.pfamColorMap[pfam] = this.colors[this.pfamColorCount++ % this.colors.length];
         }
         var attrData = makeStruct(N);
-        arrow = this.drawArrow(neighborXpos, ypos, neighborWidth, isComplement, drawingWidth, color, attrData);
+        arrow = this.drawArrow(neighborXpos, ypos, neighborWidth, nIsComplement, drawingWidth, color, attrData);
+        
+        if (i == 0)
+            max_start = N.start;
+        else
+            max_stop = N.stop;
     }
+
+    data.attributes.max_start = max_start;
+    data.attributes.max_stop = max_stop;
+    this.drawTitle(index * this.diagramHeight + this.fontHeight - 2, data.attributes);
 }
 
 function makeStruct(data) {
-    return {
+    struct = {
         "accession": data.accession,
         "family": data.family,
         "id": data.id,
@@ -158,14 +180,35 @@ function makeStruct(data) {
         "seq_len": data.seq_len,
         "start": data.start,
         "stop": data.stop,
-        "strain": data.strain,
         "num": data.num,
+        "anno_status": data.anno_status,
+        "family_desc": data.family_desc,
+        "desc": data.desc,
     };
+    if (data.hasOwnProperty("strain"))
+        struct.strain = data.strain;
+    return struct;
 }
 
 ArrowDiagram.prototype.drawAxis = function(ypos, drawingWidth) {
     ypos = ypos + this.axisThickness - 1;
     this.S.paper.line(this.padding, ypos, this.padding + drawingWidth, ypos).attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
+}
+
+ArrowDiagram.prototype.drawTitle = function(ypos, data) {
+    var title = "";
+    if (data.hasOwnProperty("organism"))
+        title = data.organism + "; ";
+    if (data.hasOwnProperty("taxon_id"))
+        title = title + data.taxon_id + "; ";
+    if (data.hasOwnProperty("id"))
+        title = title + "(" + data.id + ")";
+    if (title.length == 0)
+        title = data.strain + " [global width = " + (data.max_stop - data.max_start) + "]";
+    if (title.length > 0) {
+        var textObj = this.S.paper.text(this.padding, ypos, title);
+        textObj.attr({'font-size':12});
+    }
 }
 
 // xpos is in percent (0-1)
@@ -202,13 +245,16 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
         coords = [llx, lly, lrx, lry, px, py, urx, ury, ulx, uly];
     } else { // pointing left
         // pointer of arrow, facing left
-        px = this.padding + (xpos - width) * drawingWidth;
+//        px = this.padding + (xpos - width) * drawingWidth;
+        px = this.padding + (xpos ) * drawingWidth;
         py = ypos + this.axisThickness + this.axisBuffer + this.arrowHeight / 2;
         // lower left of rect. portion
-        llx = this.padding + (xpos - width) * drawingWidth + this.pointerWidth;
+//        llx = this.padding + (xpos - width) * drawingWidth + this.pointerWidth;
+        llx = this.padding + (xpos) * drawingWidth + this.pointerWidth;
         lly = ypos + this.axisThickness + this.axisBuffer + this.arrowHeight;
         // lower right of rect. portion
-        lrx = this.padding + xpos * drawingWidth;
+//        lrx = this.padding + xpos * drawingWidth;
+        lrx = this.padding + (xpos + width) * drawingWidth;
         lry = lly;
         // upper right of rect. portion
         urx = lrx; //this.padding + (xpos + width) * drawingWidth - this.pointerWidth;
@@ -231,7 +277,7 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
     var arrow = this.S.paper.polygon(coords).attr(attrData);
 
     arrow.click(function(event) {
-        window.location.href = "http://uniprot.org/uniprot/" + this.attr("id");
+        window.open("http://uniprot.org/uniprot/" + this.attr("accession"));
     });
 
     var that = this;
@@ -256,11 +302,14 @@ ArrowDiagram.prototype.doPopup = function(xPos, yPos, doShow, data) {
         this.popupElement.css({top: yPos, left: xPos});
         if (!family || family.length == 0) family = "none";
         $("#" + this.popupIds.IdId + " span").text(data.attr("accession"));
+        $("#" + this.popupIds.DescId + " span").text(data.attr("desc"));
         $("#" + this.popupIds.FamilyId + " span").text(data.attr("family"));
-        $("#" + this.popupIds.CoordsId + " span").text(data.attr("start") + "-" + data.attr("stop"));
+        $("#" + this.popupIds.FamilyDescId + " span").text(data.attr("family_desc"));
+        $("#" + this.popupIds.SpTrId + " span").text(data.attr("anno_status"));
+//        $("#" + this.popupIds.CoordsId + " span").text(data.attr("start") + "-" + data.attr("stop"));
         $("#" + this.popupIds.SeqLenId + " span").text(data.attr("seq_len"));
-        $("#" + this.popupIds.DirectionId + " span").text(data.attr("gene_direction"));
-        $("#" + this.popupIds.IndexId + " span").text(data.attr("num"));
+//        $("#" + this.popupIds.DirectionId + " span").text(data.attr("gene_direction"));
+//        $("#" + this.popupIds.IndexId + " span").text(data.attr("num"));
         this.popupElement.show();
     } else {
         this.popupElement.hide();
