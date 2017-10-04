@@ -2,27 +2,13 @@
 var DM_COORDS = 1;
 var DM_INDEX = 2;
 
-/*
-function PopupIds(parentId, idId, familyId, coordsId, seqLenId, directionId, indexId) {
-    this.ParentId = parentId;
-    this.IdId = idId;
-    this.FamilyId = familyId;
-    this.CoordsId = coordsId;
-    this.DirectionId = directionId;
-    this.SeqLenId = seqLenId;
-    this.IndexId = indexId;
-}
-*/
 
-function ArrowDiagram(canvasId, displayModeCbId, canvasContainerId, popupIds, inputId, controlsId, progressId) {
+function ArrowDiagram(canvasId, displayModeCbId, canvasContainerId, popupIds) {
 
-    this.inputId = inputId;
     this.canvasId = canvasId;
     this.displayModeCbId = displayModeCbId;
     this.canvasContainerId = canvasContainerId;
     this.popupIds = popupIds;
-    this.controlsId = controlsId;
-    this.progressId = progressId;
 
     this.displayMode = DM_COORDS;
     this.diagramHeight = 70;
@@ -39,9 +25,15 @@ function ArrowDiagram(canvasId, displayModeCbId, canvasContainerId, popupIds, in
     this.pfamColorMap = {};
     this.pfamColorCount = 0;
 
+    this.diagramPage = 0;
+    this.diagramCount = 0;
+
     this.popupElement = $("#" + this.popupIds.ParentId);
     this.popupElement.css({position:"absolute"});
     this.popupElement.hide();
+
+    this.arrowMap = {};
+    this.pfamFilter = {};
 
     this.updateDisplayMode();
 }
@@ -59,41 +51,78 @@ ArrowDiagram.prototype.updateDisplayMode = function() {
     }
 }
 
-ArrowDiagram.prototype.getArrowData = function() {
-    var idList = document.getElementById(this.inputId).value;
+ArrowDiagram.prototype.nextPage = function(callback) {
+    this.diagramPage++;
+    this.retrieveArrowData(this.idList, true, false, callback);
+}
 
-    if (idList.length > 0) {
-        var idListQuery = idList.replace(/\n/g, " ").replace(/\r/g, " ");
+ArrowDiagram.prototype.retrieveArrowData = function(idList, usePaging, resetCanvas, callback) {
+    if (typeof idList !== 'undefined')
+        this.idList = idList;
+
+    if (typeof this.idList !== 'undefined' && this.idList.length > 0) {
+        var idListQuery = this.idList.replace(/\n/g, " ").replace(/\r/g, " ");
         var that = this;
 
+        usePaging = typeof usePaging === 'undefined' ? false : usePaging;
+        var pageString = "";
+        if (usePaging)
+            pageString = "&page=" + this.diagramPage;
+        resetCanvas = typeof resetCanvas === 'undefined' ? false : resetCanvas;
+
         var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("GET", "get_neighbor_data.php?id=" + this.jobId + "&key=" + this.jobKey + "&query=" + idListQuery, true);
+        xmlhttp.open("GET", "get_neighbor_data.php?id=" + this.jobId + "&key=" + this.jobKey + "&query=" + idListQuery + pageString, true);
         xmlhttp.onload = function() {
             if (this.readyState == 4 && this.status == 200) {
                 var data = JSON.parse(this.responseText);
-                that.makeArrowDiagram(data);
+                that.makeArrowDiagram(data, usePaging, resetCanvas);
                 that.data = data;
-                $("#" + that.controlsId + " button,textarea,input").prop("disabled", false);
-                $("#" + that.progressId).css({visibility: "hidden"});
+                typeof callback === 'function' && callback(data.eod);
             }
         };
-        $("#" + this.controlsId + " button,textarea,input").prop("disabled", true);
-        $("#" + this.progressId).css({visibility: "visible"});
         xmlhttp.send(null);
     }
 }
 
-ArrowDiagram.prototype.makeArrowDiagram = function(data) {
+ArrowDiagram.prototype.retrieveFamilyData = function(callback) {
+    var that = this;
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", "get_neighbor_data.php?id=" + this.jobId + "&key=" + this.jobKey + "&fams=1", true);
+    xmlhttp.onload = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var data = JSON.parse(this.responseText);
+            that.families = data.families;
+            typeof callback === 'function' && callback(that.families);
+        }
+    };
+    xmlhttp.send(null);
+}
+
+ArrowDiagram.prototype.hasFamilyData = function() {
+    return typeof this.families !== 'undefined';
+}
+
+ArrowDiagram.prototype.getFamilies = function() {
+    return Array.sort(Object.keys(this.arrowMap));
+}
+
+ArrowDiagram.prototype.makeArrowDiagram = function(data, usePaging, resetCanvas) {
     canvas = document.getElementById(this.canvasId);
+    
     var drawingWidth = canvas.getBoundingClientRect().width - this.padding * 2;
-    while (canvas.hasChildNodes()) {
-        canvas.removeChild(canvas.lastChild);
+    if (!usePaging || resetCanvas) {
+        while (canvas.hasChildNodes()) {
+            canvas.removeChild(canvas.lastChild);
+        }
+        document.getElementById(this.canvasContainerId).setAttribute("style","width:900px;height:0px");
     }
-    var i = 0;
+
+    var i = usePaging && !resetCanvas ? this.diagramCount : 0;
     for (seqId in data.data) {
         this.drawDiagram(canvas, i, data.data[seqId], drawingWidth);
         i++;
     }
+    this.diagramCount = i;
 }
 
 // Draw a diagram for a single arrow
@@ -102,7 +131,6 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
     var ypos = index * this.diagramHeight + this.padding * 2 + this.fontHeight;
     if (ypos + this.diagramHeight + this.padding > canvasHeight)
         document.getElementById(this.canvasContainerId).setAttribute("style","width:900px;height:" + (ypos + this.diagramHeight + this.padding) + "px");
-    this.drawAxis(ypos, drawingWidth);
 
     // Orient the query arrows in the same direction (flip the diagram)
     var orientSameDir = true;
@@ -115,19 +143,27 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
     if (this.displayMode == DM_COORDS) {
         geneXpos = parseFloat(data.attributes.rel_start);
         geneWidth = parseFloat(data.attributes.rel_width);
-//        if (orientSameDir && isComplement)
-//            geneXpos = 1.0 - geneXpos;
     } else {
         var refGeneXpos = (isComplement ? 11 : 10);
         geneXpos = refGeneXpos * indexGeneWidth;
         geneXoffset = data.attributes.num - 10; 
     }
 
+    var minXpct = 1.1, maxXpct = -0.1;
+
     var attrData = makeStruct(data.attributes);
     // Always face to the right which is why isComplement isn't provided, rather false is given in this call.
     var arrow = this.drawArrow(geneXpos, ypos, geneWidth, orientSameDir ? false : isComplement,
                                drawingWidth, this.selectedGeneColor, attrData);
-var debugAcc = attrData.accession;
+    if (!(attrData.family in this.arrowMap))
+        this.arrowMap[attrData.family] = [];
+    this.arrowMap[attrData.family].push(arrow);
+    this.pfamColorMap[attrData.family] = this.selectedGeneColor;
+
+    var isBound = attrData.is_bound;
+    minXpct = (geneXpos < minXpct) ? geneXpos : minXpct;
+    maxXpct = (geneXpos+geneWidth > maxXpct) ? geneXpos+geneWidth : maxXpct;
+
     var max_start = 0;
     for (var i = 0; i < data.neighbors.length; i++) {
         var N = data.neighbors[i];
@@ -140,15 +176,15 @@ var debugAcc = attrData.accession;
             neighborWidth = parseFloat(N.rel_width);
             if (orientSameDir && isComplement) {
                 nIsComplement = !nIsComplement;
-//                neighborXpos = 1 - neighborXpos;
             }
         } else {
             neighborXpos = (parseInt(N.num) - geneXoffset) * indexGeneWidth;
             if (nIsComplement)
                 neighborXpos += indexGeneWidth;
         }
+        minXpct = (neighborXpos < minXpct) ? neighborXpos : minXpct;
+        maxXpct = (neighborXpos+neighborWidth > maxXpct) ? neighborXpos+neighborWidth : maxXpct;
 
-        //var color = colors[i % colors.length];
         var color = "grey";
         var pfam = N.family;
         if (pfam.length > 0) {
@@ -159,12 +195,17 @@ var debugAcc = attrData.accession;
         }
         var attrData = makeStruct(N);
         arrow = this.drawArrow(neighborXpos, ypos, neighborWidth, nIsComplement, drawingWidth, color, attrData);
+        if (!(attrData.family in this.arrowMap))
+            this.arrowMap[attrData.family] = [];
+        this.arrowMap[attrData.family].push(arrow);
         
         if (i == 0)
             max_start = N.start;
         else
             max_stop = N.stop;
     }
+    
+    this.drawAxis(ypos, drawingWidth, minXpct, maxXpct, isBound);
 
     data.attributes.max_start = max_start;
     data.attributes.max_stop = max_stop;
@@ -185,14 +226,48 @@ function makeStruct(data) {
         "family_desc": data.family_desc,
         "desc": data.desc,
     };
+    
+    if (data.hasOwnProperty("cluster_num"))
+        struct.cluster_num = data.cluster_num;
+    
+    if (data.hasOwnProperty("is_bound"))
+        struct.is_bound = data.is_bound;
+    else
+        struct.is_bound = 0;
+
     if (data.hasOwnProperty("strain"))
         struct.strain = data.strain;
+
     return struct;
 }
 
-ArrowDiagram.prototype.drawAxis = function(ypos, drawingWidth) {
+ArrowDiagram.prototype.drawAxis = function(ypos, drawingWidth, minXpct, maxXpct, isBound) {
     ypos = ypos + this.axisThickness - 1;
-    this.S.paper.line(this.padding, ypos, this.padding + drawingWidth, ypos).attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
+    // A single line, full width:
+    //this.S.paper.line(this.padding, ypos, this.padding + drawingWidth, ypos).attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
+    this.S.paper.line(this.padding + minXpct * drawingWidth - 3, ypos,
+                      this.padding + maxXpct * drawingWidth + 3, ypos)
+        .attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
+    
+    if (isBound & 1) { // end of contig on left
+        this.S.paper.line(this.padding + minXpct * drawingWidth - 3, ypos - 5,
+                          this.padding + minXpct * drawingWidth - 3, ypos + 5)
+            .attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
+    } else if (minXpct > 0) {
+        this.S.paper.line(this.padding, ypos,
+                          this.padding + minXpct * drawingWidth - 3, ypos)
+            .attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness, 'stroke-dasharray': '2px, 4px' });
+    }
+    
+    if (isBound & 2) { // end of contig on right
+        this.S.paper.line(this.padding + maxXpct * drawingWidth + 3, ypos - 5,
+                          this.padding + maxXpct * drawingWidth + 3, ypos + 5)
+            .attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
+    } else if (minXpct > 0) {
+        this.S.paper.line(this.padding + maxXpct * drawingWidth + 3, ypos,
+                          this.padding + drawingWidth, ypos)
+            .attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness, 'stroke-dasharray': '2px, 4px' });
+    }
 }
 
 ArrowDiagram.prototype.drawTitle = function(ypos, data) {
@@ -200,9 +275,11 @@ ArrowDiagram.prototype.drawTitle = function(ypos, data) {
     if (data.hasOwnProperty("organism"))
         title = data.organism + "; ";
     if (data.hasOwnProperty("taxon_id"))
-        title = title + data.taxon_id + "; ";
+        title = title + "NCBI Taxon ID: " + data.taxon_id;
     if (data.hasOwnProperty("id"))
-        title = title + "(" + data.id + ")";
+        title = title + "; (ENA ID: " + data.id + ")";
+    if (data.hasOwnProperty("cluster_num"))
+        title = title + "; Cluster: " + data.cluster_num;
     if (title.length == 0)
         title = data.strain + " [global width = " + (data.max_stop - data.max_start) + "]";
     if (title.length > 0) {
@@ -245,15 +322,15 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
         coords = [llx, lly, lrx, lry, px, py, urx, ury, ulx, uly];
     } else { // pointing left
         // pointer of arrow, facing left
-//        px = this.padding + (xpos - width) * drawingWidth;
-        px = this.padding + (xpos ) * drawingWidth;
+        //px = this.padding + (xpos - width) * drawingWidth;
+        px = this.padding + xpos * drawingWidth;
         py = ypos + this.axisThickness + this.axisBuffer + this.arrowHeight / 2;
         // lower left of rect. portion
-//        llx = this.padding + (xpos - width) * drawingWidth + this.pointerWidth;
-        llx = this.padding + (xpos) * drawingWidth + this.pointerWidth;
+        //llx = this.padding + (xpos - width) * drawingWidth + this.pointerWidth;
+        llx = this.padding + xpos * drawingWidth + this.pointerWidth;
         lly = ypos + this.axisThickness + this.axisBuffer + this.arrowHeight;
         // lower right of rect. portion
-//        lrx = this.padding + xpos * drawingWidth;
+        //lrx = this.padding + xpos * drawingWidth;
         lrx = this.padding + (xpos + width) * drawingWidth;
         lry = lly;
         // upper right of rect. portion
@@ -272,6 +349,11 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
     }
 
     attrData.fill = color;
+    if (typeof this.pfamFilter[attrData.family] !== 'undefined') {
+        attrData.stroke = "#000";
+        attrData.strokeWidth = 3;
+    }
+    attrData.fillColor = color;
     attrData.cx = ulx + (urx - ulx) / 2;
     attrData.cy = lly; //py;
     var arrow = this.S.paper.polygon(coords).attr(attrData);
@@ -295,6 +377,32 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
     return arrow;
 }
 
+ArrowDiagram.prototype.addPfamFilter = function(pfam) {
+    this.pfamFilter[pfam] = 1;
+
+    for (idx in this.arrowMap[pfam]) {
+        var arrow = this.arrowMap[pfam][idx];
+        var fillColor = arrow.attr("fillColor");
+        arrow.attr({fill: fillColor, stroke: "#000", strokeWidth: 3});
+        //var p = this.S.path("M10-5-10,15M15,0,0,15M0-5-20,15").attr({
+        //        fill: "none",
+        //        stroke: fillColor,
+        //        strokeWidth: 5
+        //    }).pattern(0, 0, 10, 10);
+        //arrow.attr({fill: p });
+    }
+}
+
+ArrowDiagram.prototype.removePfamFilter = function(pfam) {
+    delete this.pfamFilter[pfam];
+
+    for (idx in this.arrowMap[pfam]) {
+        var arrow = this.arrowMap[pfam][idx];
+        var fillColor = arrow.attr("fillColor");
+        arrow.attr({fill: fillColor, stroke: "none", strokeWidth: 0});
+    }
+}
+
 ArrowDiagram.prototype.doPopup = function(xPos, yPos, doShow, data) {
     
     if (doShow) {
@@ -306,10 +414,7 @@ ArrowDiagram.prototype.doPopup = function(xPos, yPos, doShow, data) {
         $("#" + this.popupIds.FamilyId + " span").text(data.attr("family"));
         $("#" + this.popupIds.FamilyDescId + " span").text(data.attr("family_desc"));
         $("#" + this.popupIds.SpTrId + " span").text(data.attr("anno_status"));
-//        $("#" + this.popupIds.CoordsId + " span").text(data.attr("start") + "-" + data.attr("stop"));
         $("#" + this.popupIds.SeqLenId + " span").text(data.attr("seq_len"));
-//        $("#" + this.popupIds.DirectionId + " span").text(data.attr("gene_direction"));
-//        $("#" + this.popupIds.IndexId + " span").text(data.attr("num"));
         this.popupElement.show();
     } else {
         this.popupElement.hide();
@@ -318,7 +423,7 @@ ArrowDiagram.prototype.doPopup = function(xPos, yPos, doShow, data) {
 
 function getColors() {
     var colors = [
-        "crimson",
+        //"crimson",
         "bisque",
         "blue",
         "blueviolet",

@@ -8,6 +8,7 @@ include_once("../libs/settings.class.inc.php");
 <link rel="stylesheet" type="text/css" href="css/efi_tool.css">
 <link rel="stylesheet" type="text/css" href="css/popup.css">
 <link rel="stylesheet" type="text/css" href="css/loader.css">
+<link rel="stylesheet" type="text/css" href="css/multi-select.css">
 <link rel="stylesheet" type="text/css" href="/css/shared.css">
 <!--<link rel='stylesheet' type='text/css' href='css/upload.css'>-->
 <link rel="shortcut icon" href="images/favicon_efi.ico" type="image/x-icon">

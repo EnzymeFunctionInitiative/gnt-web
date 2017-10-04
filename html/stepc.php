@@ -221,18 +221,29 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
     <hr>
     <h4 >Arrow Diagrams</h4>  
 
-    Input a list of UniProt IDs or a cluster number from the GNN to generate arrow diagrams:<br>
     <div id="diagram-controls">
-        <div><textarea rows=4 cols=20 id="id-input"></textarea></div>
-        <div style="float:left"><button type="button" id="diagram-generate-button">Generate</button></div>
-        <div id="progress-loader" style="display:inline-block;margin-left:15px;visibility:hidden" class="loader"></div>
-        <div style="clear:both"><input type="checkbox" checked id="display-mode"> Align genes by coordinates</div>
+        <div style="float:left">
+            <div style="width:200px">
+                <div style="font-size: 90%">Input a list of UniProt IDs or a cluster number from the GNN to generate arrow diagrams:</div>
+                <textarea rows=4 cols=20 id="id-input"></textarea>
+            </div>
+            <div style="float:left"><button type="button" id="diagram-generate-button">Generate</button></div>
+            <div id="progress-loader" style="display:inline-block;margin-left:15px;visibility:hidden" class="loader"></div>
+        </div>
+        <div style="float:left;margin-left:40px" id="pfam-filter-container">
+            <div style="font-size:90%">Select one or more Pfam families to highlight:</div>
+            <select multiple="multiple" id="pfam-filter" name="pfam-filter[]">
+            </select>
+        </div>
+        <div style="float:left;margin-left:40px" id="display-control-container"><input type="checkbox" checked id="display-mode"> Align genes by coordinates</div>
+        <div style="clear:both"></div>
     </div>
 
     <div id="arrow-container" style="width:900px;height:10px">
         <br>
 
         <svg id="arrow-canvas" style="width:100%;height:100%"></svg>
+        <div style="text-align:right"><button type="button" id="arrow-all">Show All</button>  <button type="button" id="arrow-more">Show More</button></div>
     </div>
 
     <hr>
@@ -257,22 +268,146 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
                 "SpTrId": "info-popup-sptr",
                 "SeqLenId": "info-popup-seqlen",
                 "DescId": "info-popup-desc",
-            }; 
-//            var popupIds = new PopupIds("info-popup", "info-popup-id", "info-popup-fam", "info-popup-coords",
-//                    "info-popup-seqlen", "info-popup-dir", "info-popup-num");
-            var arrowDiagram = new ArrowDiagram("arrow-canvas", "display-mode", "arrow-container", popupIds, "id-input",
-                                                "diagram-controls", "progress-loader");
-            arrowDiagram.setJobInfo("<?php echo $gnnId; ?>", "<?php echo $gnnKey; ?>");
+            };
+
+            $("#display-control-container").hide();
+            $("#pfam-filter-container").hide();
+
+            var inputObj = document.getElementById("id-input");
+            var progressObj = $("#progress-loader");
+            var controlObj = $("#diagram-controls  button,textarea,input");
+            var arrows = new ArrowDiagram("arrow-canvas", "display-mode", "arrow-container", popupIds);
+            arrows.setJobInfo("<?php echo $gnnId; ?>", "<?php echo $gnnKey; ?>");
+
+            $("#pfam-filter").multiSelect({
+                selectableHeader: "<input type='text' class='search-input' autocomplete='off' placeholder='enter Pfam'>",
+                selectionHeader: "<input type='text' class='search-input' autocomplete='off' placeholder='enter Pfam'>",
+                afterInit: function(ms){
+                    var that = this,
+                        $selectableSearch = that.$selectableUl.prev(),
+                        $selectionSearch = that.$selectionUl.prev(),
+                        selectableSearchString = '#'+that.$container.attr('id')+' .ms-elem-selectable:not(.ms-selected)',
+                        selectionSearchString = '#'+that.$container.attr('id')+' .ms-elem-selection.ms-selected';
+                
+                    that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+                        .on('keydown', function(e){
+                             if (e.which === 40){
+                                 that.$selectableUl.focus();
+                                 return false;
+                             }
+                        });
+                
+                    that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+                    .on('keydown', function(e){
+                      if (e.which == 40){
+                        that.$selectionUl.focus();
+                        return false;
+                      }
+                    });
+                }, 
+                afterSelect: function(values) {
+                    this.qs1.cache();
+                    this.qs2.cache();
+                    arrows.addPfamFilter(values);
+                },
+                afterDeselect: function(values) {
+                    this.qs1.cache();
+                    this.qs2.cache();
+                    arrows.removePfamFilter(values);
+                },
+            });
 
             $("#diagram-generate-button").click(function() {
-                arrowDiagram.getArrowData();
+                if (arrows.hasFamilyData()) {
+                    startProgressBar();
+                    var idList = getIdList(); 
+                    arrows.retrieveArrowData(idList, true, true, function(isEod) {
+                        fillPfamSelectBox();
+                        updateMoreButtonStatus(isEod);
+                        stopProgressBar();
+                    });
+                } else {
+                    startProgressBar();
+                    arrows.retrieveFamilyData(function(fams) {
+                        var idList = getIdList(); 
+                        arrows.retrieveArrowData(idList, true, true, function(isEod) {
+                            fillPfamSelectBox();
+                            updateMoreButtonStatus(isEod);
+                            stopProgressBar();
+                            $("#display-control-container").show();
+                            $("#pfam-filter-container").show();
+                        });
+                    });
+                }
             });
 
+            function fillPfamSelectBox() {
+                var fams = arrows.getFamilies();
+                var selObj = $("#pfam-filter");
+                selObj.find('option').remove();
+                for (var i = 0; i < fams.length; i++) {
+                    selObj.multiSelect('addOption', { value: fams[i], text: fams[i], index: i });
+                }
+                selObj.multiSelect('updateCache');
+            }
+
+            function startProgressBar() {
+                progressObj.css({visibility: "visible"});
+            }
+
+            function stopProgressBar() {
+                progressObj.css({visibility: "hidden"});
+            }
+
+            function disableForm() {
+                controlObj.prop("disabled", true);
+            }
+
+            function enableForm() {
+                controlObj.prop("disabled", false);
+            }
+
+            function getIdList() {
+                var idList = inputObj.value;
+                return idList;
+            }
+
             $("#display-mode").click(function() {
-                arrowDiagram.toggleDisplayMode();
+                arrows.toggleDisplayMode();
             });
+
+            $("#arrow-more").click(function() {
+                arrows.nextPage(nextPageCallback);
+            }).hide();
+
+            $("#arrow-all").click(function() {
+                startProgressBar();
+                arrows.retrieveArrowData(undefined, false, true, function(isEod) {
+                    fillPfamSelectBox();
+                    updateMoreButtonStatus(isEod);
+                    stopProgressBar();
+                });
+            }).hide();
+
+            function updateMoreButtonStatus(isEod) {
+                if (isEod) {
+                    $("#arrow-more").hide();
+                    $("#arrow-all").hide();
+                } else {
+                    $("#arrow-more").show();
+                    $("#arrow-all").show();
+                }
+            }
+
+            function nextPageCallback(isEod) {
+                updateMoreButtonStatus(isEod);
+                $('html,body').animate({scrollTop: document.body.scrollHeight},"fast");
+            }
+
         });
     </script>
+    <script src="js/jquery.quicksearch.js" type="text/javascript"></script>
+    <script src="js/jquery.multi-select.js" type="text/javascript"></script>
 
 <div id="info-popup" style="position:absolute;padding:5px;background-color:#555;color:#fff;">
     <div id="info-popup-id">UniProt ID: <span class="popup-id"></span></div>
