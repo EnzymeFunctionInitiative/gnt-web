@@ -158,6 +158,7 @@ class gnn {
         $exec .= " -none-dir " . $this->get_pfam_none_dir();
         $exec .= " -none-zip " . $this->get_pfam_none_zip_file();
         $exec .= " -arrow-file " . $this->get_arrow_data_file();
+        $exec .= " -arrow-file " . $this->get_cooc_table_file();
 
         error_log("Job ID: " . $this->get_id());
         error_log("Exec: " . $exec);
@@ -224,6 +225,7 @@ class gnn {
         $exec .= " -fasta-dir \"" . $this->get_fasta_dir() . "\"";
         $exec .= " -fasta-zip \"" . $this->get_fasta_zip_file() . "\"";
         $exec .= " -arrow-file \"" . $this->get_arrow_data_file() . "\"";
+        $exec .= " -cooc-table \"" . $this->get_cooc_table_file() . "\"";
 
         //TODO: remove this debug message
         error_log("Job ID: " . $this->get_id());
@@ -289,96 +291,52 @@ class gnn {
     public function get_color_ssn() {
         $name = $this->is_legacy ? "color" : "coloredssn";
         return $this->shared_get_full_file_path("_${name}", ".xgmml");
-//        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/" . $filename;
-//        return $full_path;
     }
     public function get_relative_color_ssn() {
         $name = $this->is_legacy ? "color" : "coloredssn";
         return $this->shared_get_relative_file_path("_${name}", ".xgmml");
-//        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-//        $output_dir = $this->get_rel_output_dir();
-//        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-//        return $full_path;
     }
 
     public function get_gnn() {
         $name = $this->is_legacy ? "gnn" : "ssn_cluster_gnn";
         return $this->shared_get_full_file_path("_${name}", ".xgmml");
-//        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/" . $filename;
-//        return $full_path;
     }
     public function get_relative_gnn() {
         $name = $this->is_legacy ? "gnn" : "ssn_cluster_gnn";
         return $this->shared_get_relative_file_path("_${name}", ".xgmml");
-//        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-//        $output_dir = $this->get_rel_output_dir();
-//        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-//        return $full_path;
     }
 
     public function get_pfam_hub() {
         $name = $this->is_legacy ? "pfam" : "pfam_family_gnn";
         return $this->shared_get_full_file_path("_${name}", ".xgmml");
-//        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/" . $filename;
-//        return $full_path;
     }
     public function get_relative_pfam_hub() {
         $name = $this->is_legacy ? "pfam" : "pfam_family_gnn";
         return $this->shared_get_relative_file_path("_${name}", ".xgmml");
-//        $filename = $this->get_file_prefix() . "_${name}_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".xgmml";
-//        $output_dir = $this->get_rel_output_dir();
-//        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-//        return $full_path;
     }
 
     public function get_warning_file() {
         if ($this->is_legacy)
             return "";
         return $this->shared_get_full_file_path("_nomatches_noneighbors", ".txt");
-//        $filename = $this->get_file_prefix() . "_nomatches_noneighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/" . $filename;
-//        return $full_path;
     }
     public function get_relative_warning_file() {
         if ($this->is_legacy)
             return "";
         return $this->shared_get_relative_file_path("_nomatches_noneighbors", ".txt");
-//        $filename = $this->get_file_prefix() . "_nomatches_noneighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-//        $output_dir = $this->get_rel_output_dir();
-//        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-//        return $full_path;
     }
 
     public function get_cluster_data_dir() {
         return $this->shared_get_dir("cluster-data");
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/cluster-data";
-//        return $full_path;
     }
     public function get_pfam_data_dir() {
         return $this->shared_get_dir("pfam-data");
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/pfam-data";
-//        return $full_path;
     }
     public function get_pfam_none_dir() {
         return $this->shared_get_dir("pfam-none");
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/pfam-none";
-//        return $full_path;
     }
     public function get_fasta_dir() {
         return $this->shared_get_dir("fasta");
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/fasta";
-//        return $full_path;
     }
     private function shared_get_dir($name) {
         $output_dir = $this->get_output_dir();
@@ -406,110 +364,69 @@ class gnn {
     }
     public function get_cluster_data_zip_file() {
         return $this->shared_get_full_file_path("_UniProt_IDs", ".zip");
-//        $filename = $this->get_file_prefix() . "_UniProt_IDs_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/" . $filename;
-//        return $full_path;
     }
     public function get_relative_cluster_data_zip_file() {
         if ($this->is_legacy)
             return "";
         return $this->shared_get_relative_file_path("_UniProt_IDs", ".zip");
-//        $filename = $this->get_file_prefix() . "_UniProt_IDs_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-//        $output_dir = $this->get_rel_output_dir();
-//        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-//        return $full_path;
     }
 
     public function get_fasta_zip_file() {
         if ($this->is_legacy)
             return "";
         return $this->shared_get_full_file_path("_FASTA", ".zip");
-//        $filename = $this->get_file_prefix() . "_FASTA_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/" . $filename;
-//        return $full_path;
     }
     public function get_relative_fasta_zip_file() {
         if ($this->is_legacy)
             return "";
         return $this->shared_get_relative_file_path("_FASTA", ".zip");
-//        $filename = $this->get_file_prefix() . "_FASTA_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-//        $output_dir = $this->get_rel_output_dir();
-//        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-//        return $full_path;
     }
 
     public function get_pfam_none_zip_file() {
         return $this->shared_get_full_file_path("_no_pfam_neighbors", ".zip");
-//        $filename = $this->get_file_prefix() . "_no_pfam_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/" . $filename;
-//        return $full_path;
     }
     public function get_relative_pfam_none_zip_file() {
         if ($this->is_legacy)
             return "";
         return $this->shared_get_relative_file_path("_no_pfam_neighbors", ".zip");
-//        $filename = $this->get_file_prefix() . "_no_pfam_neighbors_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-//        $output_dir = $this->get_rel_output_dir();
-//        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-//        return $full_path;
     }
 
     public function get_pfam_data_zip_file() {
         return $this->shared_get_full_file_path("_pfam_mapping", ".zip");
-//        $filename = $this->get_file_prefix() . "_pfam_mapping_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/" . $filename;
-//        return $full_path;
     }
     public function get_relative_pfam_data_zip_file() {
         if ($this->is_legacy)
             return "";
         return $this->shared_get_relative_file_path("_pfam_mapping", ".zip");
-//        $filename = $this->get_file_prefix() . "_pfam_mapping_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".zip";
-//        $output_dir = $this->get_rel_output_dir();
-//        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-//        return $full_path;
     }
 
     public function get_id_table_file() {
         return $this->shared_get_full_file_path("_mapping_table", ".txt");
-//        $filename = $this->get_file_prefix() . "_mapping_table_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/" . $filename;
-//        return $full_path;
     }
     public function get_relative_id_table_file() {
         if ($this->is_legacy)
             return "";
         return $this->shared_get_relative_file_path("_mapping_table", ".txt");
-//        $filename = $this->get_file_prefix() . "_mapping_table_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-//        $output_dir = $this->get_rel_output_dir();
-//        $full_path = $output_dir . "/" . $this->get_id() . "/" . $filename;
-//        return $full_path;
     }
 
     public function get_stats() {
         return $this->shared_get_full_file_path("_stats", ".txt");
-//        $filename = $this->get_file_prefix() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-//        $output_dir = $this->get_output_dir();
-//        $full_path = $output_dir . "/" . $filename;
-//        return $full_path;
     }
     public function get_relative_stats() {
         if ($this->is_legacy)
             return "";
         return $this->shared_get_relative_file_path("_stats", ".txt");
-//        $filename = $this->get_file_prefix() . "_stats_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . ".txt";
-//        $output_dir = $this->get_rel_output_dir();
-//        $full_path = $output_dir . "/" . $this->get_id() . "/".  $filename;
-//        return $full_path;
     }
 
     public function get_arrow_data_file() {
         return $this->shared_get_full_file_path("_arrow_data", ".txt");
+    }
+
+    public function get_cooc_table_file() {
+        return $this->shared_get_full_file_path("_cooc_table", ".txt");
+    }
+    public function get_relative_cooc_table_file() {
+        return $this->shared_get_relative_file_path("_cooc_table", ".txt");
     }
 
     public function shared_get_full_file_path($infix_type, $ext) {
@@ -567,6 +484,9 @@ class gnn {
         if ($this->is_legacy)
             return 0;
         return round(filesize($this->get_id_table_file()) / 1048576,2);
+    }
+    public function get_cooc_table_filesize() {
+        return round(filesize($this->get_cooc_table_file()) / 1048576,2);
     }
 
     // Legacy Jobs

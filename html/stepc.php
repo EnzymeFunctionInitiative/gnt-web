@@ -52,6 +52,8 @@ $pfamNoneZip = $gnn->get_relative_pfam_none_zip_file();
 $pfamNoneZipFilesize = $gnn->get_pfam_none_zip_filesize();
 $fastaZip = $gnn->get_relative_fasta_zip_file();
 $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
+$coocTableFile = $gnn->get_relative_cooc_table_file();
+$coocTableFilesize = $gnn->get_cooc_table_filesize();
 
 // Legacy jobs
 $noMatchesFile = $gnn->get_relative_no_matches_file();
@@ -214,6 +216,15 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
             </td>
             <td>No Neighbors File</td>
             <td><?php echo $noNeighborsFilesize; ?> MB</td>
+        </tr>
+<?php } ?>
+<?php if ($coocTableFile) { ?>
+        <tr style='text-align:center;'>
+            <td>
+                <a href="<?php echo "$baseUrl/$coocTableFile"; ?>"><button>Download</button></a>
+            </td>
+            <td>Pfam Family/Cluster Cooccurrence Table File</td>
+            <td><?php echo $coocTableFilesize; ?> MB</td>
         </tr>
 <?php } ?>
     </table>
