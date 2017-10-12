@@ -175,7 +175,8 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
             neighborXpos = parseFloat(N.rel_start);
             neighborWidth = parseFloat(N.rel_width);
             if (orientSameDir && isComplement) {
-                nIsComplement = !nIsComplement;
+//                nIsComplement = !nIsComplement;
+                neighborXpos = 1.0 - neighborXpos - neighborWidth + geneWidth;
             }
         } else {
             neighborXpos = (parseInt(N.num) - geneXoffset) * indexGeneWidth;

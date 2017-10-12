@@ -159,6 +159,7 @@ class gnn {
         $exec .= " -none-zip " . $this->get_pfam_none_zip_file();
         $exec .= " -arrow-file " . $this->get_arrow_data_file();
         $exec .= " -arrow-file " . $this->get_cooc_table_file();
+        $exec .= " -hub-count-file \"" . $this->get_hub_count_file() . "\"";
 
         error_log("Job ID: " . $this->get_id());
         error_log("Exec: " . $exec);
@@ -226,6 +227,7 @@ class gnn {
         $exec .= " -fasta-zip \"" . $this->get_fasta_zip_file() . "\"";
         $exec .= " -arrow-file \"" . $this->get_arrow_data_file() . "\"";
         $exec .= " -cooc-table \"" . $this->get_cooc_table_file() . "\"";
+        $exec .= " -hub-count-file \"" . $this->get_hub_count_file() . "\"";
 
         //TODO: remove this debug message
         error_log("Job ID: " . $this->get_id());
@@ -429,6 +431,13 @@ class gnn {
         return $this->shared_get_relative_file_path("_cooc_table", ".txt");
     }
 
+    public function get_hub_count_file() {
+        return $this->shared_get_full_file_path("_hub_count", ".txt");
+    }
+    public function get_relative_hub_count_file() {
+        return $this->shared_get_relative_file_path("_hub_count", ".txt");
+    }
+
     public function shared_get_full_file_path($infix_type, $ext) {
         $filename = $this->get_file_prefix() . $infix_type . "_co" . $this->get_cooccurrence() . "_ns" . $this->get_size() . $ext;
         $output_dir = $this->get_output_dir();
@@ -487,6 +496,9 @@ class gnn {
     }
     public function get_cooc_table_filesize() {
         return round(filesize($this->get_cooc_table_file()) / 1048576,2);
+    }
+    public function get_hub_count_filesize() {
+        return round(filesize($this->get_hub_count_file()) / 1048576,2);
     }
 
     // Legacy Jobs

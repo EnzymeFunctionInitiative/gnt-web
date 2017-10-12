@@ -54,6 +54,8 @@ $fastaZip = $gnn->get_relative_fasta_zip_file();
 $fastaZipFilesize = $gnn->get_fasta_zip_filesize();
 $coocTableFile = $gnn->get_relative_cooc_table_file();
 $coocTableFilesize = $gnn->get_cooc_table_filesize();
+$hubCountFile = $gnn->get_relative_hub_count_file();
+$hubCountFilesize = $gnn->get_hub_count_filesize();
 
 // Legacy jobs
 $noMatchesFile = $gnn->get_relative_no_matches_file();
@@ -225,6 +227,15 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
             </td>
             <td>Pfam Family/Cluster Cooccurrence Table File</td>
             <td><?php echo $coocTableFilesize; ?> MB</td>
+        </tr>
+<?php } ?>
+<?php if ($hubCountFile) { ?>
+        <tr style='text-align:center;'>
+            <td>
+                <a href="<?php echo "$baseUrl/$hubCountFile"; ?>"><button>Download</button></a>
+            </td>
+            <td>GNN Hub Cluster Sequence Count File</td>
+            <td><?php echo $hubCountFilesize; ?> MB</td>
         </tr>
 <?php } ?>
     </table>
