@@ -243,6 +243,8 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
     <hr>
     <h4 >Arrow Diagrams</h4>  
 
+    <a href="diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank">View arrow diagrams in a new window</a>
+<!--
     <div id="diagram-controls">
         <div style="float:left">
             <div style="width:200px">
@@ -267,7 +269,7 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
         <svg id="arrow-canvas" style="width:100%;height:100%"></svg>
         <div style="text-align:right"><button type="button" id="arrow-all">Show All</button>  <button type="button" id="arrow-more">Show More</button></div>
     </div>
-
+-->
     <hr>
     <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>  
     
@@ -277,7 +279,7 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
 <?php if (settings::is_beta_release()) { ?>
     <div><center><h4><b><span style="color: red">BETA</span></b></h4></center></div>
 <?php } ?>
-
+<!--
     <script src="https://cdnjs.cloudflare.com/ajax/libs/snap.svg/0.5.1/snap.svg-min.js" content-type="text/javascript"></script>
     <script src="js/arrows.js" content-type="text/javascript"></script>
     <script type="application/javascript">
@@ -430,6 +432,7 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
     </script>
     <script src="js/jquery.quicksearch.js" type="text/javascript"></script>
     <script src="js/jquery.multi-select.js" type="text/javascript"></script>
+-->
 
 <div id="info-popup" style="position:absolute;padding:5px;background-color:#555;color:#fff;">
     <div id="info-popup-id">UniProt ID: <span class="popup-id"></span></div>

@@ -35,6 +35,7 @@ if ($message) {
 
 $dataDir = $gnn->get_output_dir();
 $dbFile = $gnn->get_arrow_data_file();
+//$blastCacheDir = settings::get_blast_data_dir();
 
 if (array_key_exists("query", $_GET)) {
     $queryString = str_replace("\n", ",", $_GET["query"]);
@@ -42,7 +43,10 @@ if (array_key_exists("query", $_GET)) {
     $queryString = str_replace(" ", ",", $queryString);
     $items = explode(",", $queryString);
 
-    $arrowData = getArrowData($items, $dataDir, $dbFile);
+    $blastId = getBlastId();
+    //$orderData = getOrder($blastId, $items, $dbFile, $dataDir, $blastCacheDir, $gnn);
+    $orderData = getDefaultOrder();
+    $arrowData = getArrowData($items, $dataDir, $dbFile, $orderData);
     $output["eod"] = $arrowData["eod"];
     $output["data"] = $arrowData["data"];
 }
@@ -65,7 +69,9 @@ echo json_encode($output);
 
 
 
-
+function getBlastId() {
+    return "test";
+}
 
 function getFamilies($dataDir, $dbFile) {
     $output = array();
@@ -80,7 +86,7 @@ function getFamilies($dataDir, $dbFile) {
         $dbQuery = $resultsDb->query($famSql);
         while ($row = $dbQuery->fetchArray()) {
             if (strlen($row["family"]) > 0)
-                array_push($output, $row["family"]);
+                array_push($output, array("id" => $row["family"], "name" => "a name"));
         }
     }
 
@@ -89,7 +95,10 @@ function getFamilies($dataDir, $dbFile) {
 
 
 
-function getArrowData($items, $dataDir, $dbFile) {
+function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
+
+    $orderData = $orderDataStruct['order'];
+    $centralId = $orderDataStruct['central_id'];
 
     $output = array();
 
@@ -97,12 +106,24 @@ function getArrowData($items, $dataDir, $dbFile) {
 
     foreach ($items as $item) {
         if (is_numeric($item)) {
-            $ids = array_merge($ids, getIdsFromCluster($item, $dataDir));
+            $clusterIds = getIdsFromCluster($item, $dataDir);
+            foreach ($clusterIds as $clusterId) {
+                $evalue = array_key_exists($clusterId, $orderData) ? $orderData[$clusterId][0] : -1;
+                $pctId = array_key_exists($clusterId, $orderData) ? $orderData[$clusterId][1] : -1;
+                array_push($ids, array($clusterId, $evalue, $pctId));
+            }
         }
         else if ($item) {
-            array_push($ids, $item);
+            $evalue = array_key_exists($item, $orderData) ? $orderData[$item][0] : -1;
+            $pctId = array_key_exists($item, $orderData) ? $orderData[$clusterId][1] : -1;
+            array_push($ids, array($item, $evalue, $pctId));
         }
     }
+
+    // This will be useful when we start sorting/grouping
+    //usort($ids, "sortNodes");
+    //if ($centralId)
+    //    array_unshift($ids, array($centralId, 0));
 
     $pageSize = 20;
     $startCount = 0;
@@ -127,7 +148,10 @@ function getArrowData($items, $dataDir, $dbFile) {
     
     $output["data"] = array();
     $idCount = 0;
-    foreach ($ids as $id) {
+    for ($i = 0; $i < count($ids); $i++) {
+        $id = $ids[$i][0];
+        $evalue = $ids[$i][1];
+
         $attrSql = "SELECT * FROM attributes WHERE accession = '$id'";
         $dbQuery = $resultsDb->query($attrSql);
         $row = $dbQuery->fetchArray(SQLITE3_ASSOC);
@@ -139,7 +163,7 @@ function getArrowData($items, $dataDir, $dbFile) {
     
         if (++$startCount > $maxCount)
             break;
-    
+
         $attr = array();
         $attr['accession'] = $row['accession'];
         $attr['id'] = $row['id'];
@@ -172,6 +196,12 @@ function getArrowData($items, $dataDir, $dbFile) {
         if ($queryWidth > $maxQueryWidth)
             $maxQueryWidth = $queryWidth;
     
+        $evalue = array_key_exists($attr['accession'], $orderData) ? $orderData[$attr['accession']][0] : 100;
+        $pid = array_key_exists($attr['accession'], $orderData) ? $orderData[$attr['accession']][1] : -1;
+        $attr['evalue'] = $evalue;
+        $attr['pid'] = $pid;
+
+
         $nbSql = "SELECT * FROM neighbors WHERE gene_key = '" . $row['sort_key'] . "'";
         $dbQuery = $resultsDb->query($nbSql);
     
@@ -198,11 +228,14 @@ function getArrowData($items, $dataDir, $dbFile) {
                 $maxBp = $nb['rel_stop_coord'];
             array_push($neighbors, $nb);
         }
-    
-        $output["data"][$id] = array('attributes' => $attr,
-                                     'neighbors' => $neighbors);
+
+        array_push($output["data"],
+            array(
+                'attributes' => $attr,
+                'neighbors' => $neighbors,
+            ));
     }
-    
+
     $output["eod"] = $startCount < $maxCount;
     
     $maxSide = (abs($maxBp) > abs($minBp)) ? abs($maxBp) : abs($minBp);
@@ -210,29 +243,129 @@ function getArrowData($items, $dataDir, $dbFile) {
     $minBp = -$maxSide;
     $maxBp = $maxSide + $maxQueryWidth;
     
-    foreach ($output["data"] as $accId => $data) {
-        $start = $output["data"][$accId]["attributes"]["rel_start_coord"];
-        $stop = $output["data"][$accId]["attributes"]["rel_stop_coord"];
+    for ($i = 0; $i < count($output["data"]); $i++) {
+        $start = $output["data"][$i]["attributes"]["rel_start_coord"];
+        $stop = $output["data"][$i]["attributes"]["rel_stop_coord"];
         $acStart = 0.5;
         $acWidth = ($stop - $start) / $maxWidth;
         $offset = 0.5 - ($start - $minBp) / $maxWidth;
-        $output["data"][$accId]["attributes"]["rel_start"] = $acStart;
-        $output["data"][$accId]["attributes"]["rel_width"] = $acWidth;
+        $output["data"][$i]["attributes"]["rel_start"] = $acStart;
+        $output["data"][$i]["attributes"]["rel_width"] = $acWidth;
     
-        foreach ($output["data"][$accId]["neighbors"] as $idx => $data2) {
-            $nbStart = ($output["data"][$accId]["neighbors"][$idx]["rel_start_coord"] - $minBp) / $maxWidth;
-            $nbWidth = ($output["data"][$accId]["neighbors"][$idx]["rel_stop_coord"] - $output["data"][$accId]["neighbors"][$idx]["rel_start_coord"]) / $maxWidth;
-            $output["data"][$accId]["neighbors"][$idx]["rel_start"] = $nbStart + $offset;
-            $output["data"][$accId]["neighbors"][$idx]["rel_width"] = $nbWidth;
+        foreach ($output["data"][$i]["neighbors"] as $idx => $data2) {
+            $nbStart = ($output["data"][$i]["neighbors"][$idx]["rel_start_coord"] - $minBp) / $maxWidth;
+            $nbWidth = ($output["data"][$i]["neighbors"][$idx]["rel_stop_coord"] - $output["data"][$i]["neighbors"][$idx]["rel_start_coord"]) / $maxWidth;
+            $output["data"][$i]["neighbors"][$idx]["rel_start"] = $nbStart + $offset;
+            $output["data"][$i]["neighbors"][$idx]["rel_width"] = $nbWidth;
         }
     }
+
+    $resultsDb->close();
 
     return $output;
 }
 
 
+function sortNodes($a, $b) {
+    if ($a[1] == $b[1])
+        return 0;
+    return $a[1] < $b[1] ? -1 : 1;
+}
 
 
+//function getOrder($blastId, $items, $dbFile, $jobDataDir, $blastCacheDir, $gnn) {
+//
+//    $cwd = getcwd();
+//
+//    $resultsDb = new SQLite3($dbFile);
+//
+//    $centralId = "";
+//    $blastIds = array();
+//    foreach ($items as $item) {
+//        if (is_numeric($item)) {
+//            $ids = getIdsFromCluster($item, $jobDataDir);
+//
+//            if (!$centralId) {
+//                $sql = "SELECT * FROM cluster_degree where cluster_num = '$item'";
+//                $dbQuery = $resultsDb->query($sql);
+//                $row = $dbQuery->fetchArray(SQLITE3_ASSOC);
+//
+//                if (!$row && count($ids) > 0)
+//                    $centralId = $ids[0];
+//                else
+//                    $centralId = $row["accession"];
+//            }
+//
+//            foreach ($ids as $id)
+//                $blastIds[$id] = 1;
+////            array_push($blastIds, $ids);
+//        } else if ($item) {
+//            if (!$centralId)
+//                $centralId = $item;
+//            $blastIds[$item] = 1;
+////            array_push($blastIds, $item);
+//        }
+//    }
+//
+//    $resultsDb->close();
+//
+//    if (!$centralId)
+//        return FALSE;
+//
+//    $index = array_search($centralId, $blastIds);
+//    if ($index !== FALSE)
+//        unset($blastIds[$index]);
+//
+//    $blastMod = settings::get_blast_module();
+//    $blastDir = "$blastCacheDir/blast-$blastId";
+//    if (!file_exists($blastDir))
+//        mkdir($blastDir);
+//
+//    $blastInputFile = "$blastDir/blast.input";
+//    $blastOutputFile = "$blastDir/blast.output";
+//    $blasthits = 100000; //TODO: find this
+//    $evalue = "1e-5"; //TODO: find this
+//
+//    $exec = "source /etc/profile.d/modules.sh; ";
+//    $exec .= "module load $blastMod; ";
+//    $exec .= "fastacmd -d $jobDataDir/blast/database -s $centralId > $blastInputFile; ";
+//    $exec .= "blastall -p blastp -i $blastInputFile -d $jobDataDir/blast/database -m 8 -e $evalue -b $blasthits -o $blastOutputFile";
+//
+//    $exitStatus = 1;
+//    $outputArray = array();
+//    $cmdOutput = exec($exec, $outputArray, $exitStatus);
+//    $cmdOutput = trim(rtrim($cmdOutput));
+//    //TODO: handle errors
+//
+//    $order = getIdOrder($blastOutputFile, $blastIds);
+//
+//    $result = array('order' => $order, 'central_id' => $centralId);
+//    return $result;
+//}
+
+function getDefaultOrder() {
+    $result = array('order' => array(), 'central_id' => "");
+    return $result;
+}
+
+//function getIdOrder($blastOutputFile, $blastIds) {
+//    $order = array();
+//
+//    $data = file_get_contents($blastOutputFile);
+//    $lines = preg_split("/(\r\n|\r|\n)/", $data);
+//    foreach ($lines as $line) {
+//        $line = rtrim($line);
+//        $parts = explode("\t", $line);
+//        if (count($parts) < 11)
+//            continue;
+//
+//        if (array_key_exists($parts[1], $blastIds)) {
+//            $order[$parts[1]] = array(floatval($parts[10]), floatval($parts[2]));
+//        }
+//    }
+//
+//    return $order;
+//}
 
 
 function getIdsFromCluster($clusterId, $dataDir) {

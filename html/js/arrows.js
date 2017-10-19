@@ -6,7 +6,7 @@ var DM_INDEX = 2;
 function ArrowDiagram(canvasId, displayModeCbId, canvasContainerId, popupIds) {
 
     this.canvasId = canvasId;
-    this.displayModeCbId = displayModeCbId;
+//    this.displayModeCbId = displayModeCbId;
     this.canvasContainerId = canvasContainerId;
     this.popupIds = popupIds;
 
@@ -29,27 +29,28 @@ function ArrowDiagram(canvasId, displayModeCbId, canvasContainerId, popupIds) {
     this.diagramCount = 0;
 
     this.popupElement = $("#" + this.popupIds.ParentId);
-    this.popupElement.css({position:"absolute"});
-    this.popupElement.hide();
+    //this.popupElement.css({position:"absolute"});
+    //this.popupElement.hide();
 
     this.arrowMap = {};
     this.pfamFilter = {};
+    this.pfamList = {};
 
-    this.updateDisplayMode();
+    //this.updateDisplayMode();
 }
 
-ArrowDiagram.prototype.toggleDisplayMode = function() {
-    this.updateDisplayMode();
-    this.makeArrowDiagram(this.data);
-}
+//ArrowDiagram.prototype.toggleDisplayMode = function() {
+//    this.updateDisplayMode();
+//    this.makeArrowDiagram(this.data);
+//}
 
-ArrowDiagram.prototype.updateDisplayMode = function() {
-    if (document.getElementById(this.displayModeCbId).checked) {
-        this.displayMode = DM_COORDS;
-    } else {
-        this.displayMode = DM_INDEX;
-    }
-}
+//ArrowDiagram.prototype.updateDisplayMode = function() {
+//    if (document.getElementById(this.displayModeCbId).checked) {
+//        this.displayMode = DM_COORDS;
+//    } else {
+//        this.displayMode = DM_INDEX;
+//    }
+//}
 
 ArrowDiagram.prototype.nextPage = function(callback) {
     this.diagramPage++;
@@ -98,12 +99,23 @@ ArrowDiagram.prototype.retrieveFamilyData = function(callback) {
     xmlhttp.send(null);
 }
 
+ArrowDiagram.prototype.clearFamilyData = function() {
+    this.pfamList = {};
+}
+
 ArrowDiagram.prototype.hasFamilyData = function() {
     return typeof this.families !== 'undefined';
 }
 
 ArrowDiagram.prototype.getFamilies = function() {
-    return Array.sort(Object.keys(this.arrowMap));
+    var fams = [];
+    var keys = Object.keys(this.pfamList);
+    for (var fi = 0; fi < keys.length; fi++) {
+        if (keys[fi] != "none")
+            fams.push({'id': keys[fi], 'name': this.pfamList[keys[fi]]});
+    }
+    fams.sort(function(a, b) { return a.id.localeCompare(b.id); });
+    return fams;
 }
 
 ArrowDiagram.prototype.makeArrowDiagram = function(data, usePaging, resetCanvas) {
@@ -114,12 +126,20 @@ ArrowDiagram.prototype.makeArrowDiagram = function(data, usePaging, resetCanvas)
         while (canvas.hasChildNodes()) {
             canvas.removeChild(canvas.lastChild);
         }
-        document.getElementById(this.canvasContainerId).setAttribute("style","width:900px;height:0px");
+        document.getElementById(this.canvasContainerId).setAttribute("style","width:100%;height:0px");
     }
 
     var i = usePaging && !resetCanvas ? this.diagramCount : 0;
-    for (seqId in data.data) {
-        this.drawDiagram(canvas, i, data.data[seqId], drawingWidth);
+//    var order = [];
+////    if (data.hasOwnProperty("order")) {
+////        
+////    } else {
+//        order = getDefaultOrder(i, data.data.length);
+////    }
+
+    //for (seqId in data.data) {
+    for (var oi = 0; oi < data.data.length; oi++) {
+        this.drawDiagram(canvas, i, data.data[oi], drawingWidth);
         i++;
     }
     this.diagramCount = i;
@@ -130,7 +150,7 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
     var canvasHeight = canvas.getBoundingClientRect().height;
     var ypos = index * this.diagramHeight + this.padding * 2 + this.fontHeight;
     if (ypos + this.diagramHeight + this.padding > canvasHeight)
-        document.getElementById(this.canvasContainerId).setAttribute("style","width:900px;height:" + (ypos + this.diagramHeight + this.padding) + "px");
+        document.getElementById(this.canvasContainerId).setAttribute("style","width:100%;height:" + (ypos + this.diagramHeight + this.padding) + "px");
 
     // Orient the query arrows in the same direction (flip the diagram)
     var orientSameDir = true;
@@ -158,6 +178,7 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
     if (!(attrData.family in this.arrowMap))
         this.arrowMap[attrData.family] = [];
     this.arrowMap[attrData.family].push(arrow);
+    this.pfamList[attrData.family] = attrData.family_desc;
     this.pfamColorMap[attrData.family] = this.selectedGeneColor;
 
     var isBound = attrData.is_bound;
@@ -175,7 +196,7 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
             neighborXpos = parseFloat(N.rel_start);
             neighborWidth = parseFloat(N.rel_width);
             if (orientSameDir && isComplement) {
-//                nIsComplement = !nIsComplement;
+                nIsComplement = !nIsComplement;
                 neighborXpos = 1.0 - neighborXpos - neighborWidth + geneWidth;
             }
         } else {
@@ -199,6 +220,7 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
         if (!(attrData.family in this.arrowMap))
             this.arrowMap[attrData.family] = [];
         this.arrowMap[attrData.family].push(arrow);
+        this.pfamList[attrData.family] = attrData.family_desc;
         
         if (i == 0)
             max_start = N.start;
@@ -209,8 +231,16 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
     this.drawAxis(ypos, drawingWidth, minXpct, maxXpct, isBound);
 
     data.attributes.max_start = max_start;
-    data.attributes.max_stop = max_stop;
+//    data.attributes.max_stop = max_stop;
     this.drawTitle(index * this.diagramHeight + this.fontHeight - 2, data.attributes);
+}
+
+function getDefaultOrder(start, numElements) {
+    var order = [];
+    for (var i = start; i < start+numElements; i++) {
+        order.push(i);
+    }
+    return order;
 }
 
 function makeStruct(data) {
@@ -281,11 +311,16 @@ ArrowDiagram.prototype.drawTitle = function(ypos, data) {
         title = title + "; (ENA ID: " + data.id + ")";
     if (data.hasOwnProperty("cluster_num"))
         title = title + "; Cluster: " + data.cluster_num;
-    if (title.length == 0)
-        title = data.strain + " [global width = " + (data.max_stop - data.max_start) + "]";
+//    if (title.length == 0)
+//        title = data.strain + " [global width = " + (data.max_stop - data.max_start) + "]";
+//    if (data.hasOwnProperty("evalue") && data.evalue >= 0)
+//        title = title + "; e-value: " + data.evalue;
+//    if (data.hasOwnProperty("pid") && data.pid >= 0)
+//        title = title + "; %ID: " + data.pid;
     if (title.length > 0) {
         var textObj = this.S.paper.text(this.padding, ypos, title);
-        textObj.attr({'font-size':12});
+        //textObj.attr({'font-size':12});
+        textObj.attr({'style':'diagram-title'});
     }
 }
 
@@ -404,6 +439,13 @@ ArrowDiagram.prototype.removePfamFilter = function(pfam) {
     }
 }
 
+ArrowDiagram.prototype.clearPfamFilters = function() {
+    var pfams = Object.keys(this.pfamFilter);
+    for (var i = 0; i < pfams.length; i++) {
+        this.removePfamFilter(pfams[i]);
+    }
+}
+
 ArrowDiagram.prototype.doPopup = function(xPos, yPos, doShow, data) {
     
     if (doShow) {
@@ -416,9 +458,11 @@ ArrowDiagram.prototype.doPopup = function(xPos, yPos, doShow, data) {
         $("#" + this.popupIds.FamilyDescId + " span").text(data.attr("family_desc"));
         $("#" + this.popupIds.SpTrId + " span").text(data.attr("anno_status"));
         $("#" + this.popupIds.SeqLenId + " span").text(data.attr("seq_len"));
-        this.popupElement.show();
+        //this.popupElement.show();
+        this.popupElement.removeClass("hidden");
     } else {
-        this.popupElement.hide();
+        //this.popupElement.hide();
+        this.popupElement.addClass("hidden");
     }
 }
 

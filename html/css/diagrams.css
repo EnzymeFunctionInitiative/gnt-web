@@ -1,0 +1,202 @@
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+/*    position: relative;*/
+    min-height: 100%;
+}
+body {
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+    margin-top: 70px;
+}
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 60px;
+    line-height: 30px; /* Vertically center the text there */
+    background-color: #f5f5f5;
+    border-top: 1px solid #312A25;
+}
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 70px;
+    line-height: 70px; /* Vertically center the text there */
+    background-color: #f5f5f5;
+    padding-right: 55px;
+    border-bottom: 1px solid #312A25;
+}
+
+
+#sidebar-wrapper {
+    height: calc(100% - 130px);
+    font-size: 1.1em;
+}
+
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+.container {
+    width: auto;
+    /*  max-width: 980px;*/
+    padding: 0 55px;
+}
+
+.button-wrapper {
+    vertical-align: middle;
+    padding-top: 15px;
+}
+
+.search-wrapper {
+    vertical-align: middle;
+}
+
+.header-title {
+    font-weight: bold;
+    font-size: 20px;
+    margin-right: 20px;
+}
+
+.header-metadata {
+    vertical-align: middle;
+}
+
+.header-metadata div {
+    line-height: 23px;
+}
+
+
+.header-form {
+    margin: 0;
+}
+
+
+.hidden {
+    display: none;
+}
+
+.initial-hidden {
+    display: none;
+}
+
+.disabled {
+    color: #999;
+}
+
+
+/* Arrows */
+
+.diagram-title {
+    font-size: 1em;
+}
+
+
+/* Menu */
+
+.fa-toggle-size {
+    font-size: 27px !Important;
+}
+
+#toggle-icon-right {
+    margin-right: -6px;
+}
+
+
+/* Filter Controls */
+
+.filter-container {
+    border-top: 1px gray dashed;
+    border-bottom: 1px gray dashed;
+    text-align: left;
+    overflow: auto;
+    line-height: 1em;
+}
+
+.filter-cb-toggle-div {
+    margin-top: 5px;
+    margin-bottom: 2px;
+    padding-bottom: 2px;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.filter-cb-div {
+    line-height: 1em;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+input.filter-cb {
+    margin-right: 5px;
+}
+
+#filter-clear {
+    background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor:pointer;
+    overflow: hidden;
+    outline:none;
+    height: 2em;
+}
+
+
+/* Popup */
+
+.info-popup {
+    position: absolute;
+    padding: 5px;
+    background-color: #555;
+    color: #fff;
+}
+
+
+/* Startup */
+
+#start-info {
+    font-size: 3em;
+    position: fixed;
+    left: 380px;
+    top: 110px;
+    vertical-align: text-top;
+}
+
+#start-info i {
+    font-size: 5em;
+}
+
+
+
+/* Loader */
+
+.loader {
+  border: 6px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 6px solid blue;
+  border-bottom: 6px solid blue;
+  width: 32px;
+  height: 32px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+  margin-top: 15px;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
