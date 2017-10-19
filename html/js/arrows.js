@@ -107,14 +107,23 @@ ArrowDiagram.prototype.hasFamilyData = function() {
     return typeof this.families !== 'undefined';
 }
 
-ArrowDiagram.prototype.getFamilies = function() {
+ArrowDiagram.prototype.getFamilies = function(sortById) {
     var fams = [];
     var keys = Object.keys(this.pfamList);
     for (var fi = 0; fi < keys.length; fi++) {
-        if (keys[fi] != "none")
-            fams.push({'id': keys[fi], 'name': this.pfamList[keys[fi]]});
+        var famId = keys[fi];
+        if (famId == "none")
+            continue;
+
+        var isChecked = typeof this.pfamFilter[famId] !== 'undefined';
+        fams.push({'id': famId, 'name': this.pfamList[famId], 'checked': isChecked});
     }
-    fams.sort(function(a, b) { return a.id.localeCompare(b.id); });
+
+    if (sortById)
+        fams.sort(function(a, b) { return a.id.localeCompare(b.id); });
+    else
+        fams.sort(function(a, b) { return a.name.localeCompare(b.name); });
+
     return fams;
 }
 
@@ -308,7 +317,7 @@ ArrowDiagram.prototype.drawTitle = function(ypos, data) {
     if (data.hasOwnProperty("taxon_id"))
         title = title + "NCBI Taxon ID: " + data.taxon_id;
     if (data.hasOwnProperty("id"))
-        title = title + "; (ENA ID: " + data.id + ")";
+        title = title + "; ENA ID: " + data.id;
     if (data.hasOwnProperty("cluster_num"))
         title = title + "; Cluster: " + data.cluster_num;
 //    if (title.length == 0)

@@ -4,38 +4,18 @@ function ArrowApp(arrows, popupIds) {
     this.arrows = arrows;
     this.popupIds = popupIds;
     this.inputObj = document.getElementById("search-input");
+    this.advancedInputObj = document.getElementById("advanced-search-input");
     this.progressObj = $("#progress-loader");
     this.showMoreObj = $("#show-more-arrows-button");
     this.showAllObj = $("#show-all-arrows-button");
     this.filterListObj = $("#filter-container");
     this.filterContainerToggleObj = $("#filter-container-toggle");
     this.firstRun = true;
+    this.showFamsById = false;
 
     var that = this;
-    $("#search-cluster-button").click(function() {
-//        if (that.arrows.hasFamilyData()) {
-            that.startProgressBar();
-            var idList = that.getIdList();
-            that.arrows.clearFamilyData();
-            that.arrows.retrieveArrowData(idList, true, true, function(isEod) {
-                that.populateFilterList();
-                that.updateMoreButtonStatus(isEod);
-                that.stopProgressBar();
-                $("#start-info").hide();
-            });
-//        } else {
-//            that.startProgressBar();
-//            that.arrows.retrieveFamilyData(function(fams) {
-//                var idList = that.getIdList();
-//                that.arrows.retrieveArrowData(idList, true, true, function(isEod) {
-//                    that.populateFilterList();
-//                    that.updateMoreButtonStatus(isEod);
-//                    that.stopProgressBar();
-//                    $("#start-info").hide();
-//                });
-//            });
-//        }
-    });
+    $("#search-cluster-button").click(function() { that.search(that.inputObj); });
+    $("#advanced-search-cluster-button").click(function() { that.search(that.advancedInputObj); });
 
     this.showMoreObj.click(function() {
         that.arrows.nextPage(function(isEod) {
@@ -59,14 +39,31 @@ function ArrowApp(arrows, popupIds) {
         });
 }
 
+ArrowApp.prototype.search = function(inputObj) {
+    this.startProgressBar();
+    var idList = this.getIdList(inputObj);
+    this.arrows.clearFamilyData();
+    var that = this;
+    this.arrows.retrieveArrowData(idList, true, true, function(isEod) {
+        that.populateFilterList();
+        that.updateMoreButtonStatus(isEod);
+        that.stopProgressBar();
+        $("#start-info").hide();
+    });
+}
+
 ArrowApp.prototype.populateFilterList = function() {
-    this.fams = this.arrows.getFamilies();
+    this.fams = this.arrows.getFamilies(this.showFamsById);
     this.filterListObj.empty();
 
     var that = this;
     $.each(this.fams, function(i, fam) {
-        var entry = $("<div class='filter-cb-div' data-toggle='tooltip' title='" + fam.name + "'></div>").appendTo(that.filterListObj);
-        $("<input id='filter-cb-" + i + "' class='filter-cb' type='checkbox' value='" + fam.id + "' />")
+        var ttText = that.showFamsById ? fam.name : fam.id;
+        var famText = that.showFamsById ? fam.id : fam.name;
+        var isChecked = fam.checked ? "checked" : "";
+
+        var entry = $("<div class='filter-cb-div' data-toggle='tooltip' title='" + ttText + "'></div>").appendTo(that.filterListObj);
+        $("<input id='filter-cb-" + i + "' class='filter-cb' type='checkbox' value='" + fam.id + "' " + isChecked + "/>")
             .appendTo(entry)
             .click(function(e) {
                     if (this.checked)
@@ -74,17 +71,15 @@ ArrowApp.prototype.populateFilterList = function() {
                     else
                         that.arrows.removePfamFilter(fam.id);
                 });
-         $(" <span id='filter-cb-text-" + i + "' class='filter-cb-name'>" + fam.name + "</span>").
-            appendTo(entry);
-         $(" <span id='filter-cb-text-" + i + "' class='filter-cb-number hidden'>" + fam.id + "</span>").
+         //$(" <span id='filter-cb-text-" + i + "' class='filter-cb-name'>" + fam.name + "</span>").
+         //   appendTo(entry);
+         $("<span id='filter-cb-text-" + i + "' class='filter-cb-number'><label for='filter-cb-" + i + "'>" + famText + "</label></span>").
             appendTo(entry);
     });
 
     if (this.firstRun) {
         $(".initial-hidden").removeClass("initial-hidden");
         this.firstRun = false;
-//        this.filterListObj.removeClass("initial-hidden");
-//        this.filterContainerToggleObj.removeClass("initial-hidden");
     }
 }
 
@@ -94,8 +89,10 @@ ArrowApp.prototype.clearFilter = function() {
 }
 
 ArrowApp.prototype.togglePfamNamesNumbers = function(isChecked) {
-   $(".filter-cb-name").toggleClass("hidden");
-   $(".filter-cb-number").toggleClass("hidden"); 
+    this.showFamsById = isChecked; // true == sort by ID
+    this.populateFilterList();
+    //$(".filter-cb-name").toggleClass("hidden");
+    //$(".filter-cb-number").toggleClass("hidden"); 
 }
 
 ArrowApp.prototype.startProgressBar = function() {
@@ -106,8 +103,8 @@ ArrowApp.prototype.stopProgressBar = function() {
     this.progressObj.addClass("hidden");
 }
 
-ArrowApp.prototype.getIdList = function() {
-    var idList = this.inputObj.value;
+ArrowApp.prototype.getIdList = function(inputObj) {
+    var idList = inputObj.value;
     return idList;
 }
 
@@ -124,7 +121,7 @@ ArrowApp.prototype.updateMoreButtonStatus = function (isEod) {
 ArrowApp.prototype.nextPageCallback = function (isEod) {
     this.populateFilterList();
     this.updateMoreButtonStatus(isEod);
-    $('html,body').animate({scrollTop: document.body.scrollHeight},{duration:800}); //"slow");
+    $('html,body').animate({scrollTop: document.body.scrollHeight},{duration:800});
 }
 
 

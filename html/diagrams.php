@@ -97,13 +97,22 @@ else {
                         <!--<i class="fa fa-bars " style="font-size:20px !Important;" aria-hidden="true" aria-hidden="true"></i>--></a> 
                     </li>
                     <li>
-                    <i class="fa fa-filter" aria-hidden="true"> </i> <b><span style="margin-left:10px;">PFAM FILTERING</span></b><br>
-                        <div class="filter-cb-div filter-cb-toggle-div initial-hidden" id="filter-container-toggle"><input id="filter-cb-toggle" type="checkbox" /> <span id="filter-cb-toggle-text">Toggle Pfam Numbers/Names</span></div>
+                        <i class="fa fa-filter" aria-hidden="true"> </i> <b><span style="margin-left:10px;">PFAM FILTERING</span></b><br>
+                        <div class="filter-cb-div filter-cb-toggle-div initial-hidden" id="filter-container-toggle">
+                            <input id="filter-cb-toggle" type="checkbox" />
+                            <label for="filter-cb-toggle"><span id="filter-cb-toggle-text">Show Pfam Numbers</span></label>
+                        </div>
                         <div style="width:100%;height:12em;" class="filter-container initial-hidden" id="filter-container">
                         </div>
                         <button type="button" id="filter-clear" class="initial-hidden"><i class="fa fa-times" aria-hidden="true"></i> Clear Filter</button>
+                    </li>
                     <li>
                         <i class="fa fa-search" aria-hidden="true"> </i> <b><span style="margin-left:10px;">ADVANCED SEARCH</span></b><br>
+                        <div id="advanced-search-panel">
+                            <div style="font-size:0.9em">Input multiple clusters and/or individual UniProt IDs.</div>
+                            <textarea id="advanced-search-input"></textarea>
+                            <button type="button" class="btn btn-light" id="advanced-search-cluster-button">Query</button>
+                        </div>
                     </li>
                 </ul>
             </div>
@@ -159,6 +168,7 @@ else {
                     $("#filter-container").toggleClass("hidden");
                     $("#toggle-icon-left").toggleClass("hidden");
                     $("#toggle-icon-right").toggleClass("hidden");
+                    $("#advanced-search-panel").toggleClass("hidden");
                 });
                 $("#filter-cb-toggle").click(function(e) {
                     arrowApp.togglePfamNamesNumbers(this.checked);
