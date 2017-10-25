@@ -2,7 +2,7 @@
 <?php 
 
 require_once '../includes/main.inc.php';
-
+require_once '../libs/settings.class.inc.php';
 
 
 
@@ -20,13 +20,18 @@ if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
     $dotPos = strpos($gnnName, ".");
     $gnnName = substr($gnnName, 0, $dotPos);
     if ($gnn->get_key() != $_GET['key']) {
-        echo "<br><b><h4 class='center'>No EFI-GNN Selected.</h4></b>";
-        exit;
+        header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found", true, 404);
+        include("not_found.php");
+        die();
+    }
+    elseif (time() < $gnn->get_time_completed() + settings::get_retention_days()) {
+        prettyError404("That job has expired and doesn't exist anymore.");
     }
 }
 else {
-    echo "<br><b><h4 class='center'>No EFI-GNN Selected. Please go <a href='index.php'>back</a></h4></b>";
-    exit;
+    header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found", true, 404);
+    include("not_found.php");
+    die();
 }
 ?>
 
@@ -40,12 +45,13 @@ else {
         <meta name="description" content="">
         <meta name="author" content="">
 
-        <title>Arrow Diagrams for Job #<?php echo $gnnId; ?></title>
+        <title>Genome Neighborhood Diagrams for Job #<?php echo $gnnId; ?></title>
 
         <!-- Bootstrap core CSS -->
         <link href="/bs/css/bootstrap.min.css" rel="stylesheet">
         <link href="/bs/css/menu-sidebar.css" rel="stylesheet">
         <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="shortcut icon" href="images/favicon_efi.ico" type="image/x-icon">
 
 
         <!-- Custom styles for this template -->
@@ -64,54 +70,52 @@ else {
     <body>
 
         <header class="header">
-<!--            <div class="container">-->
-                <div class="span6 align-middle">
-                    <form class="navbar-form navbar-left header-form"> 
-                        <div class="form-group"> 
-                            <div class="search-wrapper">
-                                <span class="header-title">Arrow Diagrams for Job #<?php echo $gnnId; ?></span>
-                                <input class="form-control" placeholder="Search for cluster(s)" id="search-input"> 
-                                <button type="button" class="btn btn-default" id="search-cluster-button">Query</button>
-                            </div>
-                        </div>
-                    </form>
+            <div class="span6 align-middle navbar-left">
+                <span class="header-title">Genome Neighborhood Diagrams for Job #<?php echo $gnnId; ?></span>
+            </div>
+            <div class="span6">
+                <div class="header-metadata pull-right align-middle">
+                    <div>Co-occurrence: <?php echo $cooccurrence; ?></div>
+                    <div>Neighborhood size: <?php echo $nbSize; ?></div>
+                    <div>Input filename: <?php echo $gnnName; ?></div>
                 </div>
-                <div class="span6">
-                    <div class="header-metadata pull-right align-middle">
-                        <div>Co-occurrence: <?php echo $cooccurrence; ?></div>
-                        <div>Neighborhood size: <?php echo $nbSize; ?></div>
-                        <div>Input filename: <?php echo $gnnName; ?></div>
-                    </div>
-                </div>
-<!--            </div>-->
+            </div>
         </header>
 
         <!-- Begin page content -->
         <div id="wrapper" class="">
             <div id="sidebar-wrapper">
                 <ul class="sidebar-nav">
-                    <li class="sidebar-brand">
-                    <a href="#menu-toggle" id="menu-toggle" style="margin-top:20px;float:right;" >
-                        <i class="fa fa-caret-square-o-right fa-toggle-size hidden" id="toggle-icon-right" aria-hidden="true"></i>
-                        <i class="fa fa-caret-square-o-left fa-toggle-size" id="toggle-icon-left" aria-hidden="true"></i>
-                        <!--<i class="fa fa-bars " style="font-size:20px !Important;" aria-hidden="true" aria-hidden="true"></i>--></a> 
-                    </li>
+                    <!--<li class="sidebar-brand">
+                        <a href="#menu-toggle" id="menu-toggle" style="margin-top:20px;float:right;" >
+                            <i class="fa fa-caret-square-o-right fa-toggle-size hidden" id="toggle-icon-right" aria-hidden="true"></i>
+                            <i class="fa fa-caret-square-o-left fa-toggle-size" id="toggle-icon-left" aria-hidden="true"></i>
+                        </a> 
+                    </li>-->
                     <li>
-                        <i class="fa fa-filter" aria-hidden="true"> </i> <b><span style="margin-left:10px;">PFAM FILTERING</span></b><br>
-                        <div class="filter-cb-div filter-cb-toggle-div initial-hidden" id="filter-container-toggle">
-                            <input id="filter-cb-toggle" type="checkbox" />
-                            <label for="filter-cb-toggle"><span id="filter-cb-toggle-text">Show Pfam Numbers</span></label>
-                        </div>
-                        <div style="width:100%;height:12em;" class="filter-container initial-hidden" id="filter-container">
-                        </div>
-                        <button type="button" id="filter-clear" class="initial-hidden"><i class="fa fa-times" aria-hidden="true"></i> Clear Filter</button>
-                    </li>
-                    <li>
-                        <i class="fa fa-search" aria-hidden="true"> </i> <b><span style="margin-left:10px;">ADVANCED SEARCH</span></b><br>
+                        <i class="fa fa-search" aria-hidden="true"> </i> <b><span style="margin-left:10px;">SEARCH</span></b>
                         <div id="advanced-search-panel">
                             <div style="font-size:0.9em">Input multiple clusters and/or individual UniProt IDs.</div>
                             <textarea id="advanced-search-input"></textarea>
                             <button type="button" class="btn btn-light" id="advanced-search-cluster-button">Query</button>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fa fa-filter" aria-hidden="true"> </i> <b><span style="margin-left:10px;">PFAM FILTERING</span></b>
+                        <div class="initial-hidden">
+                            <div class="filter-cb-div filter-cb-toggle-div" id="filter-container-toggle">
+                                <input id="filter-cb-toggle" type="checkbox" />
+                                <label for="filter-cb-toggle"><span id="filter-cb-toggle-text">Show Pfam Numbers</span></label>
+                            </div>
+                            <div style="width:100%;height:12em;" class="filter-container" id="filter-container">
+                            </div>
+                            <button type="button" id="filter-clear"><i class="fa fa-times" aria-hidden="true"></i> Clear Filter</button>
+                            <!--<div>
+                                <input id="filter-cb-toggle-dashes" type="checkbox" />
+                                <label for="filter-cb-toggle-dashes"><span id="filter-cb-toggle-dashes-text">Dashed lines</span></label>
+                            </div>-->
+                            <div style="width:100%;height:12em;" class="active-filter-list" id="active-filter-list">
+                            </div>
                         </div>
                     </li>
                 </ul>
@@ -128,13 +132,20 @@ else {
         <footer class="footer">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div id="progress-loader" class="loader hidden"></div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <div class="button-wrapper col-centered">
+                            <a href="diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank" class="btn btn-default">New Window</a>
+                            <button type="button" class="btn btn-default" id="save-canvas-button">Save To PNG</button>
+                            <a id="download-data" href="download_diagram_data.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" class="btn btn-default" id="download-data" title="Download the data to upload it for future analysis using this tool.">Download Data</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="button-wrapper pull-right">
-                            <button type="button" id="show-all-arrows-button">Show All</button>
-                            <button type="button" id="show-more-arrows-button">Show More</button>
+                            <button type="button" class="btn btn-default" id="show-all-arrows-button">Show All</button>
+                            <button type="button" class="btn btn-default" id="show-more-arrows-button">Show More</button>
                         </div>
                     </div>
                 </div>
@@ -149,7 +160,9 @@ else {
         <script src="https://cdnjs.cloudflare.com/ajax/libs/snap.svg/0.5.1/snap.svg-min.js" content-type="text/javascript"></script>
 
         <!-- jQuery -->
-        <script src="/bs/js/jquery.js"></script>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<!--        <script src="/bs/js/jquery.js"></script>-->
         <!-- Bootstrap Core JavaScript -->
         <script src="/bs/js/bootstrap.min.js"></script>
 
@@ -174,7 +187,6 @@ else {
                     arrowApp.togglePfamNamesNumbers(this.checked);
                 });
 
-                $('[data-toggle="tooltip"]').tooltip();
             });
         </script>
 
@@ -191,7 +203,7 @@ else {
         </div>
 
         <div id="start-info">
-            <div><i class="fa fa-arrow-up" aria-hidden="true"></i></div>
+            <div><i class="fa fa-arrow-left" aria-hidden="true"></i></div>
             <div>Start by entering a cluster number</div>
         </div>
     </body>

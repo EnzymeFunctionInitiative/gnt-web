@@ -35,10 +35,13 @@ if ($message) {
 
 $dataDir = $gnn->get_output_dir();
 $dbFile = $gnn->get_arrow_data_file();
+if (!file_exists($dbFile))
+    $dbFile = $gnn->get_arrow_data_file_legacy();
 //$blastCacheDir = settings::get_blast_data_dir();
 
 if (array_key_exists("query", $_GET)) {
-    $queryString = str_replace("\n", ",", $_GET["query"]);
+    $queryString = strtoupper($_GET["query"]);
+    $queryString = str_replace("\n", ",", $queryString);
     $queryString = str_replace("\r", ",", $queryString);
     $queryString = str_replace(" ", ",", $queryString);
     $items = explode(",", $queryString);
@@ -98,47 +101,16 @@ function getFamilies($dataDir, $dbFile) {
 function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
 
     $orderData = $orderDataStruct['order'];
-    $centralId = $orderDataStruct['central_id'];
-
     $output = array();
-
-    $ids = array();
-
-    foreach ($items as $item) {
-        if (is_numeric($item)) {
-            $clusterIds = getIdsFromCluster($item, $dataDir);
-            foreach ($clusterIds as $clusterId) {
-                $evalue = array_key_exists($clusterId, $orderData) ? $orderData[$clusterId][0] : -1;
-                $pctId = array_key_exists($clusterId, $orderData) ? $orderData[$clusterId][1] : -1;
-                array_push($ids, array($clusterId, $evalue, $pctId));
-            }
-        }
-        else if ($item) {
-            $evalue = array_key_exists($item, $orderData) ? $orderData[$item][0] : -1;
-            $pctId = array_key_exists($item, $orderData) ? $orderData[$clusterId][1] : -1;
-            array_push($ids, array($item, $evalue, $pctId));
-        }
-    }
-
-    // This will be useful when we start sorting/grouping
-    //usort($ids, "sortNodes");
-    //if ($centralId)
-    //    array_unshift($ids, array($centralId, 0));
-
-    $pageSize = 20;
-    $startCount = 0;
-    $maxCount = 100000000;
-    if (array_key_exists("page", $_GET)) {
-        $page = intval($_GET["page"]);
-        if ($page >= 0 && $page <= 10000) { // error check to limit to 10000 pages 
-            $startCount = $page * $pageSize;
-            $maxCount = $startCount + $pageSize;
-        }
-    }
-    
-    $output["eod"] = "$startCount $maxCount";
     
     $resultsDb = new SQLite3($dbFile);
+
+    $ids = parseIds($items, $dataDir, $orderDataStruct, $resultsDb);
+
+    $pageBounds = getPageLimits();
+    $startCount = $pageBounds['start'];
+    $maxCount = $pageBounds['end'];
+    $output["eod"] = "$startCount $maxCount";
     
     
     $minBp = 999999999999;
@@ -152,7 +124,7 @@ function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
         $id = $ids[$i][0];
         $evalue = $ids[$i][1];
 
-        $attrSql = "SELECT * FROM attributes WHERE accession = '$id'";
+        $attrSql = "SELECT * FROM attributes WHERE accession = '$id' ORDER BY sort_order";
         $dbQuery = $resultsDb->query($attrSql);
         $row = $dbQuery->fetchArray(SQLITE3_ASSOC);
         if (!$row)
@@ -164,30 +136,7 @@ function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
         if (++$startCount > $maxCount)
             break;
 
-        $attr = array();
-        $attr['accession'] = $row['accession'];
-        $attr['id'] = $row['id'];
-        $attr['num'] = $row['num'];
-        $attr['family'] = $row['family'];
-        $attr['start'] = $row['start'];
-        $attr['stop'] = $row['stop'];
-        $attr['rel_start_coord'] = $row['rel_start'];
-        $attr['rel_stop_coord'] = $row['rel_stop'];
-        $attr['strain'] = $row['strain'];
-        $attr['direction'] = $row['direction'];
-        $attr['type'] = $row['type'];
-        $attr['seq_len'] = $row['seq_len'];
-        $attr['cluster_num'] = $row['cluster_num'];
-        $attr['organism'] = $row['organism'];
-        $attr['taxon_id'] = $row['taxon_id'];
-        $attr['anno_status'] = $row['anno_status'];
-        $attr['family_desc'] = $row['family_desc'];
-        if (array_key_exists("is_bound", $row))
-            $attr['is_bound'] = $row['is_bound'];
-        else
-            $attr['is_bound'] = 0;
-        $attr['desc'] = $row['desc'];
-    
+        $attr = getQueryAttributes($row, $orderData);
         if ($attr['rel_start_coord'] < $minBp)
             $minBp = $attr['rel_start_coord'];
         if ($attr['rel_stop_coord'] > $maxBp)
@@ -195,11 +144,6 @@ function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
         $queryWidth = $attr['rel_stop_coord'] - $attr['rel_start_coord'];
         if ($queryWidth > $maxQueryWidth)
             $maxQueryWidth = $queryWidth;
-    
-        $evalue = array_key_exists($attr['accession'], $orderData) ? $orderData[$attr['accession']][0] : 100;
-        $pid = array_key_exists($attr['accession'], $orderData) ? $orderData[$attr['accession']][1] : -1;
-        $attr['evalue'] = $evalue;
-        $attr['pid'] = $pid;
 
 
         $nbSql = "SELECT * FROM neighbors WHERE gene_key = '" . $row['sort_key'] . "'";
@@ -207,21 +151,7 @@ function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
     
         $neighbors = array();
         while ($row = $dbQuery->fetchArray()) {
-            $nb = array();
-            $nb['accession'] = $row['accession'];
-            $nb['id'] = $row['id'];
-            $nb['num'] = $row['num'];
-            $nb['family'] = $row['family'];
-            $nb['start'] = $row['start'];
-            $nb['stop'] = $row['stop'];
-            $nb['rel_start_coord'] = $row['rel_start'];
-            $nb['rel_stop_coord'] = $row['rel_stop'];
-            $nb['direction'] = $row['direction'];
-            $nb['type'] = $row['type'];
-            $nb['seq_len'] = $row['seq_len'];
-            $nb['anno_status'] = $row['anno_status'];
-            $nb['family_desc'] = $row['family_desc'];
-            $nb['desc'] = $row['desc'];
+            $nb = getNeighborAttributes($row);
             if ($nb['rel_start_coord'] < $minBp)
                 $minBp = $nb['rel_start_coord'];
             if ($nb['rel_stop_coord'] > $maxBp)
@@ -236,8 +166,24 @@ function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
             ));
     }
 
+    $resultsDb->close();
+
     $output["eod"] = $startCount < $maxCount;
+
+    $output = computeRelativeCoordinates($output, $minBp, $maxBp, $maxQueryWidth);
     
+    return $output;
+}
+
+
+function sortNodes($a, $b) {
+    if ($a[1] == $b[1])
+        return 0;
+    return $a[1] < $b[1] ? -1 : 1;
+}
+
+
+function computeRelativeCoordinates($output, $minBp, $maxBp, $maxQueryWidth) {
     $maxSide = (abs($maxBp) > abs($minBp)) ? abs($maxBp) : abs($minBp);
     $maxWidth = $maxSide * 2 + $maxQueryWidth;
     $minBp = -$maxSide;
@@ -260,16 +206,162 @@ function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
         }
     }
 
-    $resultsDb->close();
-
     return $output;
 }
 
 
-function sortNodes($a, $b) {
-    if ($a[1] == $b[1])
-        return 0;
-    return $a[1] < $b[1] ? -1 : 1;
+function parseIds($items, $dataDir, $orderDataStruct, $resultsDb) {
+
+    $orderData = $orderDataStruct['order'];
+    $centralId = $orderDataStruct['central_id'];
+
+    $ids = array();
+
+    foreach ($items as $item) {
+        if (is_numeric($item)) {
+//            $clusterIds = getIdsFromClusterFile($item, $dataDir);
+            $clusterIds = getIdsFromDatabase($item, $resultsDb);
+            foreach ($clusterIds as $clusterId) {
+                $evalue = array_key_exists($clusterId, $orderData) ? $orderData[$clusterId][0] : -1;
+                $pctId = array_key_exists($clusterId, $orderData) ? $orderData[$clusterId][1] : -1;
+                array_push($ids, array($clusterId, $evalue, $pctId));
+            }
+        }
+        else if ($item) {
+            $evalue = array_key_exists($item, $orderData) ? $orderData[$item][0] : -1;
+            $pctId = array_key_exists($item, $orderData) ? $orderData[$clusterId][1] : -1;
+            array_push($ids, array($item, $evalue, $pctId));
+        }
+    }
+
+    // This will be useful when we start sorting/grouping
+    //usort($ids, "sortNodes");
+    //if ($centralId)
+    //    array_unshift($ids, array($centralId, 0));
+
+    return $ids;
+}
+
+
+function getPageLimits() {
+    $pageSize = 20;
+    $startCount = 0;
+    $maxCount = 100000000;
+    if (array_key_exists("page", $_GET)) {
+        $page = intval($_GET["page"]);
+        if ($page >= 0 && $page <= 10000) { // error check to limit to 10000 pages 
+            $startCount = $page * $pageSize;
+            $maxCount = $startCount + $pageSize;
+        }
+    }
+
+    return array('start' => $startCount, 'end' => $maxCount);
+}
+
+
+function getQueryAttributes($row, $orderData) {
+    $attr = array();
+    $attr['accession'] = $row['accession'];
+    $attr['id'] = $row['id'];
+    $attr['num'] = $row['num'];
+    $attr['family'] = $row['family'];
+    $attr['start'] = $row['start'];
+    $attr['stop'] = $row['stop'];
+    $attr['rel_start_coord'] = $row['rel_start'];
+    $attr['rel_stop_coord'] = $row['rel_stop'];
+    $attr['strain'] = $row['strain'];
+    $attr['direction'] = $row['direction'];
+    $attr['type'] = $row['type'];
+    $attr['seq_len'] = $row['seq_len'];
+    $attr['cluster_num'] = $row['cluster_num'];
+    $attr['organism'] = rtrim($row['organism']);
+    $attr['taxon_id'] = $row['taxon_id'];
+    $attr['anno_status'] = $row['anno_status'];
+    $attr['family_desc'] = $row['family_desc'];
+    $attr['desc'] = $row['desc'];
+    
+    if (array_key_exists("color", $row))
+        $attr['color'] = $row['color'];
+
+    if (array_key_exists("sort_order", $row))
+        $attr['sort_order'] = $row['sort_order'];
+    else
+        $attr['sort_order'] = -1;
+    
+    if (array_key_exists("is_bound", $row))
+        $attr['is_bound'] = $row['is_bound'];
+    else
+        $attr['is_bound'] = 0;
+
+    $evalue = array_key_exists($attr['accession'], $orderData) ? $orderData[$attr['accession']][0] : 100;
+    $pid = array_key_exists($attr['accession'], $orderData) ? $orderData[$attr['accession']][1] : -1;
+    $attr['evalue'] = $evalue;
+    $attr['pid'] = $pid;
+
+    if (substr_compare($attr['organism'], ".", -1) === 0)
+        $attr['organism'] = substr($attr['organism'], 0, strlen($attr['organism'])-1);
+
+    return $attr;
+}
+
+
+function getNeighborAttributes($row) {
+    $nb = array();
+    $nb['accession'] = $row['accession'];
+    $nb['id'] = $row['id'];
+    $nb['num'] = $row['num'];
+    $nb['family'] = $row['family'];
+    $nb['start'] = $row['start'];
+    $nb['stop'] = $row['stop'];
+    $nb['rel_start_coord'] = $row['rel_start'];
+    $nb['rel_stop_coord'] = $row['rel_stop'];
+    $nb['direction'] = $row['direction'];
+    $nb['type'] = $row['type'];
+    $nb['seq_len'] = $row['seq_len'];
+    $nb['anno_status'] = $row['anno_status'];
+    $nb['family_desc'] = $row['family_desc'];
+    $nb['desc'] = $row['desc'];
+    
+    if (array_key_exists("color", $row))
+        $nb['color'] = $row['color'];
+    
+    return $nb;
+}
+
+
+function getIdsFromDatabase($clusterId, $resultsDb) {
+    if (!is_numeric($clusterId))
+        return array();
+
+    $sql = "SELECT accession FROM attributes WHERE cluster_num = '$clusterId' ORDER BY sort_order";
+    $dbQuery = $resultsDb->query($sql);
+
+    $ids = array();
+    while ($row = $dbQuery->fetchArray()) {
+        array_push($ids, $row['accession']);
+    }
+    
+    return $ids;
+}
+
+
+function getIdsFromClusterFile($clusterId, $dataDir) {
+    if (!is_numeric($clusterId))
+        return array();
+
+    $filePath = "$dataDir/cluster-data/cluster_UniProt_IDs_" . $clusterId . ".txt";
+    if (!file_exists($filePath))
+        return array();
+
+    $flags = FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES;
+    $ids = file($filePath, $flags);
+    return $ids;
+}
+
+
+function getDefaultOrder() {
+    $result = array('order' => array(), 'central_id' => "");
+    return $result;
 }
 
 
@@ -342,12 +434,6 @@ function sortNodes($a, $b) {
 //    $result = array('order' => $order, 'central_id' => $centralId);
 //    return $result;
 //}
-
-function getDefaultOrder() {
-    $result = array('order' => array(), 'central_id' => "");
-    return $result;
-}
-
 //function getIdOrder($blastOutputFile, $blastIds) {
 //    $order = array();
 //
@@ -366,19 +452,5 @@ function getDefaultOrder() {
 //
 //    return $order;
 //}
-
-
-function getIdsFromCluster($clusterId, $dataDir) {
-    if (!is_numeric($clusterId))
-        continue;
-
-    $filePath = "$dataDir/cluster-data/cluster_UniProt_IDs_" . $clusterId . ".txt";
-    if (!file_exists($filePath))
-        continue;
-
-    $flags = FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES;
-    $ids = file($filePath, $flags);
-    return $ids;
-}
 
 ?>

@@ -1,5 +1,16 @@
 <?php
 include_once("../libs/settings.class.inc.php");
+
+$title = "Genome Neighborhood Networks Tool";
+if (isset($GnnId))
+    $title .= ": Job #$GnnId";
+
+if (isset($Is404Page) && $Is404Page)
+    $title = "Page Not Found";
+
+if (isset($IsExpiredPage) && $IsExpiredPage)
+    $title = "Expired Job";
+
 ?>
 
 <!doctype html>
@@ -12,7 +23,7 @@ include_once("../libs/settings.class.inc.php");
 <link rel="stylesheet" type="text/css" href="/css/shared.css">
 <!--<link rel='stylesheet' type='text/css' href='css/upload.css'>-->
 <link rel="shortcut icon" href="images/favicon_efi.ico" type="image/x-icon">
-<title>Genome Neighborhood Networks Tool</title>
+<title><?php echo $title; ?></title>
 
 <script src='includes/main2.inc.js' type='text/javascript'></script>
 <script src='includes/upload2.inc.js' type='text/javascript'></script>

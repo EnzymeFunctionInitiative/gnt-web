@@ -10,12 +10,26 @@ function ArrowApp(arrows, popupIds) {
     this.showAllObj = $("#show-all-arrows-button");
     this.filterListObj = $("#filter-container");
     this.filterContainerToggleObj = $("#filter-container-toggle");
+    this.filterLegendObj = $("#active-filter-list");
     this.firstRun = true;
     this.showFamsById = false;
 
     var that = this;
-    $("#search-cluster-button").click(function() { that.search(that.inputObj); });
+    this.filterLegendObj.empty();
+    $("#search-cluster-button").click(function() {
+            that.advancedInputObj.value = that.inputObj.value;
+            that.search(that.inputObj);
+        });
+    $("input").on('keypress', function(e) {
+            if (e.which == 13) {
+                that.advancedInputObj.value = that.inputObj.value;
+                that.search(that.inputObj);
+                e.preventDefault();
+            }
+        });
     $("#advanced-search-cluster-button").click(function() { that.search(that.advancedInputObj); });
+
+    $("#filter-cb-toggle-dashes").click(function() { $(".an-arrow").toggleClass("dashed-arrow"); });
 
     this.showMoreObj.click(function() {
         that.arrows.nextPage(function(isEod) {
@@ -30,19 +44,24 @@ function ArrowApp(arrows, popupIds) {
             that.updateMoreButtonStatus(isEod);
             that.populateFilterList();
             that.stopProgressBar();
-            $('html,body').animate({scrollTop: document.body.scrollHeight},{duration:800});
+//            $('html,body').animate({scrollTop: document.body.scrollHeight},{duration:800});
         });
     });
 
     $("#filter-clear").click(function() {
             that.clearFilter();
         });
+
+    $("#download-data").tooltip({delay: {show: 50}, placement: 'top', trigger: 'hover'});
+
+    this.enableSaveButton();
 }
 
 ArrowApp.prototype.search = function(inputObj) {
     this.startProgressBar();
     var idList = this.getIdList(inputObj);
     this.arrows.clearFamilyData();
+    this.clearFilter();
     var that = this;
     this.arrows.retrieveArrowData(idList, true, true, function(isEod) {
         that.populateFilterList();
@@ -55,36 +74,59 @@ ArrowApp.prototype.search = function(inputObj) {
 ArrowApp.prototype.populateFilterList = function() {
     this.fams = this.arrows.getFamilies(this.showFamsById);
     this.filterListObj.empty();
+    this.filterLegendObj.empty();
 
     var that = this;
     $.each(this.fams, function(i, fam) {
-        var ttText = that.showFamsById ? fam.name : fam.id;
         var famText = that.showFamsById ? fam.id : fam.name;
+        //var ttText = that.showFamsById ? fam.name : fam.id;
+        var ttText = famText;
         var isChecked = fam.checked ? "checked" : "";
 
-        var entry = $("<div class='filter-cb-div' data-toggle='tooltip' title='" + ttText + "'></div>").appendTo(that.filterListObj);
-        $("<input id='filter-cb-" + i + "' class='filter-cb' type='checkbox' value='" + fam.id + "' " + isChecked + "/>")
+        var entry = $("<div class='filter-cb-div' title='" + ttText + "'></div>").appendTo(that.filterListObj);
+        $("<input id='filter-cb-" + i + "' class='filter-cb' type='checkbox' value='" + i + "' " + isChecked + "/>")
             .appendTo(entry)
             .click(function(e) {
-                    if (this.checked)
-                        that.arrows.addPfamFilter(fam.id);
-                    else
-                        that.arrows.removePfamFilter(fam.id);
-                });
+                if (this.checked) {
+                    that.arrows.addPfamFilter(fam.id);
+                    that.addLegendItem(i, fam.id, famText);
+//    var color = that.arrows.getPfamColor(id);
+//                    var activeFilter = $("<div id='legend-" + this.value + "'>" +
+//                            "<span class='active-filter-icon' style='background-color:" + color + "'> </span> " + famText + "</div>")
+//                        .appendTo("#active-filter-list");
+                } else {
+                    that.arrows.removePfamFilter(fam.id);
+                    $("#legend-" + i).remove();
+                }
+            });
          //$(" <span id='filter-cb-text-" + i + "' class='filter-cb-name'>" + fam.name + "</span>").
          //   appendTo(entry);
          $("<span id='filter-cb-text-" + i + "' class='filter-cb-number'><label for='filter-cb-" + i + "'>" + famText + "</label></span>").
             appendTo(entry);
+         
+         if (fam.checked)
+             that.addLegendItem(i, fam.id, famText);
     });
 
     if (this.firstRun) {
         $(".initial-hidden").removeClass("initial-hidden");
         this.firstRun = false;
     }
+
+    $('.filter-cb-div').tooltip({delay: {show: 50}, placement: 'top', trigger: 'hover'});
+
+}
+
+ArrowApp.prototype.addLegendItem = function(index, id, text) {
+    var color = this.arrows.getPfamColor(id);
+    var activeFilter = $("<div id='legend-" + index + "'>" +
+            "<span class='active-filter-icon' style='background-color:" + color + "'> </span> " + text + "</div>")
+        .appendTo(this.filterLegendObj);
 }
 
 ArrowApp.prototype.clearFilter = function() {
     $("input.filter-cb:checked").removeAttr("checked");
+    this.filterLegendObj.empty();
     this.arrows.clearPfamFilters();
 }
 
@@ -121,10 +163,26 @@ ArrowApp.prototype.updateMoreButtonStatus = function (isEod) {
 ArrowApp.prototype.nextPageCallback = function (isEod) {
     this.populateFilterList();
     this.updateMoreButtonStatus(isEod);
-    $('html,body').animate({scrollTop: document.body.scrollHeight},{duration:800});
+    //$('html,body').animate({scrollTop: document.body.scrollHeight},{duration:800});
 }
 
+ArrowApp.prototype.enableSaveButton = function() {
+    
+    var saveSupported = (navigator.userAgent.search("Chrome") >= 0 ||
+                         navigator.userAgent.search("Firefox") >= 0 ||
+                         (navigator.userAgent.search("Safari") >= 0 && navigator.userAgent.search("Chrome") < 0)) &&
+                        navigator.userAgent.search("Edge") < 0;
 
+    if (saveSupported) {
+        $("#save-canvas-button").show();
+
+//        $("#save-canvas-button").canvas(function(e) {
+//                
+//            });
+    } else {
+        $("#save-canvas-button").hide();
+    }
+}
 
 
 

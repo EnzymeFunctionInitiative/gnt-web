@@ -158,7 +158,7 @@ class gnn {
         $exec .= " -none-dir " . $this->get_pfam_none_dir();
         $exec .= " -none-zip " . $this->get_pfam_none_zip_file();
         $exec .= " -arrow-file " . $this->get_arrow_data_file();
-        $exec .= " -arrow-file " . $this->get_cooc_table_file();
+        $exec .= " -cooc-table " . $this->get_cooc_table_file();
         $exec .= " -hub-count-file \"" . $this->get_hub_count_file() . "\"";
 
         error_log("Job ID: " . $this->get_id());
@@ -421,7 +421,13 @@ class gnn {
     }
 
     public function get_arrow_data_file() {
+        return $this->shared_get_full_file_path("_arrow_data", ".sqlite");
+    }
+    public function get_arrow_data_file_legacy() {
         return $this->shared_get_full_file_path("_arrow_data", ".txt");
+    }
+    public function get_relative_arrow_data_file() {
+        return $this->shared_get_relative_file_path("_arrow_data", ".sqlite");
     }
 
     public function get_cooc_table_file() {

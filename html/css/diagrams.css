@@ -52,11 +52,16 @@ body {
     padding-top: 15px;
 }
 
+.button-wrapper .btn-default {
+    background-color: #ddd;
+}
+
 .search-wrapper {
     vertical-align: middle;
 }
 
 .header-title {
+    margin-left: 50px;
     font-weight: bold;
     font-size: 20px;
     margin-right: 20px;
@@ -87,6 +92,11 @@ body {
 .disabled {
     color: #999;
 }
+
+.col-centered {
+    margin: 0 auto;
+}
+
 
 
 /* Arrows */
@@ -123,6 +133,10 @@ body {
     width: 100%;
 }
 
+.sidebar-nav li {
+    margin-top: 15px;
+}
+
 
 /* Filter Controls */
 
@@ -139,7 +153,10 @@ body {
     margin-bottom: 2px;
     padding-bottom: 2px;
     margin-right: 5px;
-    font-weight: bold;
+}
+
+.filter-cb-toggle-text {
+    font-weight: normal;
 }
 
 .filter-cb-div {
@@ -148,7 +165,7 @@ body {
     margin-right: 5px;
     margin-bottom: 4px;
     white-space: nowrap;
-    text-overflow: ellipsis;
+/*    text-overflow: ellipsis;*/
     overflow: hidden;
 }
 
@@ -168,6 +185,54 @@ input.filter-cb {
 
 .filter-cb-number label {
     font-weight: normal;
+}
+
+.tooltip.top .tooltip-inner {
+    background-color: #999;
+}
+
+.tooltip.in {
+    opacity: 1!important;
+}
+
+.tooltip.top .tooltip-arrow {
+    border-top-color: #999;
+}
+
+#active-filter-list {
+    padding-left: 5px;
+    overflow: auto;
+}
+
+#active-filter-list div {
+    margin: 10px 0 0 0;
+    line-height: 1em;
+}
+
+.active-filter-icon {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+}
+
+
+/* Arrows */
+
+.an-arrow {
+}
+
+.an-arrow-mute {
+    opacity: 0.4;
+}
+
+.an-arrow-selected {
+    opacity: 1.0;
+    stroke: #000;
+    stroke-width: 3;
+}
+
+.dashed-arrow {
+    stroke-dasharray: 3;
 }
 
 

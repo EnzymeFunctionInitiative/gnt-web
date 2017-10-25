@@ -1,8 +1,19 @@
+<?php
+
+$feedbackMessage = "Need help or have suggestions or comments?   Please click here.";
+
+if ((isset($Is404Page) && $Is404Page) || (isset($IsExpiredPage) && $IsExpiredPage)) {
+    echo "</div>";
+    if (isset($Is404Page) && $Is404Page)
+        $feedbackMessage = "Please click here to report this.";
+}
+
+?>
 
 <div class="clear"></div>
 
 <p class="suggestions">
-    <a href="http://enzymefunction.org/content/sequence-similarity-networks-tool-feedback" target="_blank">Need help or have suggestions or comments?   Please click here.</a>
+    <a href="http://enzymefunction.org/content/sequence-similarity-networks-tool-feedback" target="_blank"><?php echo $feedbackMessage; ?></a>
 </p>
 </div>
 

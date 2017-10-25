@@ -127,6 +127,14 @@ ArrowDiagram.prototype.getFamilies = function(sortById) {
     return fams;
 }
 
+ArrowDiagram.prototype.getPfamColor = function(pfam) {
+    if (pfam in this.pfamColorMap) {
+        return this.pfamColorMap[pfam];
+    } else {
+        return "transparent";
+    }
+}
+
 ArrowDiagram.prototype.makeArrowDiagram = function(data, usePaging, resetCanvas) {
     canvas = document.getElementById(this.canvasId);
     
@@ -216,16 +224,24 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
         minXpct = (neighborXpos < minXpct) ? neighborXpos : minXpct;
         maxXpct = (neighborXpos+neighborWidth > maxXpct) ? neighborXpos+neighborWidth : maxXpct;
 
+        var attrData = makeStruct(N);
+
         var color = "grey";
         var pfam = N.family;
-        if (pfam.length > 0) {
-            if (pfam in this.pfamColorMap)
+        if (attrData.color.length > 0) {
+            color = this.pfamColorMap[pfam] = attrData.color;
+        } else if (pfam.length > 0) {
+            if (pfam in this.pfamColorMap) {
                 color = this.pfamColorMap[pfam];
-            else
-                color = this.pfamColorMap[pfam] = this.colors[this.pfamColorCount++ % this.colors.length];
+            } else {
+                var colorIndex = Math.floor(Math.random() * this.colors.length);
+                var colorIndex = this.pfamColorCount++ % this.colors.length;
+                color = this.pfamColorMap[pfam] = this.colors[colorIndex];
+            }
         }
-        var attrData = makeStruct(N);
+
         arrow = this.drawArrow(neighborXpos, ypos, neighborWidth, nIsComplement, drawingWidth, color, attrData);
+
         if (!(attrData.family in this.arrowMap))
             this.arrowMap[attrData.family] = [];
         this.arrowMap[attrData.family].push(arrow);
@@ -277,6 +293,11 @@ function makeStruct(data) {
 
     if (data.hasOwnProperty("strain"))
         struct.strain = data.strain;
+
+    if (data.hasOwnProperty("color"))
+        struct.color = data.color;
+    else
+        struct.color = "";
 
     return struct;
 }
@@ -401,6 +422,7 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
     attrData.fillColor = color;
     attrData.cx = ulx + (urx - ulx) / 2;
     attrData.cy = lly; //py;
+    attrData.class = "an-arrow";
     var arrow = this.S.paper.polygon(coords).attr(attrData);
 
     arrow.click(function(event) {
@@ -425,16 +447,21 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
 ArrowDiagram.prototype.addPfamFilter = function(pfam) {
     this.pfamFilter[pfam] = 1;
 
-    for (idx in this.arrowMap[pfam]) {
-        var arrow = this.arrowMap[pfam][idx];
-        var fillColor = arrow.attr("fillColor");
-        arrow.attr({fill: fillColor, stroke: "#000", strokeWidth: 3});
+    $(".an-arrow").addClass("an-arrow-mute");
+
+    for (pf in this.pfamFilter) {
+    for (idx in this.arrowMap[pf]) {
+        var arrow = this.arrowMap[pf][idx];
+//        var fillColor = arrow.attr("fillColor");
+        //arrow.attr({fill: fillColor, stroke: "#000", strokeWidth: 3, class: "an-arrow-selected"});
+        arrow.addClass("an-arrow-selected");
         //var p = this.S.path("M10-5-10,15M15,0,0,15M0-5-20,15").attr({
         //        fill: "none",
         //        stroke: fillColor,
         //        strokeWidth: 5
         //    }).pattern(0, 0, 10, 10);
         //arrow.attr({fill: p });
+    }
     }
 }
 
@@ -443,8 +470,13 @@ ArrowDiagram.prototype.removePfamFilter = function(pfam) {
 
     for (idx in this.arrowMap[pfam]) {
         var arrow = this.arrowMap[pfam][idx];
-        var fillColor = arrow.attr("fillColor");
-        arrow.attr({fill: fillColor, stroke: "none", strokeWidth: 0});
+        //var fillColor = arrow.attr("fillColor");
+        //arrow.attr({fill: fillColor, stroke: "none", strokeWidth: 0, class: "an-arrow-mute"});
+        arrow.removeClass("an-arrow-selected");
+    }
+    
+    if (Object.keys(this.pfamFilter).length == 0) {
+        $(".an-arrow").removeClass("an-arrow-mute");
     }
 }
 
@@ -453,6 +485,7 @@ ArrowDiagram.prototype.clearPfamFilters = function() {
     for (var i = 0; i < pfams.length; i++) {
         this.removePfamFilter(pfams[i]);
     }
+    $(".an-arrow-mute").toggleClass("an-arrow-mute");
 }
 
 ArrowDiagram.prototype.doPopup = function(xPos, yPos, doShow, data) {
@@ -477,7 +510,7 @@ ArrowDiagram.prototype.doPopup = function(xPos, yPos, doShow, data) {
 
 function getColors() {
     var colors = [
-        //"crimson",
+/*        //"crimson",
         "bisque",
         "blue",
         "blueviolet",
@@ -503,6 +536,81 @@ function getColors() {
         "teal",
         "turquoise",
         "violet"
+        */
+        "Pink",
+        "HotPink",
+        "DeepPink",
+        "PaleVioletRed",
+        "Salmon",
+        "DarkSalmon",
+        "LightCoral",
+        "IndianRed",
+        "DarkRed",
+        "OrangeRed",
+        "Tomato",
+        "Coral",
+        "DarkOrange",
+        "Orange",
+        "DarkKhaki",
+        "Gold",
+        "BurlyWood",
+        "Tan",
+        "RosyBrown",
+        "SandyBrown",
+        "Goldenrod",
+        "DarkGoldenrod",
+        "Peru",
+        "Chocolate",
+        "SaddleBrown",
+        "Sienna",
+        "Brown",
+        "Maroon",
+        "DarkOliveGreen",
+        "Olive",
+        "OliveDrab",
+        "YellowGreen",
+        "LimeGreen",
+        "Lime",
+        "LightGreen",
+        "DarkSeaGreen",
+        "MediumAquamarine",
+        "MediumSeaGreen",
+        "SeaGreen",
+        "Green",
+        "DarkGreen",
+        "Cyan",
+        "Turquoise",
+        "LightSeaGreen",
+        "CadetBlue",
+        "Teal",
+        "LightSteelBlue",
+        "SkyBlue",
+        "DeepSkyBlue",
+        "DodgerBlue",
+        "CornflowerBlue",
+        "SteelBlue",
+        "RoyalBlue",
+        "Blue",
+        "MediumBlue",
+        "DarkBlue",
+        "Navy",
+        "MidnightBlue",
+        "Thistle",
+        "Plum",
+        "Violet",
+        "Orchid",
+        "Fuchsia",
+        "MediumOrchid",
+        "MediumPurple",
+        "BlueViolet",
+        "DarkViolet",
+        "DarkOrchid",
+        "Purple",
+        "Indigo",
+        "DarkSlateBlue",
+        "SlateBlue",
+        "LightSlateGray",
+        "DarkSlateGray",
     ];
     return colors;
 }
