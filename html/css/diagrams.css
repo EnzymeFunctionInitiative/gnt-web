@@ -85,6 +85,10 @@ body {
     display: none;
 }
 
+.hidden-placeholder {
+    visibility: hidden;
+}
+
 .initial-hidden {
     display: none;
 }

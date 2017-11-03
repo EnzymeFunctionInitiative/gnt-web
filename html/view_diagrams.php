@@ -8,8 +8,15 @@ require_once '../libs/settings.class.inc.php';
 
 $gnnId = "";
 $gnnKey = "";
-$cooccurrence = 0;
-$nbSize = 0;
+$cooccurrence = "";
+$nbSize = "";
+$gnnName = "";
+$idKeyQueryString = "";
+$windowTitle = "";
+$isUploadedDiagram = false;
+$supportsDownload = false;
+$supportsExport = false;
+
 if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
     $gnnKey = $_GET['key'];
     $gnnId = $_GET['id'];
@@ -19,20 +26,42 @@ if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
     $gnnName = $gnn->get_filename();
     $dotPos = strpos($gnnName, ".");
     $gnnName = substr($gnnName, 0, $dotPos);
+    
     if ($gnn->get_key() != $_GET['key']) {
-        header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found", true, 404);
-        include("not_found.php");
-        die();
+        error404();
     }
     elseif (time() < $gnn->get_time_completed() + settings::get_retention_days()) {
         prettyError404("That job has expired and doesn't exist anymore.");
     }
+
+    $idKeyQueryString = "id=$gnnId&key=$gnnKey";
+    $windowTitle = " for Job #$gnnId";
+}
+else if (isset($_GET['upload-id']) && functions::is_diagram_upload_id_valid($_GET['upload-id'])) {
+    $gnnId = $_GET['upload-id'];
+
+    $arrows = new arrow_database($gnnId);
+
+    if (!$arrows->is_loaded()) {
+        prettyError404("Oops, something went wrong. Please send us an email and mention the following diagnostic code: $gnnId");
+    }
+
+    $gnnName = $arrows->get_name();
+    $cooccurrence = $arrows->get_cooccurrence();
+    $nbSize = $arrows->get_neighborhood_size();
+
+    $idKeyQueryString = "upload-id=$gnnId";
+    $isUploadedDiagram = true;
+    $gnnNameText = "Input filename: $gnnName";
 }
 else {
-    header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found", true, 404);
-    include("not_found.php");
-    die();
+    error404();
 }
+
+$nbSizeText = "Neighborhood size: $nbSize";
+$cooccurrenceText = "Co-occurrence: $cooccurrence";
+$gnnNameText = "Input filename: $gnnName";
+
 ?>
 
 
@@ -45,7 +74,7 @@ else {
         <meta name="description" content="">
         <meta name="author" content="">
 
-        <title>Genome Neighborhood Diagrams for Job #<?php echo $gnnId; ?></title>
+        <title>Genome Neighborhood Diagrams<?php echo $windowTitle; ?></title>
 
         <!-- Bootstrap core CSS -->
         <link href="/bs/css/bootstrap.min.css" rel="stylesheet">
@@ -71,13 +100,13 @@ else {
 
         <header class="header">
             <div class="span6 align-middle navbar-left">
-                <span class="header-title">Genome Neighborhood Diagrams for Job #<?php echo $gnnId; ?></span>
+                <a href="index.php"><img src="images/efignt_logo55.png" width="157" height="55" alt="EFI GNT Logo" style="margin-left:10px;" /></a> <span class="header-title">Genome Neighborhood Diagrams for Job #<?php echo $gnnId; ?></span>
             </div>
             <div class="span6">
                 <div class="header-metadata pull-right align-middle">
-                    <div>Co-occurrence: <?php echo $cooccurrence; ?></div>
-                    <div>Neighborhood size: <?php echo $nbSize; ?></div>
-                    <div>Input filename: <?php echo $gnnName; ?></div>
+                    <div><?php echo $cooccurrenceText; ?></div>
+                    <div><?php echo $nbSizeText; ?></div>
+                    <div><?php echo $gnnNameText; ?></div>
                 </div>
             </div>
         </header>
@@ -117,6 +146,9 @@ else {
                             <div style="width:100%;height:12em;" class="active-filter-list" id="active-filter-list">
                             </div>
                         </div>
+                        <div style="margin-top:50px;width:100%;position:fixed;bottom:0;height:50px;margin-bottom:100px">
+                            <i id="progress-loader" class="fa fa-refresh fa-spin fa-4x fa-fw hidden-placeholder" style="color:white"></i>
+                        </div>
                     </li>
                 </ul>
             </div>
@@ -132,14 +164,20 @@ else {
         <footer class="footer">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-4">
-                        <div id="progress-loader" class="loader hidden"></div>
+                    <div class="col-md-2">
+                        <img src="images/efi_logo45.png" width="150" height="45" alt="EFI Logo" style="margin-top:5px" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-1">
+                    </div>
+                    <div class="col-md-5">
                         <div class="button-wrapper col-centered">
-                            <a href="diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank" class="btn btn-default">New Window</a>
+                            <a href="view_diagrams.php?<?php echo $idKeyQueryString; ?>" target="_blank" class="btn btn-default">New Window</a>
+<?php if ($supportsDownload) { ?>
                             <button type="button" class="btn btn-default" id="save-canvas-button">Save To PNG</button>
-                            <a id="download-data" href="download_diagram_data.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" class="btn btn-default" id="download-data" title="Download the data to upload it for future analysis using this tool.">Download Data</a>
+<?php } ?>
+<?php if ($supportsExport && !$isUploadedDiagram) { ?>
+                            <a id="download-data" href="download_diagram_data.php?<?php echo $idKeyQueryString; ?>" class="btn btn-default" id="download-data" title="Download the data to upload it for future analysis using this tool.">Download Data</a>
+<?php } ?>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -172,7 +210,7 @@ else {
             $(document).ready(function() {
                 var popupIds = new PopupIds();
                 var arrowDiagrams = new ArrowDiagram("arrow-canvas", "", "arrow-container", popupIds);
-                arrowDiagrams.setJobInfo("<?php echo $gnnId; ?>", "<?php echo $gnnKey; ?>");
+                arrowDiagrams.setJobInfo("<?php echo $idKeyQueryString; ?>");
                 var arrowApp = new ArrowApp(arrowDiagrams);
 
                 $("#menu-toggle").click(function(e) {

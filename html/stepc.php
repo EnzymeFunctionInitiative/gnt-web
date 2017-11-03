@@ -58,6 +58,12 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
 
 ?>
 
+<div class="update_message">
+    The GNT database has been updated to use UniProt
+    <?php echo settings::get_uniprot_version(); ?> and ENA
+    <?php echo settings::get_ena_version(); ?>.
+</div>
+
 <hr>
     <img src="images/quest_stages_c.jpg" width="990" height="119" alt="stage 1">
     <hr>
@@ -233,13 +239,22 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
 <?php } ?>
     </table>
 
-    <hr>
-    <h4>Genome Neighborhood Diagrams</h4>  
+    <h4>Genome Neighborhood Diagrams</h4> 
+    
+    <table width="100%" border="1">
+        <th>Action</th>
+        <th></th>
+        <tr style='text-align:center;'>
+            <td>
+                <a href="view_diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button>View diagrams</button></a>
+            </td>
+            <td>
+                Genome neighboorhoods can be visualized in an arrow digram format in a new window.
+            </td>
+        </tr>
+    </table>
 
-    <a href="diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank">View genome neighborhood diagrams in a new window</a>
-    <hr>
     <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>  
-
 
   </div>
 

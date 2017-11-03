@@ -32,9 +32,11 @@ function ArrowApp(arrows, popupIds) {
     $("#filter-cb-toggle-dashes").click(function() { $(".an-arrow").toggleClass("dashed-arrow"); });
 
     this.showMoreObj.click(function() {
+        that.startProgressBar();
         that.arrows.nextPage(function(isEod) {
             that.nextPageCallback(isEod);
             that.populateFilterList();
+            that.stopProgressBar();
         });
     });
     
@@ -138,11 +140,12 @@ ArrowApp.prototype.togglePfamNamesNumbers = function(isChecked) {
 }
 
 ArrowApp.prototype.startProgressBar = function() {
-    this.progressObj.removeClass("hidden");
+    console.log("Starting");
+    this.progressObj.removeClass("hidden-placeholder");
 }
 
 ArrowApp.prototype.stopProgressBar = function() {
-    this.progressObj.addClass("hidden");
+    this.progressObj.addClass("hidden-placeholder");
 }
 
 ArrowApp.prototype.getIdList = function(inputObj) {

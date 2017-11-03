@@ -6,7 +6,6 @@ var DM_INDEX = 2;
 function ArrowDiagram(canvasId, displayModeCbId, canvasContainerId, popupIds) {
 
     this.canvasId = canvasId;
-//    this.displayModeCbId = displayModeCbId;
     this.canvasContainerId = canvasContainerId;
     this.popupIds = popupIds;
 
@@ -29,28 +28,13 @@ function ArrowDiagram(canvasId, displayModeCbId, canvasContainerId, popupIds) {
     this.diagramCount = 0;
 
     this.popupElement = $("#" + this.popupIds.ParentId);
-    //this.popupElement.css({position:"absolute"});
-    //this.popupElement.hide();
 
     this.arrowMap = {};
     this.pfamFilter = {};
     this.pfamList = {};
 
-    //this.updateDisplayMode();
+    this.idKeyQueryString = ""; 
 }
-
-//ArrowDiagram.prototype.toggleDisplayMode = function() {
-//    this.updateDisplayMode();
-//    this.makeArrowDiagram(this.data);
-//}
-
-//ArrowDiagram.prototype.updateDisplayMode = function() {
-//    if (document.getElementById(this.displayModeCbId).checked) {
-//        this.displayMode = DM_COORDS;
-//    } else {
-//        this.displayMode = DM_INDEX;
-//    }
-//}
 
 ArrowDiagram.prototype.nextPage = function(callback) {
     this.diagramPage++;
@@ -72,7 +56,7 @@ ArrowDiagram.prototype.retrieveArrowData = function(idList, usePaging, resetCanv
         resetCanvas = typeof resetCanvas === 'undefined' ? false : resetCanvas;
 
         var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("GET", "get_neighbor_data.php?id=" + this.jobId + "&key=" + this.jobKey + "&query=" + idListQuery + pageString, true);
+        xmlhttp.open("GET", "get_neighbor_data.php?" + this.idKeyQueryString + "&query=" + idListQuery + pageString, true);
         xmlhttp.onload = function() {
             if (this.readyState == 4 && this.status == 200) {
                 var data = JSON.parse(this.responseText);
@@ -88,7 +72,7 @@ ArrowDiagram.prototype.retrieveArrowData = function(idList, usePaging, resetCanv
 ArrowDiagram.prototype.retrieveFamilyData = function(callback) {
     var that = this;
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("GET", "get_neighbor_data.php?id=" + this.jobId + "&key=" + this.jobKey + "&fams=1", true);
+    xmlhttp.open("GET", "get_neighbor_data.php?" + this.idKeyQueryString + "&fams=1", true);
     xmlhttp.onload = function() {
         if (this.readyState == 4 && this.status == 200) {
             var data = JSON.parse(this.responseText);
@@ -294,7 +278,7 @@ function makeStruct(data) {
     if (data.hasOwnProperty("strain"))
         struct.strain = data.strain;
 
-    if (data.hasOwnProperty("color"))
+    if (data.hasOwnProperty("color") && data.color != null)
         struct.color = data.color;
     else
         struct.color = "";
@@ -433,6 +417,7 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
     var pos = $("#" + this.canvasId).offset();
 
     arrow.mouseover(function(e) {
+            console.log(this.attr("accession"));
         var cx = parseInt(this.attr("cx"));
         var cy = parseInt(this.attr("cy"));
         that.doPopup(pos.left + cx, pos.top + cy + 1, true, this);
@@ -615,8 +600,7 @@ function getColors() {
     return colors;
 }
 
-ArrowDiagram.prototype.setJobInfo = function(jobId, jobKey) {
-    this.jobId = jobId;
-    this.jobKey = jobKey;
+ArrowDiagram.prototype.setJobInfo = function(idKeyQueryString) {
+    this.idKeyQueryString = idKeyQueryString; 
 }
 
