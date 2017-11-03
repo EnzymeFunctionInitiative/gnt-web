@@ -84,5 +84,37 @@ class functions {
         rmdir($dir);
     }
 
+    public static function generate_key() {
+        $key = uniqid(rand(), true);
+        $hash = sha1($key);
+        return $hash;
+    }
+
+    public static function get_new_diagram_key() {
+        $dir = __UPLOADED_DIAGRAM_DIR__;
+        $id = generate_key();
+        while (file_exists("$dir/" . get_uploaded_diagram_filename($id))) {
+            $id = generate_key();
+        }
+        return $id;
+    }
+
+    public static function is_diagram_upload_id_valid($id) {
+        // Make sure the ID only contains numbers and letters to prevent attacks.
+        $hasInvalidChars = preg_match('/[^A-Za-z0-9]/', $id);
+        if ($hasInvalidChars === 1)
+            return false;
+
+        return file_exists(get_uploaded_diagram_file_path($id));
+    }
+
+    public static function get_uploaded_diagram_filename($id) {
+        return "$id.sqlite";
+    }
+
+    public static function get_uploaded_diagram_file_path($id) {
+        $filePath = __UPLOADED_DIAGRAM_DIR__ . "/" . get_uploaded_diagram_filename($id);
+        return $filePath;
+    }
 }
 ?>

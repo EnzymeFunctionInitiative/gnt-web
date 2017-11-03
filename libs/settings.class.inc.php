@@ -123,5 +123,19 @@ class settings {
     public static function is_beta_release() {
         return defined("__BETA_RELEASE__") && __BETA_RELEASE__ ? true : false;
     }
+
+    public static function is_valid_diagram_file_type($filetype) {
+        $filetypes = explode(" ", __VALID_DIAGRAM_FILE_TYPE__);
+        return in_array($filetype, $filetypes);
+    }
+
+    public static function get_valid_diagram_file_types() {
+        $filetypes = explode(" ", __VALID_DIAGRAM_FILE_TYPE__);
+        return $filetypes[0];
+    }
+
+    public static function get_uploaded_diagram_directory() {
+        return __UPLOADED_DIAGRAM_DIR__;
+    }
 }
 ?>

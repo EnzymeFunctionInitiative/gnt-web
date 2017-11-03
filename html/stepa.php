@@ -39,6 +39,13 @@ $maxFileSize = ini_get('post_max_size');
 require_once('includes/header.inc.php'); 
 
 ?>
+
+<div class="update_message">
+    The GNT database has been updated to use UniProt
+    <?php echo settings::get_uniprot_version(); ?> and ENA
+    <?php echo settings::get_ena_version(); ?>.
+</div>
+
 <h3>Stage 1</h3>
 
 <hr>

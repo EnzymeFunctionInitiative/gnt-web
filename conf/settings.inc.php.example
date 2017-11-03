@@ -21,6 +21,7 @@ define("__RELATIVE_OUTPUT_DIR__","");
 define("__LEGACY_RELATIVE_OUTPUT_DIR__","");
 define("__DEFAULT_NEIGHBOR_SIZE__",10);
 define("__VALID_FILE_TYPE__","xgmml");
+define("__VALID_DIAGRAM_FILE_TYPE__","sqlite");
 define("__UPLOAD_DIR__","");
 define("__MYSQL_HOST__","");
 define("__MYSQL_USER__","");
@@ -52,5 +53,7 @@ define("__ENABLE_LOG__",false);
 define("__LOG_FILE__","");
 define("__WEB_ROOT__","");
 define("__EST_URL__","");
+
+define("__UPLOADED_DIAGRAM_DIR__","");
 
 ?>

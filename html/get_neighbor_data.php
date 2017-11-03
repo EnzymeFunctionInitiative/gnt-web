@@ -5,6 +5,8 @@ include_once '../libs/gnn.class.inc.php';
 
 $output = array();
 
+$dbFile = "";
+
 $message = "";
 if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
     $gnn = new gnn($db,$_GET['id']);
@@ -15,8 +17,14 @@ if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
     elseif (time() < $gnn->get_time_completed() + settings::get_retention_days()) {
         $message = "GNN results are expired.";
     }
-    else {
-    }
+    
+    $dbFile = $gnn->get_arrow_data_file();
+    if (!file_exists($dbFile))
+        $dbFile = $gnn->get_arrow_data_file_legacy();
+}
+else if (isset($_GET['upload-id']) && functions::is_diagram_upload_id_valid($_GET['upload-id'])) {
+    $arrows = new arrow_database($_GET['upload-id']);
+    $dbFile = $arrows->get_arrow_data_file();
 }
 else {
     $message = "No GNN selected.";
@@ -33,11 +41,6 @@ if ($message) {
     exit;
 }
 
-$dataDir = $gnn->get_output_dir();
-$dbFile = $gnn->get_arrow_data_file();
-if (!file_exists($dbFile))
-    $dbFile = $gnn->get_arrow_data_file_legacy();
-//$blastCacheDir = settings::get_blast_data_dir();
 
 if (array_key_exists("query", $_GET)) {
     $queryString = strtoupper($_GET["query"]);
@@ -47,14 +50,14 @@ if (array_key_exists("query", $_GET)) {
     $items = explode(",", $queryString);
 
     $blastId = getBlastId();
-    //$orderData = getOrder($blastId, $items, $dbFile, $dataDir, $blastCacheDir, $gnn);
+    //$orderData = getOrder($blastId, $items, $dbFile, $blastCacheDir, $gnn);
     $orderData = getDefaultOrder();
-    $arrowData = getArrowData($items, $dataDir, $dbFile, $orderData);
+    $arrowData = getArrowData($items, $dbFile, $orderData);
     $output["eod"] = $arrowData["eod"];
     $output["data"] = $arrowData["data"];
 }
 else if (array_key_exists("fams", $_GET)) {
-    $output["families"] = getFamilies($dataDir, $dbFile);
+    $output["families"] = getFamilies($dbFile);
 }
 else {
     $output["error"] = true;
@@ -76,7 +79,7 @@ function getBlastId() {
     return "test";
 }
 
-function getFamilies($dataDir, $dbFile) {
+function getFamilies($dbFile) {
     $output = array();
 
     $resultsDb = new SQLite3($dbFile);
@@ -98,25 +101,24 @@ function getFamilies($dataDir, $dbFile) {
 
 
 
-function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
+function getArrowData($items, $dbFile, $orderDataStruct) {
 
     $orderData = $orderDataStruct['order'];
     $output = array();
     
     $resultsDb = new SQLite3($dbFile);
+    $orderByClause = getOrderByClause($resultsDb);
 
-    $ids = parseIds($items, $dataDir, $orderDataStruct, $resultsDb);
+    $ids = parseIds($items, $orderDataStruct, $resultsDb, $orderByClause);
 
     $pageBounds = getPageLimits();
     $startCount = $pageBounds['start'];
     $maxCount = $pageBounds['end'];
     $output["eod"] = "$startCount $maxCount";
     
-    
     $minBp = 999999999999;
     $maxBp = -999999999999;
     $maxQueryWidth = -1;
-    
     
     $output["data"] = array();
     $idCount = 0;
@@ -124,7 +126,7 @@ function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
         $id = $ids[$i][0];
         $evalue = $ids[$i][1];
 
-        $attrSql = "SELECT * FROM attributes WHERE accession = '$id' ORDER BY sort_order";
+        $attrSql = "SELECT * FROM attributes WHERE accession = '$id' $orderByClause";
         $dbQuery = $resultsDb->query($attrSql);
         $row = $dbQuery->fetchArray(SQLITE3_ASSOC);
         if (!$row)
@@ -176,6 +178,34 @@ function getArrowData($items, $dataDir, $dbFile, $orderDataStruct) {
 }
 
 
+function getOrderByClause($db) {
+    $hasSortOrder = 0;
+
+    #$cols = $db->fetchColumnTypes('attributes', SQLITE_ASSOC);
+    #foreach ($cols as $col => $type) {
+    #    print "$col\n";
+    #    if ($col == "sort_order") {
+    #        $hasSortOrder = 1;
+    #        break;
+    #    }
+    #}
+
+    $result = $db->query("PRAGMA table_info(attributes)");
+    while ($row = $result->fetchArray()) {
+        if ($row['name'] == "sort_order") {
+            $hasSortOrder = 1;
+            break;
+        }
+    }
+    
+    if ($hasSortOrder) {
+        return "ORDER BY sort_order";
+    } else {
+        return "";
+    }
+}
+
+
 function sortNodes($a, $b) {
     if ($a[1] == $b[1])
         return 0;
@@ -210,7 +240,7 @@ function computeRelativeCoordinates($output, $minBp, $maxBp, $maxQueryWidth) {
 }
 
 
-function parseIds($items, $dataDir, $orderDataStruct, $resultsDb) {
+function parseIds($items, $orderDataStruct, $resultsDb, $sortOrderClause) {
 
     $orderData = $orderDataStruct['order'];
     $centralId = $orderDataStruct['central_id'];
@@ -219,8 +249,7 @@ function parseIds($items, $dataDir, $orderDataStruct, $resultsDb) {
 
     foreach ($items as $item) {
         if (is_numeric($item)) {
-//            $clusterIds = getIdsFromClusterFile($item, $dataDir);
-            $clusterIds = getIdsFromDatabase($item, $resultsDb);
+            $clusterIds = getIdsFromDatabase($item, $resultsDb, $sortOrderClause);
             foreach ($clusterIds as $clusterId) {
                 $evalue = array_key_exists($clusterId, $orderData) ? $orderData[$clusterId][0] : -1;
                 $pctId = array_key_exists($clusterId, $orderData) ? $orderData[$clusterId][1] : -1;
@@ -329,11 +358,11 @@ function getNeighborAttributes($row) {
 }
 
 
-function getIdsFromDatabase($clusterId, $resultsDb) {
+function getIdsFromDatabase($clusterId, $resultsDb, $sortOrderClause) {
     if (!is_numeric($clusterId))
         return array();
 
-    $sql = "SELECT accession FROM attributes WHERE cluster_num = '$clusterId' ORDER BY sort_order";
+    $sql = "SELECT accession FROM attributes WHERE cluster_num = '$clusterId' $sortOrderClause";
     $dbQuery = $resultsDb->query($sql);
 
     $ids = array();
