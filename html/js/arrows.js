@@ -150,8 +150,9 @@ ArrowDiagram.prototype.makeArrowDiagram = function(data, usePaging, resetCanvas)
 ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth) {
     var canvasHeight = canvas.getBoundingClientRect().height;
     var ypos = index * this.diagramHeight + this.padding * 2 + this.fontHeight;
+    var extraPadding = 60; // for popup for last one
     if (ypos + this.diagramHeight + this.padding > canvasHeight)
-        document.getElementById(this.canvasContainerId).setAttribute("style","width:100%;height:" + (ypos + this.diagramHeight + this.padding) + "px");
+        document.getElementById(this.canvasContainerId).setAttribute("style","width:100%;height:" + (ypos + this.diagramHeight + this.padding + extraPadding) + "px");
 
     // Orient the query arrows in the same direction (flip the diagram)
     var orientSameDir = true;

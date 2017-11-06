@@ -142,6 +142,25 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
         </tr>
     </table>
 
+<div style="color:red">
+    <h4 style="color:red">Genome Neighborhood Diagrams</h4> 
+    <div class="new_feature"></div>
+    Genome neighboorhoods can be visualized in an arrow digram format in a new window.
+
+    <table width="100%" border="1">
+        <th>Action</th>
+        <th></th>
+        <tr style='text-align:center;'>
+            <td>
+                <a href="view_diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button>View diagrams</button></a>
+            </td>
+            <td>
+                Opens arrow diagram explorer in a new tab or window.
+            </td>
+        </tr>
+    </table>
+</div>
+
     <h4>Other Files</h4>
     <table width="100%" border="1">
         <th></th>
@@ -237,21 +256,6 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
             <td><?php echo $hubCountFilesize; ?> MB</td>
         </tr>
 <?php } ?>
-    </table>
-
-    <h4>Genome Neighborhood Diagrams</h4> 
-    
-    <table width="100%" border="1">
-        <th>Action</th>
-        <th></th>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="view_diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button>View diagrams</button></a>
-            </td>
-            <td>
-                Genome neighboorhoods can be visualized in an arrow digram format in a new window.
-            </td>
-        </tr>
     </table>
 
     <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>  

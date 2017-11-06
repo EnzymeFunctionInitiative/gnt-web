@@ -96,6 +96,12 @@ Used for data retrieval only
 <div id='message' style="color: red"><?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?></div>
 <center><input type="button" id='submit' name="submit" value="Generate GNN" class="css_btn_class_recalc" onclick="uploadFile()"></center>
 
+<div class="update_message">
+    The GNT database has been updated to use UniProt
+    <?php echo settings::get_uniprot_version(); ?> and ENA
+    <?php echo settings::get_ena_version(); ?>.
+</div>
+
 <hr>
 
 <div align="center">
