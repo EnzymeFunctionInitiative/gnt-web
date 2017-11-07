@@ -29,25 +29,21 @@ class user_jobs {
         $this->user_token = $token;
 
         $sql = "SELECT user_email FROM user_token WHERE user_id='" . $this->user_token . "'";
-        $dbQuery = $db->query($sql);
-
-        $row = $dbQuery->fetchArray();
+        $row = $db->query($sql);
         if (!$row)
-            return false;
+            return;
 
-        $this->user_email = $row["user_email"];
+        $this->user_email = $row[0]["user_email"];
         if (!$this->user_email)
-            return false;
+            return;
 
         $sql = "SELECT gnn_id, gnn_key, gnn_filename, gnn_time_completed FROM gnn WHERE gnn_email='" . $this->user_email . "' ORDER BY gnn_time_completed";
-        $dbQuery = $db->query($sql);
+        $rows = $db->query($sql);
 
-        while ($row = $dbQuery->fetchArray()) {
+        foreach ($rows as $row) {
             array_push($this->jobs, array("id" => $row["gnn_id"], "gnn_key" => $row["gnn_key"], "gnn_filename" => $row["gnn_filename"],
                                           "completed" => $row["gnn_time_completed"]));
         }
-
-        return true;
     }
 
     public function save_user($db, $gnnId) {
@@ -59,19 +55,19 @@ class user_jobs {
 
         $this->user_email = $rows[0]["gnn_email"];
 
-        $sql = "SELECT user_id, user_token FROM user_token WHERE user_email='" . $this->user_email . "'";
+        $sql = "SELECT user_id, user_email FROM user_token WHERE user_email='" . $this->user_email . "'";
         $rows = $db->query($sql);
 
         $isUpdate = false;
         if ($rows && count($rows) > 0) {
             $isUpdate = true;
-            $this->user_token = $rows[0]["user_token"];
+            $this->user_token = $rows[0]["user_id"];
         } else {
             $this->user_token = functions::generate_key();
         }
 
         $insert_array = array("user_id" => $this->user_token, "user_email" => $this->user_email);
-        if ($isUpdate) {
+        if (!$isUpdate) {
             $db->build_insert("user_token", $insert_array);
         }
 

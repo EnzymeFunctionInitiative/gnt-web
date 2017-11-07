@@ -8,8 +8,8 @@ if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
     if ($gnn->get_key() == $_GET['key']) {
         $message = "";
 
-//        $userObj = new user_jobs();
-//        $userObj->save_user($db, $_GET['id']);
+        $userObj = new user_jobs();
+        $userObj->save_user($db, $_GET['id']);
     }
 }
 

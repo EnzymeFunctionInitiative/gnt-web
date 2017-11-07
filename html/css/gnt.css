@@ -56,7 +56,7 @@ a:link, a:visited {
     text-decoration: none;
 }
 
-a button {
+button {
     font-size:16px;
     font-family:Arial;
     font-weight:normal;
@@ -214,5 +214,34 @@ button.dark:hover {
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#333333', endColorstr='#000000');
     background-color:#333333;
 }
+
+/* FORM INPUT */
+
+input[type="text"] {
+/*    font-size: 125%;*/
+    padding: 6px;
+}
+
+input.email {
+    width: 50%;
+}
+
+/* OVERRIDE JQUERY UI */
+
+.ui-accordion .ui-accordion-header {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 110%;
+}
+
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active,
+a.ui-button:active,
+.ui-button:active,
+.ui-button.ui-state-active:hover {
+    background: #333333;
+}
+
 
 

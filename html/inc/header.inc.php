@@ -18,14 +18,16 @@ $title = "Expired Job";
 
 <!doctype html>
 <head>
-    <link rel="stylesheet" type="text/css" href="css/gnt.css">
+    <link rel="stylesheet" type="text/css" href="jquery-ui-1.12.1/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="/css/shared.css">
+    <link rel="stylesheet" type="text/css" href="css/gnt.css">
     <link rel="shortcut icon" href="images/favicon_efi.ico" type="image/x-icon">
     <title><?php echo $title; ?></title>
 
-    <script src='js/main.js' type='text/javascript'></script>
-    <script src='js/upload.js' type='text/javascript'></script>
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="js/main.js" type="text/javascript"></script>
+    <script src="js/upload.js" type="text/javascript"></script>
+    <script src="js/jquery-3.2.1.min.js" type="text/javascript"></script>
+    <script src="jquery-ui-1.12.1/jquery-ui.js" type="text/javascript"></script>
 </head>
 
 <body>
