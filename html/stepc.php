@@ -49,6 +49,7 @@ $coocTableFile = $gnn->get_relative_cooc_table_file();
 $coocTableFilesize = $gnn->get_cooc_table_filesize();
 $hubCountFile = $gnn->get_relative_hub_count_file();
 $hubCountFilesize = $gnn->get_hub_count_filesize();
+$hasDiagrams = $gnn->does_job_have_arrows();
 
 // Legacy jobs
 $noMatchesFile = $gnn->get_relative_no_matches_file();
@@ -142,24 +143,32 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
         </tr>
     </table>
 
-<div style="color:red">
-    <h4 style="color:red">Genome Neighborhood Diagrams</h4> 
-    <div class="new_feature"></div>
-    Genome neighboorhoods can be visualized in an arrow digram format in a new window.
-
-    <table width="100%" border="1">
-        <th>Action</th>
-        <th></th>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="view_diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button>View diagrams</button></a>
-            </td>
-            <td>
-                Opens arrow diagram explorer in a new tab or window.
-            </td>
-        </tr>
-    </table>
-</div>
+<?php if ($hasDiagrams) { ?>
+    <div style="color:red">
+        <h4 style="color:red">Genome Neighborhood Diagrams</h4> 
+        <div class="new_feature"></div>
+        Genome neighboorhoods can be visualized in an arrow digram format in a new window.
+    
+        <table width="100%" border="1">
+            <th>Action</th>
+            <th></th>
+            <tr style='text-align:center;'>
+                <td>
+                    <a href="view_diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button>View diagrams</button></a>
+                </td>
+                <td>
+                    Opens arrow diagram explorer in a new tab or window.
+                </td>
+            </tr>
+        </table>
+    </div>
+<?php } else { ?>
+    <div style="color:red">
+        <br><br>
+        Since this job was run before the neighborhood diagrams were supported, there are no
+        genome neighborhood diagrams available.
+    </div>
+<?php } ?>
 
     <h4>Other Files</h4>
     <table width="100%" border="1">
@@ -238,7 +247,7 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
             <td><?php echo $noNeighborsFilesize; ?> MB</td>
         </tr>
 <?php } ?>
-<?php if ($coocTableFile) { ?>
+<?php if ($coocTableFilesize) { ?>
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$coocTableFile"; ?>"><button>Download</button></a>
@@ -247,7 +256,7 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
             <td><?php echo $coocTableFilesize; ?> MB</td>
         </tr>
 <?php } ?>
-<?php if ($hubCountFile) { ?>
+<?php if ($hubCountFilesize) { ?>
         <tr style='text-align:center;'>
             <td>
                 <a href="<?php echo "$baseUrl/$hubCountFile"; ?>"><button>Download</button></a>
