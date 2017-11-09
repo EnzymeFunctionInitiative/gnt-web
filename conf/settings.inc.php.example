@@ -16,6 +16,7 @@ define("__TIMEZONE__","America/Chicago");
 define("__GNN_SCRIPT__","");
 define("__GNN_MODULE__","");
 define("__OUTPUT_DIR__","");
+define("__DIAGRAM_OUTPUT_DIR__","");
 define("__LEGACY_OUTPUT_DIR__","");
 define("__RELATIVE_OUTPUT_DIR__","");
 define("__LEGACY_RELATIVE_OUTPUT_DIR__","");

@@ -10,6 +10,9 @@ php $DIR/check_gnn.php
 sleep 1
 php $DIR/gnn.php
 
+sleep 1
+php $DIR/diagrams.php
+
 DATE=$(date +"%Y-%m-%d %H:%M:%S")
 echo "$DATE: Finish EFI-GNT Master script"
 

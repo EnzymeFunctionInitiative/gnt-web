@@ -1,19 +1,22 @@
 
-function uploadFile() {
+function uploadFile(fileInputId, formId, progressNumId, progressBarId, messageId, emailId, submitId, isSsn) {
     var fd = new FormData();
-    fd.append("ssn_file", document.getElementById('ssn_file').files[0]);
+    fd.append("file", document.getElementById(fileInputId).files[0]);
     var xhr = new XMLHttpRequest();
-    xhr.upload.addEventListener("progress", function(evt) { uploadProgress(evt, "progressNumber", "progress_bar");}, false);
+    xhr.upload.addEventListener("progress", function(evt) { uploadProgress(evt, progressNumId, progressBarId);}, false);
     xhr.addEventListener("load", uploadComplete, false);
     xhr.addEventListener("error", uploadFailed, false);
     xhr.addEventListener("abort", uploadCanceled, false);
-    fd.append('email',document.getElementById('email').value);
-    fd.append('neighbor_size',document.getElementById('neighbor_size').value);
-    fd.append('MAX_FILE_SIZE',document.getElementById('MAX_FILE_SIZE').value);
-    fd.append('cooccurrence',document.getElementById('cooccurrence').value);
-    fd.append('submit',document.getElementById('submit').value);
-    disableForm();
-    xhr.open("POST", "upload.php",true);
+    fd.append('email',document.getElementById(emailId).value);
+    fd.append('submit',document.getElementById(submitId).value);
+    if (isSsn) {
+        fd.append('neighbor_size',document.getElementById('neighbor_size').value);
+        fd.append('MAX_FILE_SIZE',document.getElementById('MAX_FILE_SIZE').value);
+        fd.append('cooccurrence',document.getElementById('cooccurrence').value);
+    }
+    disableForm(formId);
+    var script = isSsn ? "upload_ssn.php" : "upload_diagram.php";
+    xhr.open("POST", script, true);
     xhr.send(fd);
     xhr.onreadystatechange  = function(){
         if (xhr.readyState == 4  ) {
@@ -24,11 +27,16 @@ function uploadFile() {
             // jsonObj variable now contains the data structure and can
             // be accessed as jsonObj.name and jsonObj.country.
             if (jsonObj.valid) {
-                window.location.replace("stepb.php?id=" + jsonObj.id + "&key=" + jsonObj.key);
+                var nextStepScript = "stepb.php";
+                var diagUpload = isSsn ? "" : "&upload=1";
+                window.location.href = nextStepScript + "?id=" + jsonObj.id + "&key=" + jsonObj.key + diagUpload;
+                console.log(jsonObj.cookieInfo);
+                if (jsonObj.cookieInfo)
+                    document.cookie = jsonObj.cookieInfo;
             }
             if (jsonObj.message) {
-                enableForm();
-                document.getElementById("message").innerHTML =  jsonObj.message;
+                enableForm(formId);
+                document.getElementById(messageId).innerHTML = jsonObj.message;
             }
 
         }
@@ -39,7 +47,7 @@ function uploadFile() {
 function uploadProgress(evt, progressTextId, progressBarId) {
     if (evt.lengthComputable) {
         var percentComplete = Math.round(evt.loaded * 100 / evt.total);
-        document.getElementById(progressId).innerHTML = "Uploading File: " + percentComplete.toString() + '%';
+        document.getElementById(progressTextId).innerHTML = "Uploading File: " + percentComplete.toString() + '%';
         var bar = document.getElementById(progressBarId);
         bar.value = percentComplete;
     }
@@ -61,47 +69,20 @@ function uploadCanceled(evt) {
     alert("The upload has been canceled by the user or the browser dropped the connection.");
 }
 
-function disableForm() {
-    document.getElementById('ssn_file').disabled = true;
-    document.getElementById('neighbor_size').disabled = true;
-    document.getElementById('email').disabled = true;
-    document.getElementById('submit').disabled = true;
+function disableForm(formId) {
+    document.getElementById(formId).disabled = true;
+//    document.getElementById('ssn_file').disabled = true;
+//    document.getElementById('neighbor_size').disabled = true;
+//    document.getElementById('email').disabled = true;
+//    document.getElementById('submit').disabled = true;
 }
 
-function enableForm() {
-    document.getElementById('ssn_file').disabled = false;
-    document.getElementById('neighbor_size').disabled = false;
-    document.getElementById('email').disabled = false;
-    document.getElementById('submit').disabled = false;
+function enableForm(formId) {
+    document.getElementById(formId).disabled = false;
+//    document.getElementById('ssn_file').disabled = false;
+//    document.getElementById('neighbor_size').disabled = false;
+//    document.getElementById('email').disabled = false;
+//    document.getElementById('submit').disabled = false;
 }
 
-
-function uploadDiagramFile(fileId) {
-    var fd = new FormData();
-    fd.append("diagram_file", document.getElementById(fileId).files[0]);
-    var xhr = new XMLHttpRequest();
-    xhr.upload.addEventListener("progress", function(evt) { uploadProgress(evt, "progressText2", "progress_bar2"); }, false);
-    xhr.addEventListener("load", uploadComplete, false);
-    xhr.addEventListener("error", uploadFailed, false);
-    xhr.addEventListener("abort", uploadCanceled, false);
-    xhr.open("POST", "upload_diagram.php",true);
-    xhr.send(fd);
-    xhr.onreadystatechange  = function(){
-        if (xhr.readyState == 4  ) {
-            // Javascript function JSON.parse to parse JSON data
-            var jsonObj = JSON.parse(xhr.responseText);
-
-            // jsonObj variable now contains the data structure and can
-            // be accessed as jsonObj.name and jsonObj.country.
-            if (jsonObj.valid) {
-                window.location.replace("diagrams.php?upload-id=" + jsonObj.key);
-            }
-            if (jsonObj.message) {
-                enableForm();
-                document.getElementById("message").innerHTML =  jsonObj.message;
-            }
-
-        }
-    }
-}
 

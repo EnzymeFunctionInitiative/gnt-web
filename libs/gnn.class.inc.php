@@ -67,38 +67,36 @@ class gnn {
         return $uploads_dir . "/" . $this->get_id() . "." . pathinfo($this->filename, PATHINFO_EXTENSION);
     }
 
-    public static function create($db,$email,$size,$tmp_filename,$filename,$cooccurrence) {
-        $result = false;
-        $insert_array = array('gnn_email'=>$email,
-            'gnn_size'=>$size,
-            'gnn_key'=>self::generate_key(),
-            'gnn_filename'=>$filename,
-            'gnn_cooccurrence'=>$cooccurrence,
-            'gnn_status'=>__NEW__);
-        $result = $db->build_insert('gnn',$insert_array);
-        if ($result) {	
-            self::copy_to_uploads_dir($tmp_filename, $filename, $result);
-        }
-        return $result;
-
+    public static function create2($db, $email, $size, $cooccurrence, $tmp_filename, $filename) {
+        return self::create_shared($db, $email, $size, $cooccurrence, $tmp_filename, $filename);
     }
 
-    public static function copy_to_uploads_dir($tmp_file, $uploaded_filename, $id) {
-        $uploads_dir = settings::get_uploads_dir();
-
-        // By this time we have verified that the uploaded file is valid. Now we need to retain the
-        // extension in case the file is a zipped file.
-        $file_type = strtolower(pathinfo($uploaded_filename, PATHINFO_EXTENSION));
-        $filename = $id . "." . $file_type;
-        $full_path = $uploads_dir . "/" . $filename;
-        if (is_uploaded_file($tmp_file)) {
-            if (move_uploaded_file($tmp_file,$full_path)) { return $filename; }
+    private static function create_shared($db, $email, $size, $cooccurrence, $tmp_filename, $filename) {
+        $result = false;
+        $key = self::generate_key();
+        $insert_array = array(
+            'gnn_email' => $email,
+            'gnn_size' => $size,
+            'gnn_key' => $key,
+            'gnn_filename' => $filename,
+            'gnn_cooccurrence' => $cooccurrence,
+            'gnn_status' => __NEW__);
+        $result = $db->build_insert('gnn',$insert_array);
+        if ($result) {	
+            functions::copy_to_uploads_dir($tmp_filename, $filename, $result);
+        } else {
+            return false;
         }
-        else {
-            if (copy($tmp_file,$full_path)) { return $filename; }
-        }
-        return false;
+        $info = array('id' => $result, 'key' => $key);
+        return $info;
+    }
 
+    public static function create($db, $email, $size, $tmp_filename, $filename, $cooccurrence) {
+        $info = create_shared($db, $email, $size, $cooccurrence, $tmp_filename, $filename);
+        if ($info === false)
+            return 0;
+        else
+            return $info['id'];
     }
 
     public function unzip_file() { 

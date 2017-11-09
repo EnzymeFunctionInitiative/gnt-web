@@ -39,10 +39,15 @@ if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
 }
 else if (isset($_GET['upload-id']) && functions::is_diagram_upload_id_valid($_GET['upload-id'])) {
     $gnnId = $_GET['upload-id'];
+    $gnnKey = $_GET['key'];
 
-    $arrows = new arrow_database($gnnId);
+    $arrows = new diagram_data_file($gnnId);
+    $key = diagram_jobs::get_key($db, $gnnId);
 
-    if (!$arrows->is_loaded()) {
+    if ($gnnKey != $key) {
+        error404();
+    }
+    elseif (!$arrows->is_loaded()) {
         prettyError404("Oops, something went wrong. Please send us an email and mention the following diagnostic code: $gnnId");
     }
 
@@ -50,7 +55,7 @@ else if (isset($_GET['upload-id']) && functions::is_diagram_upload_id_valid($_GE
     $cooccurrence = $arrows->get_cooccurrence();
     $nbSize = $arrows->get_neighborhood_size();
 
-    $idKeyQueryString = "upload-id=$gnnId";
+    $idKeyQueryString = "upload-id=$gnnId&key=$gnnKey";
     $isUploadedDiagram = true;
     $gnnNameText = "Input filename: $gnnName";
 }
@@ -58,9 +63,9 @@ else {
     error404();
 }
 
-$nbSizeText = "Neighborhood size: $nbSize";
-$cooccurrenceText = "Co-occurrence: $cooccurrence";
-$gnnNameText = "Input filename: $gnnName";
+$nbSizeText = $nbSize ? "Neighborhood size: $nbSize"  : "";
+$cooccurrenceText = $cooccurrence ? "Co-occurrence: $cooccurrence" : "";
+$gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
 
 ?>
 

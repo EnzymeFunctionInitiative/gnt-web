@@ -23,7 +23,7 @@ if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
         $dbFile = $gnn->get_arrow_data_file_legacy();
 }
 else if (isset($_GET['upload-id']) && functions::is_diagram_upload_id_valid($_GET['upload-id'])) {
-    $arrows = new arrow_database($_GET['upload-id']);
+    $arrows = new diagram_data_file($_GET['upload-id']);
     $dbFile = $arrows->get_arrow_data_file();
 }
 else {

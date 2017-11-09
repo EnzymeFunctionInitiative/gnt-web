@@ -29,10 +29,6 @@ if ((isset($Is404Page) && $Is404Page) || (isset($IsExpiredPage) && $IsExpiredPag
         </div>
     </div> <!-- container -->
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="/bs/js/bootstrap.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="/bs/js/ie10-viewport-bug-workaround.js"></script>
 </body>
 </html>
 

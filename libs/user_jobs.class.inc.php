@@ -37,23 +37,24 @@ class user_jobs {
         if (!$this->user_email)
             return;
 
-        $sql = "SELECT gnn_id, gnn_key, gnn_filename, gnn_time_completed FROM gnn WHERE gnn_email='" . $this->user_email . "' ORDER BY gnn_time_completed";
+        $expDate = $this->get_start_date_window();
+        $sql = "SELECT gnn_id, gnn_key, gnn_filename, gnn_time_completed FROM gnn " .
+            "WHERE gnn_email='" . $this->user_email . "' AND " .
+            "(gnn_time_completed >= '$expDate' OR gnn_status = 'RUNNING')" .
+            "ORDER BY gnn_status, gnn_time_completed DESC";
         $rows = $db->query($sql);
 
         foreach ($rows as $row) {
-            array_push($this->jobs, array("id" => $row["gnn_id"], "gnn_key" => $row["gnn_key"], "gnn_filename" => $row["gnn_filename"],
-                                          "completed" => $row["gnn_time_completed"]));
+            $comp = $row["gnn_time_completed"];
+            if (substr($comp, 0, 4) == "0000")
+                $comp = "RUNNING";
+            array_push($this->jobs, array("id" => $row["gnn_id"], "key" => $row["gnn_key"], "filename" => $row["gnn_filename"],
+                                          "completed" => $comp));
         }
     }
 
-    public function save_user($db, $gnnId) {
-        $sql = "SELECT gnn_email FROM gnn WHERE gnn_id=" . $gnnId;
-        $rows = $db->query($sql);
-
-        if (!$rows)
-            return false;
-
-        $this->user_email = $rows[0]["gnn_email"];
+    public function save_user($db, $email) {
+        $this->user_email = $email;
 
         $sql = "SELECT user_id, user_email FROM user_token WHERE user_email='" . $this->user_email . "'";
         $rows = $db->query($sql);
@@ -71,9 +72,25 @@ class user_jobs {
             $db->build_insert("user_token", $insert_array);
         }
 
-        setcookie(user_jobs::USER_TOKEN_NAME, $this->user_token, time() + user_jobs::EXPIRATION_SECONDS);
+        //setcookie(user_jobs::USER_TOKEN_NAME, $this->user_token, time() + user_jobs::EXPIRATION_SECONDS);
 
         return true;
+    }
+
+    public function get_cookie() {
+        $dom = parse_url(settings::get_web_root(), PHP_URL_HOST);
+        $maxAge = 30 * 86400; // 30 days
+        $tokenField = user_jobs::USER_TOKEN_NAME;
+        $token = $this->user_token;
+        return "$tokenField=$token;max-age=$maxAge";
+    }
+
+    public function get_start_date_window() {
+        $numDays = settings::get_retention_days();
+        $dt = new DateTime();
+        $pastDt = $dt->sub(new DateInterval("P${numDays}D"));
+        $mysqlDate = $pastDt->format("Y-m-d");
+        return $mysqlDate;
     }
 
     public function get_jobs() {

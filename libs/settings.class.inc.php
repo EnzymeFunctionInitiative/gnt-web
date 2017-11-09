@@ -39,6 +39,12 @@ class settings {
         return false;
     }
 
+    public static function get_diagram_output_dir() {
+        if (is_dir(__DIAGRAM_OUTPUT_DIR__))
+            return __DIAGRAM_OUTPUT_DIR__;
+        return false;
+    }
+
     public static function get_legacy_output_dir() {
         if (is_dir(__LEGACY_OUTPUT_DIR__)) {
             return __LEGACY_OUTPUT_DIR__;
@@ -134,8 +140,12 @@ class settings {
         return $filetypes[0];
     }
 
-    public static function get_uploaded_diagram_directory() {
-        return __UPLOADED_DIAGRAM_DIR__;
+    public static function get_diagram_extension() {
+        return "sqlite";
+    }
+
+    public static function get_diagram_upload_prefix() {
+        return "diagram_";
     }
 }
 ?>

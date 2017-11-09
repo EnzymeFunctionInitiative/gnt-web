@@ -93,7 +93,7 @@ class functions {
     public static function get_new_diagram_key() {
         $dir = __UPLOADED_DIAGRAM_DIR__;
         $id = generate_key();
-        while (file_exists("$dir/" . get_uploaded_diagram_filename($id))) {
+        while (file_exists("$dir/" . self::get_diagram_file_name($id))) {
             $id = generate_key();
         }
         return $id;
@@ -105,16 +105,47 @@ class functions {
         if ($hasInvalidChars === 1)
             return false;
 
-        return file_exists(get_uploaded_diagram_file_path($id));
+        return file_exists(self::get_diagram_file_path($id));
     }
 
-    public static function get_uploaded_diagram_filename($id) {
-        return "$id.sqlite";
+    public static function get_diagram_file_name($id) {
+        return "$id." . settings::get_diagram_extension();
     }
 
-    public static function get_uploaded_diagram_file_path($id) {
-        $filePath = __UPLOADED_DIAGRAM_DIR__ . "/" . get_uploaded_diagram_filename($id);
+    public static function get_diagram_file_path($id) {
+        $filePath = settings::get_diagram_output_dir() . "/$id/" . self::get_diagram_file_name($id);
         return $filePath;
+    }
+
+    public static function copy_to_uploads_dir($tmp_file, $uploaded_filename, $id, $prefix = "", $forceExtension = "") {
+        $uploads_dir = settings::get_uploads_dir();
+
+        // By this time we have verified that the uploaded file is valid. Now we need to retain the
+        // extension in case the file is a zipped file.
+        if ($forceExtension)
+            $file_type = $forceExtension;
+        else
+            $file_type = strtolower(pathinfo($uploaded_filename, PATHINFO_EXTENSION));
+        $filename = $prefix . $id . "." . $file_type;
+        $full_path = $uploads_dir . "/" . $filename;
+        if (is_uploaded_file($tmp_file)) {
+            if (move_uploaded_file($tmp_file,$full_path)) { return $filename; }
+        }
+        else {
+            if (copy($tmp_file,$full_path)) { return $filename; }
+        }
+        return false;
+    }
+
+    public static function sqlite_table_exists($sqliteDb, $tableName) {
+        // Check if the table exists
+        $checkSql = "SELECT name FROM sqlite_master WHERE type='table' AND name='$tableName'";
+        $dbQuery = $sqliteDb->query($checkSql);
+        if ($dbQuery->fetchArray()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 ?>

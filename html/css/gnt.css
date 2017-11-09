@@ -78,6 +78,15 @@ a button:active {
     top:1px;
 }
 
+h2.bold {
+    background: #58585a;
+    font-size: 175%;
+    padding: 4px;
+    color: #ebebeb;
+    font-family: 'DINPro-bold', helvetica, sans-serif;
+    font-weight: normal;
+}
+
 
 /* CONTAINERS */
 
@@ -215,6 +224,30 @@ button.dark:hover {
     background-color:#333333;
 }
 
+/* TABLE *************************************************************************************************************/
+
+table.pretty {
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #aaa;
+    border-right: 1px solid #aaa;
+}
+
+table.pretty td, th {
+    border-left: 1px solid #aaa;
+    margin: 0;
+    padding: 10px;
+}
+
+table.pretty th {
+    background-color: #bbb;
+}
+
+table.pretty tr:nth-of-type(even) td {
+    background-color: #eee;
+}
+
+
 /* FORM INPUT */
 
 input[type="text"] {
@@ -224,6 +257,8 @@ input[type="text"] {
 
 input.email {
     width: 50%;
+    font-style: italic;
+    font-size: 1.1em;
 }
 
 /* OVERRIDE JQUERY UI */
@@ -243,5 +278,7 @@ a.ui-button:active,
     background: #333333;
 }
 
-
+.ui-widget-content a {
+    color: #005591;
+}
 
