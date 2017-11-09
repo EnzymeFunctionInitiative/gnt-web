@@ -400,10 +400,6 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
     }
 
     attrData.fill = color;
-    if (typeof this.pfamFilter[attrData.family] !== 'undefined') {
-        attrData.stroke = "#000";
-        attrData.strokeWidth = 3;
-    }
     attrData.fillColor = color;
     attrData.cx = ulx + (urx - ulx) / 2;
     attrData.cy = lly; //py;
@@ -427,6 +423,15 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
         that.doPopup(e.pageX, e.pageY, false, null);
     });
 
+    // There are filters applied
+    if (Object.keys(this.pfamFilter).length > 0) {
+        if (attrData.family in this.pfamFilter) {
+            arrow.addClass("an-arrow-selected");
+        } else {
+            arrow.addClass("an-arrow-mute");
+        }
+    }
+
     return arrow;
 }
 
@@ -436,18 +441,10 @@ ArrowDiagram.prototype.addPfamFilter = function(pfam) {
     $(".an-arrow").addClass("an-arrow-mute");
 
     for (pf in this.pfamFilter) {
-    for (idx in this.arrowMap[pf]) {
-        var arrow = this.arrowMap[pf][idx];
-//        var fillColor = arrow.attr("fillColor");
-        //arrow.attr({fill: fillColor, stroke: "#000", strokeWidth: 3, class: "an-arrow-selected"});
-        arrow.addClass("an-arrow-selected");
-        //var p = this.S.path("M10-5-10,15M15,0,0,15M0-5-20,15").attr({
-        //        fill: "none",
-        //        stroke: fillColor,
-        //        strokeWidth: 5
-        //    }).pattern(0, 0, 10, 10);
-        //arrow.attr({fill: p });
-    }
+        for (idx in this.arrowMap[pf]) {
+            var arrow = this.arrowMap[pf][idx];
+            arrow.addClass("an-arrow-selected");
+        }
     }
 }
 
