@@ -1,12 +1,15 @@
 <?php
-require_once 'includes/tutorial_header.inc.php'; ?>
+$TUTORIAL = true;
+require_once 'inc/header.inc.php';
+?>
 
- <div class="content_nav">
-	<?php require_once('includes/tutorial_nav.php'); ?>
-  
-  </div>
-  <div class="content_content">
-<h3>Example of Generating and Interpreting a GNN</h3>
+<div class="tutorial_nav">
+	<?php require_once('inc/tutorial_nav.php'); ?>
+</div>
+
+<div class="tutorial_body">
+
+<h2>Example of Generating and Interpreting a GNN</h2>
 
 <p>This section provides an example of how EFI-GNT can be used to discover
 metabolic pathways.Although this example is "simple", it illustrates the
@@ -36,7 +39,7 @@ has a single Pfam-curated family of SBPs (PF03480). Many of the ligands for the
 TRAP transporters are anionic, carboxylates or phosphate esters, although
 exceptions have been discovered (vide infra).</p>
 
-<h4>Generating the input file for EFI-GNT: SSN for TRAP SBPs (PF03480)</h4>
+<h3>Generating the input file for EFI-GNT: SSN for TRAP SBPs (PF03480)</h3>
 
 <p>The InterPro 58/UniProt 2016_06 database contained 19,503 sequences for TRAP
 SBPs (PF03480). Option B of EFI-EST was used to generate the SSN. When the SSN
@@ -71,8 +74,8 @@ you would like to save the file, e.g., the folder that contains the Cytoscape
 session file for the SSN. This XGMML file is the input for EFI-GNT that will be
 used to identify the components of the catabolic pathway for EAL.</p>
 
-<h4>EFI-GNT Start Page: Uploading the XGMML File and Setting Parameters for
-Neighbor Collection</h4>
+<h3>EFI-GNT Start Page: Uploading the XGMML File and Setting Parameters for
+Neighbor Collection</h3>
 
 <p><b>Input SSN:</b> The Start page for EFI-GNT (button at the bottom of this page; http:
 //efi.igb.illinois.edu/gnt-test/stepa.php) is used to upload the XGMML file for
@@ -114,7 +117,7 @@ destroy the original GNN.]</p>
 <p>Finally, the user enters his/her e-mail address; EFI-GNT sends an e-mail to
 this address when the GNN has been generated and is available for download.</p>
 
-<h4>Download Page: Colored SSN and GNN XGMML Files and Tab/Spreadsheet Files</h4>
+<h3>Download Page: Colored SSN and GNN XGMML Files and Tab/Spreadsheet Files</h3>
 
 <p>As described in previous sections, EFI-GNT generates one SSN file and two GNN
 files.</p>
@@ -164,7 +167,7 @@ Files</p>
 <p>6. Text file with list of query accession IDs not found in the bacterial and
     fungal ENA files as well as those that do not have genome neighbors.</p>
 
-<h4>Colored SSN for EAL SBP Cluster</h4>
+<h3>Colored SSN for EAL SBP Cluster</h3>
 
 <p>The colored SSN for the input EAL SBP SSN with the unique cluster colors and
 numbers is shown in Figure 5 (a single, uniformly colored cluster). It is
@@ -177,7 +180,7 @@ default color (cyan).</p>
 <p><img src='images/tutorial/example_figure_5.jpg' width='600'></p>
 <p><i>Figure 5.</i> Colored SSN</p>
 
-<h4>Genome Neighborhood Network (GNN) for EAL SBP Cluster, Pfam family hub-nodes and SSN cluster spoke-nodes</h4>
+<h3>Genome Neighborhood Network (GNN) for EAL SBP Cluster, Pfam family hub-nodes and SSN cluster spoke-nodes</h3>
 
 <p>The GNN with Pfam family hub-nodes and SSN cluster spoke-nodes is shown in
 Figure 6A. This GNN was generated with the default &plusmn;10 orf window and a 5% co-occurrence frequency; it has 31 clusters with hub-nodes for the Pfam families
@@ -218,7 +221,7 @@ ligand (Figure 7).</p>
 <p><i>Figure 7.</i> Pathway for EAL Catabolism Inferred from GNN</p>
 
 
-<h4>Genome Neighborhood Network (GNN) for EAL SBP Cluster, SSN cluster hub-nodes and Pfam family spoke-nodes</h4>
+<h3>Genome Neighborhood Network (GNN) for EAL SBP Cluster, SSN cluster hub-nodes and Pfam family spoke-nodes</h3>
 
 <p>The complementary GNN with the EAL SBP SSN cluster hub-node and Pfam family
 spoke-nodes is shown in Figure 8A. This cluster has a single hub-node and 31
@@ -254,7 +257,7 @@ median distances as well as the co-occurrence frequencies (decimal fraction and
 ratio of neighbors/queriable sequences).</p>
 
 
-<h4>Mapping genome neighbors to Pfam family SSNs</h4>
+<h3>Mapping genome neighbors to Pfam family SSNs</h3>
 
 <p>A spreadsheet file is available for download that will allow the genome neighbors
 in the various Pfam families to be mapped using the color of the cluster in the
@@ -286,7 +289,7 @@ to other transport systems would not be colored.</p>
 
 
 
-<h4>Multiple neighbors of the same large Pfam family in the genome neighborhood</h4>
+<h3>Multiple neighbors of the same large Pfam family in the genome neighborhood</h3>
 
 <p>Some enzyme Pfam families are large, e.g., PF00171, the aldehyde dehydrogenase
 superfamily has 138,202 sequences in UniProt 2016_06. As a result, a &plusmn;10 orf
@@ -314,27 +317,9 @@ multiple members of a neighbor Pfam family.</p>
 <p><i>Figure 10.</i> SSN for PF00171 (from Figure 9C) with the sequences associated with
 query-node distances &ge; 5 orfs colored blue.</p>
 
-
-
-
-
-</div>
-<div>
-  <div> </div>
-      </div>
-    </div>
-
-    <div class="clear"></div>
-
-	</div>
-    
-    
-    
-    
-    
-    
-   <!-- END: class="content_wide" -->
 </div>
 
+<div class="tutorial_next"></div>
 
-<?php require_once('includes/tutorial_footer.inc.php'); ?>
+<?php require_once('inc/footer.inc.php'); ?>
+

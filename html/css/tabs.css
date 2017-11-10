@@ -1,0 +1,73 @@
+/*----- Tabs -----*/
+.tabs {
+    width: 100%;
+    display: inline-block;
+}
+
+    .tab-headers {
+        margin-bottom:  0px;
+        padding-left:  0px;
+    }
+ 
+    /*----- Tab Links -----*/
+    /* Clearfix */
+    .tab-headers:after {
+        display: block;
+        clear: both;
+        content: '';
+    }
+ 
+    .tab-headers li {
+        margin: 0px 5px;
+        float: left;
+        list-style: none;
+    }
+ 
+        .tab-headers a {
+            padding: 9px 15px;
+            display: inline-block;
+            border-radius: 3px 3px 0px 0px;
+            background: #eee;
+/*            background: #8ABFFF;*/
+/*            background: #7FB5DA;*/
+            font-size: 16px;
+            font-weight: 600;
+            color: #4c4c4c;
+            transition: all linear 0.15s;
+            border-top: 1px solid #aaa;
+            border-left: 1px solid #aaa;
+            border-right: 1px solid #aaa;
+        }
+ 
+        .tab-headers a:hover {
+            background: #8ABFFF;
+/*            background: #79A9EE;*/
+/*            background: #a7cce5;*/
+            text-decoration: none;
+        }
+ 
+    li.active a, li.active a:hover {
+        background: #8ABFFF;
+        border-top: 1px solid #aaa;
+        border-left: 1px solid #aaa;
+        border-right: 1px solid #aaa;
+        color: #4c4c4c;
+    }
+ 
+    /*----- Content of Tabs -----*/
+    .tab-content {
+        padding: 15px;
+        border-radius: 3px;
+        box-shadow: -1px 1px 1px rgba(0,0,0,0.15);
+        background: #fff;
+        border:  1px solid darkgray;
+    }
+ 
+        .tab {
+            display: none;
+        }
+ 
+        .tab.active {
+            display: block;
+        }
+

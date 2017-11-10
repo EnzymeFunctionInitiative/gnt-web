@@ -16,8 +16,6 @@ else {
 }
 
 
-require_once('includes/header.inc.php'); 
-
 $isLegacy = is_null($gnn->get_pbs_number());
 
 $baseUrl = settings::get_web_address();
@@ -57,6 +55,10 @@ $noMatchesFilesize = $gnn->get_no_matches_filesize();
 $noNeighborsFile = $gnn->get_relative_no_neighbors_file();
 $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
 
+
+
+require_once('inc/header.inc.php'); 
+
 ?>
 
 <div class="update_message">
@@ -65,102 +67,118 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
     <?php echo settings::get_ena_version(); ?>.
 </div>
 
-<hr>
+<!--<hr>
     <img src="images/quest_stages_c.jpg" width="990" height="119" alt="stage 1">
-    <hr>
-    <h4>Network Information</h4>
-    <table width="100%" border="1">
-        <tr>
-            <td>Job Number:</td><td><?php echo $gnnId; ?></td>
-        </tr>
-        <tr>
-            <td>Uploaded Filename:</td><td><?php echo $gnn->get_filename(); ?></td>
-        </tr>
-        <tr>
-             <td>Neighborhood Size</td><td><?php echo $gnn->get_size(); ?></td>
-        </tr>
-        <tr>
-            <td>Input % Co-Occurrence</td><td><?php echo $gnn->get_cooccurrence(); ?>%</td>
-        </tr>
+    <hr> -->
+    <h2 class="bold">Results</h2>
+
+    <h3>Network Information</h3>
+    <table width="100%" border="1" style="margin-top: 10px" class="pretty">
+        <tbody>
+            <tr class="deeper">
+                <td>Job Number:</td><td><?php echo $gnnId; ?></td>
+            </tr>
+            <tr class="deeper">
+                <td>Uploaded Filename:</td><td><?php echo $gnn->get_filename(); ?></td>
+            </tr>
+            <tr class="deeper">
+                 <td>Neighborhood Size</td><td><?php echo $gnn->get_size(); ?></td>
+            </tr>
+            <tr class="deeper">
+                <td>Input % Co-Occurrence</td><td><?php echo $gnn->get_cooccurrence(); ?>%</td>
+            </tr>
+        </tbody>
     </table>
 
-   <hr>
-    <h4>Colored Sequence Similarity Network (SSN)</h4>
+    <h3>Colored Sequence Similarity Network (SSN)</h3>
     <p>The nodes in the input SSN are assigned unique cluster numbers and colors.</p>
 
-    <table width="100%" border="1">
-        <th></th>
-        <th># Nodes</th>
-        <th># Edges</th>
-        <th>File Size (MB)</th>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$ssnFile" ?>"><button>Download</button></a>
+    <table width="100%" border="1" class="pretty">
+        <thead>
+            <th></th>
+            <th># Nodes</th>
+            <th># Edges</th>
+            <th>File Size (MB)</th>
+        </thead>
+        <tbody>
+            <tr style='text-align:center;'>
+                <td class="button-col">
+                    <a href="<?php echo "$baseUrl/$ssnFile" ?>"><button class="light small">Download</button></a>
 <?php if ($ssnZipFile) { ?>
-                <a href="<?php echo "$baseUrl/$ssnZipFile"; ?>"><button>Download ZIP</button></a>
+                    <a href="<?php echo "$baseUrl/$ssnZipFile"; ?>"><button class="light small">Download ZIP</button></a>
 <?php } ?>
-            </td>
-            <td><?php echo number_format($gnn->get_ssn_nodes()); ?></td>
-            <td><?php echo number_format($gnn->get_ssn_edges()); ?></td>
-            <td><?php echo $ssnFilesize; ?>MB</td>
-        </tr>
+                </td>
+                <td><?php echo number_format($gnn->get_ssn_nodes()); ?></td>
+                <td><?php echo number_format($gnn->get_ssn_edges()); ?></td>
+                <td><?php echo $ssnFilesize; ?>MB</td>
+            </tr>
+        </tbody>
     </table>
 
-    <p>&nbsp;</p>
-    <div class="align_left">
-    <h4>SSN Cluster Hub-Nodes: Genome Neighborhood Network (GNN)</h4>
+    <h3>SSN Cluster Hub-Nodes: Genome Neighborhood Network (GNN)</h3>
     <p>Each hub-node in the network represents an SSN cluster that identified neighbors, with spoke-nodes for Pfam family with neighbors.</p>
-    </div>
 
-    <table width="100%" border="1">
-        <th></th>
-        <th>File Size (MB)</th>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$gnnFile"; ?>"><button>Download</button></a>
+    <table width="100%" border="1" class="pretty">
+        <thead>
+            <th></th>
+            <th>File Size (MB)</th>
+        </thead>
+        <tbody>
+            <tr style='text-align:center;'>
+                <td class="button-col">
+                    <a href="<?php echo "$baseUrl/$gnnFile"; ?>"><button class="light small">Download</button></a>
 <?php if ($gnnZipFile) { ?>
-                <a href="<?php echo "$baseUrl/$gnnZipFile"; ?>"><button>Download ZIP</button></a>
+                    <a href="<?php echo "$baseUrl/$gnnZipFile"; ?>"><button class="light small">Download ZIP</button></a>
 <?php } ?>
-            </td>
-            <td><?php echo $gnnFilesize; ?>MB</td>
-        </tr>
+                </td>
+                <td><?php echo $gnnFilesize; ?>MB</td>
+            </tr>
+        </tbody>
     </table>
 
-    <h4>Pfam Family Hub-Nodes Genome Neighborhood Network (GNN)</h4>
+    <h3>Pfam Family Hub-Nodes Genome Neighborhood Network (GNN)</h3>
     <p>Each hub-node in the network represents a Pfam family of neighbors, with spoke-nodes for each SSN cluster that identified the Pfam family.</p>
 
-    <table width="100%" border="1">
-        <th></th>
-        <th>File Size (MB)</th>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$pfamFile"; ?>"><button>Download</button></a>
+    <table width="100%" border="1" class="pretty">
+        <thead>
+            <th></th>
+            <th>File Size (MB)</th>
+        </thead>
+        <tbody>
+            <tr style='text-align:center;'>
+                <td class="button-col">
+                    <a href="<?php echo "$baseUrl/$pfamFile"; ?>"><button class="light small">Download</button></a>
 <?php if ($pfamZipFile) { ?>
-                <a href="<?php echo "$baseUrl/$pfamZipFile"; ?>"><button>Download ZIP</button></a>
+                    <a href="<?php echo "$baseUrl/$pfamZipFile"; ?>"><button class="light small">Download ZIP</button></a>
 <?php } ?>
-            </td>
-            <td><?php echo $pfamFilesize; ?> MB</td>
-        </tr>
+                </td>
+                <td><?php echo $pfamFilesize; ?> MB</td>
+            </tr>
+        </tbody>
     </table>
 
 <?php if ($hasDiagrams) { ?>
     <div style="color:red">
-        <h4 style="color:red">Genome Neighborhood Diagrams</h4> 
+        <h3 style="color:red">Genome Neighborhood Diagrams</h3> 
         <div class="new_feature"></div>
         Genome neighboorhoods can be visualized in an arrow digram format in a new window.
     
-        <table width="100%" border="1">
-            <th>Action</th>
-            <th></th>
-            <tr style='text-align:center;'>
-                <td>
-                    <a href="view_diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button>View diagrams</button></a>
-                    <a href="download_diagram_data.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button>Download data</button></a>
-                </td>
-                <td>
-                    Opens arrow diagram explorer in a new tab or window.
-                </td>
-            </tr>
+        <table width="100%" border="1" class="pretty">
+            <thead>
+                <th>Action</th>
+                <th></th>
+            </thead>
+            <tbody>
+                <tr style='text-align:center;'>
+                    <td class="button-col">
+                        <a href="view_diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button class="light small">View diagrams</button></a>
+                        <a href="download_diagram_data.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button class="light small">Download</button></a>
+                    </td>
+                    <td>
+                        Opens arrow diagram explorer in a new tab or window.
+                    </td>
+                </tr>
+            </tbody>
         </table>
     </div>
 <?php } else { ?>
@@ -171,110 +189,113 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
     </div>
 <?php } ?>
 
-    <h4>Other Files</h4>
-    <table width="100%" border="1">
-        <th></th>
-        <th>File</th>
-        <th>File Size (MB)</th>
+    <h3>Other Files</h3>
+    <table width="100%" border="1" class="pretty">
+        <thead>
+            <th></th>
+            <th>File</th>
+            <th>File Size (MB)</th>
+        </thead>
+        <tbody>
 <?php if ($idTableFile) { ?>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$idTableFile"; ?>"><button>Download</button></a>
-            </td>
-            <td>UniProt ID-Color-Cluster Number Mapping Table</td>
-            <td><?php echo $idTableFilesize; ?> MB</td>
-        </tr>
+            <tr style='text-align:center;'>
+                <td class="button-col">
+                    <a href="<?php echo "$baseUrl/$idTableFile"; ?>"><button class="light small">Download</button></a>
+                </td>
+                <td>UniProt ID-Color-Cluster Number Mapping Table</td>
+                <td><?php echo $idTableFilesize; ?> MB</td>
+            </tr>
 <?php } ?>
 <?php if ($idDataZip) { ?>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$idDataZip"; ?>"><button>Download All (ZIP)</button></a>
-            </td>
-            <td>UniProt ID Lists per Cluster</td>
-            <td><?php echo $idDataZipFilesize; ?> MB</td>
-        </tr>
+            <tr style='text-align:center;'>
+                <td>
+                    <a href="<?php echo "$baseUrl/$idDataZip"; ?>"><button class="light small">Download All (ZIP)</button></a>
+                </td>
+                <td>UniProt ID Lists per Cluster</td>
+                <td><?php echo $idDataZipFilesize; ?> MB</td>
+            </tr>
 <?php } ?>
 <?php if ($fastaZip) { ?>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$fastaZip"; ?>"><button>Download All (ZIP)</button></a>
-            </td>
-            <td>FASTA Files per Cluster</td>
-            <td><?php echo $fastaZipFilesize; ?> MB</td>
-        </tr>
+            <tr style='text-align:center;'>
+                <td>
+                    <a href="<?php echo "$baseUrl/$fastaZip"; ?>"><button class="light small">Download All (ZIP)</button></a>
+                </td>
+                <td>FASTA Files per Cluster</td>
+                <td><?php echo $fastaZipFilesize; ?> MB</td>
+            </tr>
 <?php } ?>
 <?php if ($pfamDataZip) { ?>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$pfamDataZip"; ?>"><button>Download All (ZIP)</button></a>
-            </td>
-            <td>PFAM Neighbor Mapping Tables</td>
-            <td><?php echo $pfamDataZipFilesize; ?> MB</td>
-        </tr>
+            <tr style='text-align:center;'>
+                <td>
+                    <a href="<?php echo "$baseUrl/$pfamDataZip"; ?>"><button class="light small">Download All (ZIP)</button></a>
+                </td>
+                <td>PFAM Neighbor Mapping Tables</td>
+                <td><?php echo $pfamDataZipFilesize; ?> MB</td>
+            </tr>
 <?php } ?>
 <?php if ($pfamNoneZip) { ?>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$pfamNoneZip"; ?>"><button>Download All (ZIP)</button></a>
-            </td>
-            <td>Neighbors without PFAM assigned per Cluster</td>
-            <td><?php echo $pfamNoneZipFilesize; ?> MB</td>
-        </tr>
+            <tr style='text-align:center;'>
+                <td>
+                    <a href="<?php echo "$baseUrl/$pfamNoneZip"; ?>"><button class="light small">Download All (ZIP)</button></a>
+                </td>
+                <td>Neighbors without PFAM assigned per Cluster</td>
+                <td><?php echo $pfamNoneZipFilesize; ?> MB</td>
+            </tr>
 <?php } ?>
 <?php if ($warningFile) { ?>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$warningFile"; ?>"><button>Download</button></a>
-            </td>
-            <td>No Matches/No Neighbors File</td>
-            <td><?php echo $warningFilesize; ?> MB</td>
-        </tr>
+            <tr style='text-align:center;'>
+                <td>
+                    <a href="<?php echo "$baseUrl/$warningFile"; ?>"><button class="light small">Download</button></a>
+                </td>
+                <td>No Matches/No Neighbors File</td>
+                <td><?php echo $warningFilesize; ?> MB</td>
+            </tr>
 <?php } ?>
 <?php if ($noMatchesFile) { ?>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$noMatchesFile"; ?>"><button>Download</button></a>
-            </td>
-            <td>No Matches</td>
-            <td><?php echo $noMatchesFilesize; ?> MB</td>
-        </tr>
+            <tr style='text-align:center;'>
+                <td>
+                    <a href="<?php echo "$baseUrl/$noMatchesFile"; ?>"><button class="light small">Download</button></a>
+                </td>
+                <td>No Matches</td>
+                <td><?php echo $noMatchesFilesize; ?> MB</td>
+            </tr>
 <?php } ?>
 <?php if ($noNeighborsFile) { ?>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$noNeighborsFile"; ?>"><button>Download</button></a>
-            </td>
-            <td>No Neighbors File</td>
-            <td><?php echo $noNeighborsFilesize; ?> MB</td>
-        </tr>
+            <tr style='text-align:center;'>
+                <td>
+                    <a href="<?php echo "$baseUrl/$noNeighborsFile"; ?>"><button class="light small">Download</button></a>
+                </td>
+                <td>No Neighbors File</td>
+                <td><?php echo $noNeighborsFilesize; ?> MB</td>
+            </tr>
 <?php } ?>
 <?php if ($coocTableFilesize) { ?>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$coocTableFile"; ?>"><button>Download</button></a>
-            </td>
-            <td>Pfam Family/Cluster Cooccurrence Table File</td>
-            <td><?php echo $coocTableFilesize; ?> MB</td>
-        </tr>
+            <tr style='text-align:center;'>
+                <td>
+                    <a href="<?php echo "$baseUrl/$coocTableFile"; ?>"><button class="light small">Download</button></a>
+                </td>
+                <td>Pfam Family/Cluster Cooccurrence Table File</td>
+                <td><?php echo $coocTableFilesize; ?> MB</td>
+            </tr>
 <?php } ?>
 <?php if ($hubCountFilesize) { ?>
-        <tr style='text-align:center;'>
-            <td>
-                <a href="<?php echo "$baseUrl/$hubCountFile"; ?>"><button>Download</button></a>
-            </td>
-            <td>GNN Hub Cluster Sequence Count File</td>
-            <td><?php echo $hubCountFilesize; ?> MB</td>
-        </tr>
+            <tr style='text-align:center;'>
+                <td>
+                    <a href="<?php echo "$baseUrl/$hubCountFile"; ?>"><button class="light small">Download</button></a>
+                </td>
+                <td>GNN Hub Cluster Sequence Count File</td>
+                <td><?php echo $hubCountFilesize; ?> MB</td>
+            </tr>
 <?php } ?>
+        </tbody>
     </table>
 
-    <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>  
+    <?php if (isset($message)) { echo "<h3 class='center'>" . $message . "</h3>"; } ?>  
 
-  </div>
 
 <?php if (settings::is_beta_release()) { ?>
     <div><center><h4><b><span style="color: red">BETA</span></b></h4></center></div>
 <?php } ?>
 
-<?php require_once('includes/footer.inc.php'); ?>
+<?php require_once('inc/footer.inc.php'); ?>
 

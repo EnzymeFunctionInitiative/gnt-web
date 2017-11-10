@@ -44,6 +44,7 @@ h2 {
 h3 {
     font-size: 135%;
     font-weight: normal;
+    margin: 20px 0px 3px 0px;
 }
 
 h4 {
@@ -70,6 +71,12 @@ button {
     margin-bottom: 15px;
 }
 
+button.small {
+    font-size: 100%;
+    padding: 3px 7px;
+    margin: 0;
+}
+
 a button:hover {
 }
 
@@ -91,7 +98,9 @@ a {
     color: #005591;
 }
 
-
+table td {
+    padding: 10px;
+}
 
 /* CONTAINERS */
 
@@ -229,6 +238,15 @@ button.dark:hover {
     background-color:#333333;
 }
 
+td.button-col {
+    width: 25%;
+}
+
+table tr.deeper td {
+    padding: 10px;
+}
+
+
 /* TABLE *************************************************************************************************************/
 
 table.pretty {
@@ -242,7 +260,7 @@ table.pretty {
 table.pretty td, th {
     border-left: 1px solid #aaa;
     margin: 0;
-    padding: 5px;
+    padding: 7px;
 }
 
 table.pretty th {

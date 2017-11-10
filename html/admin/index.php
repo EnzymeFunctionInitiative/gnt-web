@@ -1,7 +1,7 @@
 <?php
 
-include_once '../includes/stats_main.inc.php';
-include_once '../includes/stats_admin_header.inc.php';
+include_once '../inc/stats_main.inc.php';
+include_once '../inc/stats_admin_header.inc.php';
 
 $month = date('n');
 if (isset($_POST['month'])) {
@@ -107,4 +107,4 @@ $year_html .= "</select>";
 <?php echo $graph_image; ?>
 
 
-<?php include_once '../includes/stats_footer.inc.php'; ?>
+<?php include_once '../inc/stats_footer.inc.php'; ?>

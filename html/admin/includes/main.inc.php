@@ -1,7 +1,7 @@
 <?php 
 set_include_path(get_include_path() . ':../../libs');
-set_include_path(get_include_path() . ':../includes/PHPExcel/Classes');
-set_include_path(get_include_path() . ':../includes/jpgraph-3.5.0b1/src');
+set_include_path(get_include_path() . ':../inc/PHPExcel/Classes');
+set_include_path(get_include_path() . ':../inc/jpgraph-3.5.0b1/src');
 
 require_once '../../conf/settings.inc.php';
 

@@ -1,0 +1,26 @@
+
+.tutorial_nav { margin: 4px 6px 0 0; float: left; width: 25%;  text-transform: uppercase; }
+.tutorial_nav h2 { display: none; visibility: hidden; }
+        .tutorial_nav ul { list-style-type: none; margin:0;}
+        .tutorial_nav li { list-style-type: none; margin:0 0 0 -40px; padding: 2px 0; border-bottom:dotted #666 2px; }
+        .tutorial_nav ul li ul { margin-left: -40px; font-size:90%; }
+        .tutorial_nav ul li ul li { border-bottom:dotted #666 1px; }
+                .tutorial_nav a:link , .tutorial_nav a:visited { color: #333; font-weight: normal; }
+                .tutorial_nav a:active , .tutorial_nav a:hover { color: #005591; font-weight: normal; text-decoration:underline; }
+
+.tutorial_body {
+    margin-top: 4px;
+    float: left;
+    width: 74%;
+    padding-bottom: 10px;
+}
+
+.tutorial_next {
+    text-align: center;
+    clear: both;
+}
+
+div.tutorial_body a {
+    font-weight: bold;
+}
+
