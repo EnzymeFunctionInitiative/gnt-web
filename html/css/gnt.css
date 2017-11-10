@@ -87,6 +87,11 @@ h2.bold {
     font-weight: normal;
 }
 
+a {
+    color: #005591;
+}
+
+
 
 /* CONTAINERS */
 
@@ -231,12 +236,13 @@ table.pretty {
     margin-bottom: 20px;
     border-bottom: 1px solid #aaa;
     border-right: 1px solid #aaa;
+    width: 100%;
 }
 
 table.pretty td, th {
     border-left: 1px solid #aaa;
     margin: 0;
-    padding: 10px;
+    padding: 5px;
 }
 
 table.pretty th {
@@ -281,4 +287,14 @@ a.ui-button:active,
 .ui-widget-content a {
     color: #005591;
 }
+
+.open-arrow-img {
+    background-image: url("../images/Down.png");
+}
+
+.closed-arrow-img {
+    background-image: url("../images/Right.png");
+}
+
+
 

@@ -14,7 +14,7 @@ $gnnName = "";
 $idKeyQueryString = "";
 $windowTitle = "";
 $isUploadedDiagram = false;
-$supportsDownload = false;
+$supportsDownload = true;
 $supportsExport = false;
 
 if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
@@ -177,11 +177,11 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
                     <div class="col-md-5">
                         <div class="button-wrapper col-centered">
                             <a href="view_diagrams.php?<?php echo $idKeyQueryString; ?>" target="_blank" class="btn btn-default">New Window</a>
-<?php if ($supportsDownload) { ?>
-                            <button type="button" class="btn btn-default" id="save-canvas-button">Save To PNG</button>
+<?php if ($supportsDownload && !$isUploadedDiagram) { ?>
+                            <a id="download-data" href="download_diagram_data.php?<?php echo $idKeyQueryString; ?>" class="btn btn-default" id="download-data" title="Download the data to upload it for future analysis using this tool.">Download Data</a>
 <?php } ?>
 <?php if ($supportsExport && !$isUploadedDiagram) { ?>
-                            <a id="download-data" href="download_diagram_data.php?<?php echo $idKeyQueryString; ?>" class="btn btn-default" id="download-data" title="Download the data to upload it for future analysis using this tool.">Download Data</a>
+                            <button type="button" class="btn btn-default" id="save-canvas-button">Save To PNG</button>
 <?php } ?>
                         </div>
                     </div>

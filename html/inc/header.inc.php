@@ -21,6 +21,7 @@ $title = "Expired Job";
     <link rel="stylesheet" type="text/css" href="jquery-ui-1.12.1/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="/css/shared.css">
     <link rel="stylesheet" type="text/css" href="css/gnt.css">
+    <link rel="stylesheet" type="text/css" href="css/tabs.css">
     <link rel="shortcut icon" href="images/favicon_efi.ico" type="image/x-icon">
     <title><?php echo $title; ?></title>
 

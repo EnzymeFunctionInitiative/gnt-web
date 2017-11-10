@@ -53,7 +53,7 @@ if (isset($_POST['submit'])) {
             $id = $gnnInfo['id'];
             $key = $gnnInfo['key'];
             $userObj = new user_jobs();
-            $userObj->save_user($db, $id);
+            $userObj->save_user($db, $email);
             $cookieInfo = $userObj->get_cookie();
         }
     }

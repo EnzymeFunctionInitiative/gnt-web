@@ -58,8 +58,11 @@ class diagram_data_file {
                 $db->close();
                 return false;
             }
-    
-            $this->cooccurrence = $row['cooccurrence'];
+
+            if (array_key_exists("cooccurrence", $row))
+                $this->cooccurrence = $row['cooccurrence'];
+            else
+                $this->cooccurrence = $row['coocurrence']; //TODO: remove this in production; there was a typo earlier.
             $this->nb_size = $row['neighborhood_size'];
             $this->gnn_name = $row['name'];
         } else {

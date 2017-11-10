@@ -155,6 +155,7 @@ $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
             <tr style='text-align:center;'>
                 <td>
                     <a href="view_diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button>View diagrams</button></a>
+                    <a href="download_diagram_data.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button>Download data</button></a>
                 </td>
                 <td>
                     Opens arrow diagram explorer in a new tab or window.

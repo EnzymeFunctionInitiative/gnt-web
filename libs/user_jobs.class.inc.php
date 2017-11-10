@@ -38,16 +38,22 @@ class user_jobs {
             return;
 
         $expDate = $this->get_start_date_window();
-        $sql = "SELECT gnn_id, gnn_key, gnn_filename, gnn_time_completed FROM gnn " .
+        $sql = "SELECT gnn_id, gnn_key, gnn_filename, gnn_time_completed, gnn_status FROM gnn " .
             "WHERE gnn_email='" . $this->user_email . "' AND " .
-            "(gnn_time_completed >= '$expDate' OR gnn_status = 'RUNNING')" .
+            "(gnn_time_completed >= '$expDate' OR gnn_status = 'RUNNING' OR gnn_status = 'NEW' OR gnn_status = 'FAILED')" .
+//            "(gnn_time_completed >= '$expDate')" .
             "ORDER BY gnn_status, gnn_time_completed DESC";
         $rows = $db->query($sql);
 
         foreach ($rows as $row) {
             $comp = $row["gnn_time_completed"];
-            if (substr($comp, 0, 4) == "0000")
-                $comp = "RUNNING";
+            if (substr($comp, 0, 4) == "0000") {
+                $comp = $row["gnn_status"]; // "RUNNING";
+                if ($comp == "NEW")
+                    $comp = "PENDING";
+            } else {
+                $comp = date_format(date_create($comp), "n/j h:i A");
+            }
             array_push($this->jobs, array("id" => $row["gnn_id"], "key" => $row["gnn_key"], "filename" => $row["gnn_filename"],
                                           "completed" => $comp));
         }
