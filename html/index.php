@@ -70,6 +70,9 @@ for ($i = 0; $i < count($jobs); $i++) {
     $linkStart = $dateCompleted == "RUNNING" ? "" : "<a href=\"stepc.php?id=$id&key=$key\">";
     $linkEnd = $dateCompleted == "RUNNING" ? "" : "</a>";
 
+    if (array_key_exists("diagram", $jobs[$i]))
+        $linkStart = "<a href=\"view_diagrams.php?upload-id=$id&key=$key\">";
+
     echo <<<HTML
                     <tr>
                         <td>$linkStart${id}$linkEnd</td>

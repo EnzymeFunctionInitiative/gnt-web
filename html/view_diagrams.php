@@ -15,7 +15,7 @@ $idKeyQueryString = "";
 $windowTitle = "";
 $isUploadedDiagram = false;
 $supportsDownload = true;
-$supportsExport = false;
+$supportsExport = true;
 
 if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
     $gnnKey = $_GET['key'];
@@ -181,7 +181,7 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
                             <a id="download-data" href="download_diagram_data.php?<?php echo $idKeyQueryString; ?>" class="btn btn-default" id="download-data" title="Download the data to upload it for future analysis using this tool.">Download Data</a>
 <?php } ?>
 <?php if ($supportsExport && !$isUploadedDiagram) { ?>
-                            <button type="button" class="btn btn-default" id="save-canvas-button">Save To PNG</button>
+                            <button type="button" class="btn btn-default" id="save-canvas-button">Save as SVG</button>
 <?php } ?>
                         </div>
                     </div>
@@ -230,6 +230,17 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
                     arrowApp.togglePfamNamesNumbers(this.checked);
                 });
 
+                $("#save-canvas-button").click(function(e) {
+                    var svg = escape($("#arrow-canvas")[0].outerHTML);
+                    var dlForm = $("<form></form>");
+                    dlForm.attr("method", "POST");
+                    dlForm.attr("action", "download_diagram_image.php");
+                    dlForm.append('<input type="hidden" name="type" value="svg">');
+                    dlForm.append('<input type="hidden" name="name" value="<?php echo $gnnName ?>">');
+                    dlForm.append('<input type="hidden" name="svg" value="' + svg + '">');
+                    $("#download-forms").append(dlForm);
+                    dlForm.submit();
+                });
             });
         </script>
 
@@ -248,6 +259,8 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
         <div id="start-info">
             <div><i class="fa fa-arrow-left" aria-hidden="true"></i></div>
             <div>Start by entering a cluster number</div>
+        </div>
+        <div id="download-forms" style="display:none;">
         </div>
     </body>
 </html>

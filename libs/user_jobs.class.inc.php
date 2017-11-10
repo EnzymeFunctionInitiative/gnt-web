@@ -57,6 +57,15 @@ class user_jobs {
             array_push($this->jobs, array("id" => $row["gnn_id"], "key" => $row["gnn_key"], "filename" => $row["gnn_filename"],
                                           "completed" => $comp));
         }
+
+        $sql = "SELECT * FROM diagram WHERE diagram_email='" . $this->user_email . "' AND diagram_status='FINISH' ORDER BY diagram_time_created DESC, diagram_id DESC";
+        $rows = $db->query($sql);
+
+        foreach ($rows as $row) {
+            $title = $row["diagram_title"] ? $row["diagram_title"] : "Uploaded diagram data file";
+            array_push($this->jobs, array("id" => $row["diagram_id"], "key" => $row["diagram_key"],
+                "filename" => $title, "completed" => "", "diagram" => true));
+        }
     }
 
     public function save_user($db, $email) {

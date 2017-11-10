@@ -140,7 +140,6 @@ ArrowApp.prototype.togglePfamNamesNumbers = function(isChecked) {
 }
 
 ArrowApp.prototype.startProgressBar = function() {
-    console.log("Starting");
     this.progressObj.removeClass("hidden-placeholder");
 }
 

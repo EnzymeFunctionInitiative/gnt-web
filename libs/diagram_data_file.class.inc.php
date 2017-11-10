@@ -19,15 +19,19 @@ class diagram_data_file {
 
     public static function create($db, $email, $tmp_filename, $filename) {
         $result = false;
-        
+
         $key = functions::generate_key();
+        $title = self::get_diagram_title_from_file($filename);
+
         $insert_array = array(
             'diagram_key' => $key,
             'diagram_email' => $email,
+            'diagram_title' => $title,
         );
 
         $uploadPrefix = settings::get_diagram_upload_prefix();
         $ext = settings::get_diagram_extension();
+
 
         $result = $db->build_insert('diagram', $insert_array);
         if ($result) {
@@ -35,7 +39,7 @@ class diagram_data_file {
         } else {
             return false;
         }
-        
+
         $info = array('id' => $result, 'key' => $key);
         return $info;
     }
@@ -51,7 +55,7 @@ class diagram_data_file {
         if (functions::sqlite_table_exists($db, "metadata")) {
             $sql = "SELECT * FROM metadata";
             $dbQuery = $db->query($sql);
-    
+
             $row = $dbQuery->fetchArray();
             if (!$row)
             {
@@ -70,10 +74,38 @@ class diagram_data_file {
             $this->nb_size = "";
             $this->gnn_name = "";
         }
-        
+
         $db->close();
 
         return true;
+    }
+
+    private static function get_diagram_title_from_file($file) {
+        $file = preg_replace("/\.sqlite$/", "", $file);
+        $file = preg_replace("/_arrow_data/", "", $file);
+        return $file;
+        /*
+        try {
+            $db = new SQLite3($file);
+
+            $sql = "SELECT * FROM metadata";
+            $dbQuery = $db->query($sql);
+
+            $row = $dbQuery->fetchArray();
+            if (!$row)
+            {
+                $db->close();
+                return "";
+            }
+            $gnn_name = $row['name'];
+
+            $db->close();
+
+            return $gnn_name;
+        } catch (Exception $e) {
+            return "";
+        }
+         */
     }
 
     public function get_arrow_data_file() {

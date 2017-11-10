@@ -414,7 +414,6 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
     var pos = $("#" + this.canvasId).offset();
 
     arrow.mouseover(function(e) {
-            console.log(this.attr("accession"));
         var cx = parseInt(this.attr("cx"));
         var cy = parseInt(this.attr("cy"));
         that.doPopup(pos.left + cx, pos.top + cy + 1, true, this);
