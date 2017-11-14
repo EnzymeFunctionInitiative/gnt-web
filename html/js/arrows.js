@@ -34,6 +34,11 @@ function ArrowDiagram(canvasId, displayModeCbId, canvasContainerId, popupIds) {
     this.pfamList = {};
 
     this.idKeyQueryString = ""; 
+
+    var container = document.getElementById(this.canvasContainerId);
+    this.initialWidth = container.getBoundingClientRect().width + this.padding * 2;
+
+    this.S.attr({viewBox: "0 0 " + this.initialWidth + " " + this.diagramHeight});
 }
 
 ArrowDiagram.prototype.nextPage = function(callback) {
@@ -45,6 +50,10 @@ ArrowDiagram.prototype.retrieveArrowData = function(idList, usePaging, resetCanv
     if (typeof idList !== 'undefined')
         this.idList = idList;
 
+    resetCanvas = typeof resetCanvas === 'undefined' ? false : resetCanvas;
+    if (resetCanvas)
+        this.diagramPage = 0;
+
     if (typeof this.idList !== 'undefined' && this.idList.length > 0) {
         var idListQuery = this.idList.replace(/\n/g, " ").replace(/\r/g, " ");
         var that = this;
@@ -53,7 +62,6 @@ ArrowDiagram.prototype.retrieveArrowData = function(idList, usePaging, resetCanv
         var pageString = "";
         if (usePaging)
             pageString = "&page=" + this.diagramPage;
-        resetCanvas = typeof resetCanvas === 'undefined' ? false : resetCanvas;
 
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", "get_neighbor_data.php?" + this.idKeyQueryString + "&query=" + idListQuery + pageString, true);
@@ -122,21 +130,18 @@ ArrowDiagram.prototype.getPfamColor = function(pfam) {
 ArrowDiagram.prototype.makeArrowDiagram = function(data, usePaging, resetCanvas) {
     canvas = document.getElementById(this.canvasId);
     
-    var drawingWidth = canvas.getBoundingClientRect().width - this.padding * 2;
+    //var drawingWidth = canvas.getBoundingClientRect().width - this.padding * 2;
     if (!usePaging || resetCanvas) {
         while (canvas.hasChildNodes()) {
             canvas.removeChild(canvas.lastChild);
         }
-        document.getElementById(this.canvasContainerId).setAttribute("style","width:100%;height:0px");
+        document.getElementById(this.canvasId).setAttribute("style","height:" + this.diagramHeight + "px");
+        this.S.attr({viewBox: "0 0 " + this.initialWidth + " 70"});
     }
 
+    var drawingWidth = this.initialWidth - this.padding * 2;
+
     var i = usePaging && !resetCanvas ? this.diagramCount : 0;
-//    var order = [];
-////    if (data.hasOwnProperty("order")) {
-////        
-////    } else {
-//        order = getDefaultOrder(i, data.data.length);
-////    }
 
     //for (seqId in data.data) {
     for (var oi = 0; oi < data.data.length; oi++) {
@@ -144,15 +149,17 @@ ArrowDiagram.prototype.makeArrowDiagram = function(data, usePaging, resetCanvas)
         i++;
     }
     this.diagramCount = i;
+    
+    //var canvasHeight = canvas.getBoundingClientRect().height;
+    var extraPadding = 60; // for popup for last one
+    var ypos = this.diagramCount * this.diagramHeight + this.padding * 2 + this.fontHeight;
+    this.S.attr({viewBox: "0 0 " + this.initialWidth + " " + ypos});
+    document.getElementById(this.canvasId).setAttribute("style","height:" + (ypos + this.diagramHeight + this.padding + extraPadding) + "px");
 }
 
 // Draw a diagram for a single arrow
 ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth) {
-    var canvasHeight = canvas.getBoundingClientRect().height;
     var ypos = index * this.diagramHeight + this.padding * 2 + this.fontHeight;
-    var extraPadding = 60; // for popup for last one
-    if (ypos + this.diagramHeight + this.padding > canvasHeight)
-        document.getElementById(this.canvasContainerId).setAttribute("style","width:100%;height:" + (ypos + this.diagramHeight + this.padding + extraPadding) + "px");
 
     // Orient the query arrows in the same direction (flip the diagram)
     var orientSameDir = true;
@@ -173,9 +180,11 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
 
     var minXpct = 1.1, maxXpct = -0.1;
 
+    var group = this.S.paper.group();
+
     var attrData = makeStruct(data.attributes);
     // Always face to the right which is why isComplement isn't provided, rather false is given in this call.
-    var arrow = this.drawArrow(geneXpos, ypos, geneWidth, orientSameDir ? false : isComplement,
+    var arrow = this.drawArrow(group, geneXpos, ypos, geneWidth, orientSameDir ? false : isComplement,
                                drawingWidth, this.selectedGeneColor, attrData);
     if (!(attrData.family in this.arrowMap))
         this.arrowMap[attrData.family] = [];
@@ -225,7 +234,7 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
             }
         }
 
-        arrow = this.drawArrow(neighborXpos, ypos, neighborWidth, nIsComplement, drawingWidth, color, attrData);
+        arrow = this.drawArrow(group, neighborXpos, ypos, neighborWidth, nIsComplement, drawingWidth, color, attrData);
 
         if (!(attrData.family in this.arrowMap))
             this.arrowMap[attrData.family] = [];
@@ -238,11 +247,11 @@ ArrowDiagram.prototype.drawDiagram = function(canvas, index, data, drawingWidth)
             max_stop = N.stop;
     }
     
-    this.drawAxis(ypos, drawingWidth, minXpct, maxXpct, isBound);
+    this.drawAxis(group, ypos, drawingWidth, minXpct, maxXpct, isBound);
 
     data.attributes.max_start = max_start;
-//    data.attributes.max_stop = max_stop;
-    this.drawTitle(index * this.diagramHeight + this.fontHeight - 2, data.attributes);
+    //data.attributes.max_stop = max_stop;
+    this.drawTitle(group, index * this.diagramHeight + this.fontHeight - 2, data.attributes);
 }
 
 function getDefaultOrder(start, numElements) {
@@ -287,36 +296,36 @@ function makeStruct(data) {
     return struct;
 }
 
-ArrowDiagram.prototype.drawAxis = function(ypos, drawingWidth, minXpct, maxXpct, isBound) {
+ArrowDiagram.prototype.drawAxis = function(svgContainer, ypos, drawingWidth, minXpct, maxXpct, isBound) {
     ypos = ypos + this.axisThickness - 1;
     // A single line, full width:
-    //this.S.paper.line(this.padding, ypos, this.padding + drawingWidth, ypos).attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
-    this.S.paper.line(this.padding + minXpct * drawingWidth - 3, ypos,
+    //svgContainer.line(this.padding, ypos, this.padding + drawingWidth, ypos).attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
+    svgContainer.line(this.padding + minXpct * drawingWidth - 3, ypos,
                       this.padding + maxXpct * drawingWidth + 3, ypos)
         .attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
     
     if (isBound & 1) { // end of contig on left
-        this.S.paper.line(this.padding + minXpct * drawingWidth - 3, ypos - 5,
+        svgContainer.line(this.padding + minXpct * drawingWidth - 3, ypos - 5,
                           this.padding + minXpct * drawingWidth - 3, ypos + 5)
             .attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
     } else if (minXpct > 0) {
-        this.S.paper.line(this.padding, ypos,
+        svgContainer.line(this.padding, ypos,
                           this.padding + minXpct * drawingWidth - 3, ypos)
             .attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness, 'stroke-dasharray': '2px, 4px' });
     }
     
     if (isBound & 2) { // end of contig on right
-        this.S.paper.line(this.padding + maxXpct * drawingWidth + 3, ypos - 5,
+        svgContainer.line(this.padding + maxXpct * drawingWidth + 3, ypos - 5,
                           this.padding + maxXpct * drawingWidth + 3, ypos + 5)
             .attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness });
     } else if (minXpct > 0) {
-        this.S.paper.line(this.padding + maxXpct * drawingWidth + 3, ypos,
+        svgContainer.line(this.padding + maxXpct * drawingWidth + 3, ypos,
                           this.padding + drawingWidth, ypos)
             .attr({ 'stroke': this.axisColor, 'strokeWidth': this.axisThickness, 'stroke-dasharray': '2px, 4px' });
     }
 }
 
-ArrowDiagram.prototype.drawTitle = function(ypos, data) {
+ArrowDiagram.prototype.drawTitle = function(svgContainer, ypos, data) {
     var title = "";
     if (data.hasOwnProperty("accession"))
         title = title + "Query UniProt ID: " + data.accession + "; ";
@@ -335,7 +344,7 @@ ArrowDiagram.prototype.drawTitle = function(ypos, data) {
 //    if (data.hasOwnProperty("pid") && data.pid >= 0)
 //        title = title + "; %ID: " + data.pid;
     if (title.length > 0) {
-        var textObj = this.S.paper.text(this.padding, ypos, title);
+        var textObj = svgContainer.text(this.padding, ypos, title);
         //textObj.attr({'font-size':12});
         textObj.attr({'style':'diagram-title'});
     }
@@ -345,11 +354,12 @@ ArrowDiagram.prototype.drawTitle = function(ypos, data) {
 // ypos is in pixels from top
 // width is in percent (0-1)
 // drawingWidth is in pixels and is the area of the canvas in which we can draw (need to add padding to it to get proper coordinate)
-ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, drawingWidth, color, attrData) {
+ArrowDiagram.prototype.drawArrow = function(svgContainer, xpos, ypos, width, isComplement, drawingWidth, color, attrData) {
     // Upper left and right of rect. portion of arrow
     coords = [];
     llx = lrx = urx = ulx = px = 0;
     lly = lry = ury = uly = py = 0;
+
     if (!isComplement) {
         // lower left of rect. portion
         llx = this.padding + xpos * drawingWidth;
@@ -406,7 +416,7 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
     attrData.cx = ulx + (urx - ulx) / 2;
     attrData.cy = lly; //py;
     attrData.class = "an-arrow";
-    var arrow = this.S.paper.polygon(coords).attr(attrData);
+    var arrow = svgContainer.polygon(coords).attr(attrData);
 
     arrow.click(function(event) {
         window.open("http://uniprot.org/uniprot/" + this.attr("accession"));
@@ -416,9 +426,13 @@ ArrowDiagram.prototype.drawArrow = function(xpos, ypos, width, isComplement, dra
     var pos = $("#" + this.canvasId).offset();
 
     arrow.mouseover(function(e) {
-        var cx = parseInt(this.attr("cx"));
-        var cy = parseInt(this.attr("cy"));
-        that.doPopup(pos.left + cx, pos.top + cy + 1, true, this);
+        var boxX, boxY;
+        var yOffset = that.arrowHeight / 2;
+        var bbox = arrow.getBBox();
+        var matrix = this.transform().globalMatrix;
+        boxX = matrix.x(bbox.cx, bbox.cy + yOffset) + pos.left;
+        boxY = matrix.y(bbox.cx, bbox.cy + yOffset) + pos.top;
+        that.doPopup(boxX, boxY, true, this);
     });
     arrow.mouseout(function(e) {
         that.doPopup(e.pageX, e.pageY, false, null);

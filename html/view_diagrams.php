@@ -159,9 +159,9 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
             </div>
 
             <div class="container">
-                <div id="arrow-container" style="width:100%;height:10px">
+                <div id="arrow-container" style="width:100%;height:100%">
                     <br>
-                    <svg id="arrow-canvas" style="width:100%;height:100%"></svg>
+                    <svg id="arrow-canvas" width="100%" style="height:70px" viewBox="0 0 10 70" preserveAspectRatio="xMinYMin"></svg>
                 </div>
             </div>
         </div>
@@ -200,12 +200,10 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
         ================================================== -->
         <!-- Placed at the end of the document so the pages load faster -->
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/snap.svg/0.5.1/snap.svg-min.js" content-type="text/javascript"></script>
+        <script src="js/snap.svg-min.js" content-type="text/javascript"></script>
 
         <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<!--        <script src="/bs/js/jquery.js"></script>-->
+        <script src="js/jquery-3.2.1.min.js"></script>
         <!-- Bootstrap Core JavaScript -->
         <script src="/bs/js/bootstrap.min.js"></script>
 

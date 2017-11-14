@@ -1,8 +1,11 @@
 <?php
 require_once "../includes/main.inc.php";
 
+$gntServer = settings::get_web_root();
+$refServer = parse_url($_SERVER['HTTP_REFERER'],  PHP_URL_HOST);
+
 $isError = false;
-if (strpos($_SERVER['HTTP_REFERER'], "view_diagrams.php") === FALSE || !isset($_POST["svg"])) {
+if (strpos($gntServer, $refServer) === FALSE || !isset($_POST["svg"])) {
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
     exit;
 }
