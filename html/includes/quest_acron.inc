@@ -1,5 +1,0 @@
-<p class="quest_explanation">
-<a href="index.php">
-<span class="boldlarge">QU</span>ick <span class="boldlarge">E</span>nzyme <span class="boldlarge">S</span>imilarity 
-<span class="boldlarge">T</span>ool &raquo;
-</a></p>

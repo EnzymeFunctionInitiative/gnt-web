@@ -1,6 +1,8 @@
 <?php
 $TUTORIAL = true;
 require_once 'inc/header.inc.php';
+require_once '../includes/main.inc.php';
+$webRoot = settings::get_web_root(); 
 ?>
 
 <div class="tutorial_nav">
@@ -77,8 +79,9 @@ used to identify the components of the catabolic pathway for EAL.</p>
 <h3>EFI-GNT Start Page: Uploading the XGMML File and Setting Parameters for
 Neighbor Collection</h3>
 
-<p><b>Input SSN:</b> The Start page for EFI-GNT (button at the bottom of this page; http:
-//efi.igb.illinois.edu/gnt-test/stepa.php) is used to upload the XGMML file for
+<p><b>Input SSN:</b> The Start page for EFI-GNT (button at the bottom of this page;
+<a href="<?php echo $webRoot; ?>"><?php echo $webRoot; ?></a>
+is used to upload the XGMML file for
 the EAL cluster. This file is selected using the Choose File function (Figure
 3).</p>
 

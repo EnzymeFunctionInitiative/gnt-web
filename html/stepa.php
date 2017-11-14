@@ -36,7 +36,7 @@ HTML;
 
 $maxFileSize = ini_get('post_max_size');
 
-require_once('includes/header.inc.php'); 
+require_once('inc/header.inc.php'); 
 
 ?>
 
@@ -121,6 +121,7 @@ EFI-GNT Version: <b><?php echo settings::get_gnt_version(); ?></b>
 </div>
 </form>
 
-<script src="includes/custom-file-input.js" type="text/javascript"></script>
+<script src="js/custom-file-input.js" type="text/javascript"></script>
 
-<?php require_once('includes/footer.inc.php'); ?>
+<?php require_once('inc/footer.inc.php'); ?>
+
