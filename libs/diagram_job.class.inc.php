@@ -35,10 +35,14 @@ class diagram_job {
 
         $uploadDir = settings::get_uploads_dir();
         $outDir = settings::get_diagram_output_dir() . "/" . $jobId;
-        $ext = settings::get_diagram_extension();
+        //$ext = settings::get_diagram_extension();
         $uploadPrefix = settings::get_diagram_upload_prefix();
+        
+        $source = "$uploadDir/$uploadPrefix$jobId";
+        $isZipFile = file_exists("$source.zip");
+        $ext = $isZipFile ? "zip" : settings::get_diagram_extension();
 
-        $source = "$uploadDir/$uploadPrefix$jobId.$ext";
+        $source = "$source.$ext";
         $target = "$outDir/$jobId.$ext";
 
         if (!file_exists($source))
@@ -52,11 +56,46 @@ class diagram_job {
         chdir($outDir);
         copy($source, $target);
 
-        $this->db->non_select_query("UPDATE diagram SET diagram_status = '" . __FINISH__ . "' WHERE diagram_id = $jobId");
+        if ($isZipFile) {
+            $binary = settings::get_unzip_diagram_script();
+            $exec = "source /etc/profile.d/modules.sh; ";
+            $exec .= "module load " . settings::get_gnn_module() . "; ";
+            $exec .= $binary . " ";
+            $exec .= " -diagram-file \"$target\"";
 
-        $this->email_complete();
+            //TODO: remove this debug message
+            error_log("Job ID: " . $this->id);
+            error_log("Exec: " . $exec);
+
+            $exit_status = 1;
+            $output_array = array();
+            $output = exec($exec, $output_array, $exit_status);
+            $output = trim(rtrim($output));
+
+            $pbs_job_number = substr($output, 0, strpos($output, "."));
+            if (!$exit_status)
+                $this->db->non_select_query("UPDATE diagram SET diagram_status = '" . __RUNNING__ . "' WHERE diagram_id = $jobId");
+            else
+                error_log("Error: $output");
+        } else {
+            $this->db->non_select_query("UPDATE diagram SET diagram_status = '" . __FINISH__ . "' WHERE diagram_id = $jobId");
+            $this->email_complete();
+        }
 
         return true;
+    }
+
+    public function check_if_job_is_done() {
+        $jobId = $this->id;
+
+        $outDir = settings::get_diagram_output_dir() . "/" . $jobId;
+        $isDone = file_exists("$outDir/unzip.completed");
+
+        if ($isDone) {
+            print "$jobId is done.\n";
+            $this->db->non_select_query("UPDATE diagram SET diagram_status = '" . __FINISH__ . "' WHERE diagram_id = $jobId");
+            $this->email_complete();
+        }
     }
 
     private function email_complete() {

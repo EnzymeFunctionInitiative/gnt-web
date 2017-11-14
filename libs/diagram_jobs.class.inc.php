@@ -28,6 +28,19 @@ class diagram_jobs {
         return $jobs;
     }
 
+    public function get_running_jobs() {
+        $jobs = array();
+
+        $sql = "SELECT * FROM diagram WHERE diagram_status = '" . __RUNNING__ . "'";
+        $rows = $this->db->query($sql);
+
+        foreach ($rows as $row) {
+            array_push($jobs, $row['diagram_id']);
+        }
+
+        return $jobs;
+    }
+
     public static function get_key($db, $id) {
         $sql = "SELECT diagram_key FROM diagram WHERE diagram_id = $id";
         $result = $db->query($sql);

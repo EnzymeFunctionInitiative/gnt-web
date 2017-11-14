@@ -10,6 +10,10 @@ class settings {
         return __GNN_SCRIPT__;
     }
 
+    public static function get_unzip_diagram_script() {
+        return __UNZIP_DIAGRAM_SCRIPT__;
+    }
+
     public static function get_uploads_dir() {
         $dir =__UPLOAD_DIR__;
         if (is_dir($dir)) {

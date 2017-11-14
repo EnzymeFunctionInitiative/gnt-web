@@ -11,6 +11,9 @@ sleep 1
 php $DIR/gnn.php
 
 sleep 1
+php $DIR/check_diagrams.php
+
+sleep 1
 php $DIR/diagrams.php
 
 DATE=$(date +"%Y-%m-%d %H:%M:%S")

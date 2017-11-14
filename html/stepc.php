@@ -31,10 +31,11 @@ $gnnFilesize = $gnn->get_gnn_filesize();
 $pfamFile = $gnn->get_relative_pfam_hub();
 $pfamZipFile = $gnn->get_relative_pfam_hub_zip_file();
 $pfamFilesize = $gnn->get_pfam_hub_filesize();
+$pfamZipFilesize = $gnn->get_pfam_hub_zip_filesize();
 $idDataZip = $gnn->get_relative_cluster_data_zip_file();
 $idDataZipFilesize = $gnn->get_cluster_data_zip_filesize();
 $pfamDataZip = $gnn->get_relative_pfam_data_zip_file();
-$pfamDataZipFilesize = $gnn->get_pfam_data_zip_filesize();
+$pfamDataZipFilesize = $gnn->get_pfam_hub_zip_filesize();
 $warningFile = $gnn->get_relative_warning_file();
 $warningFilesize = $gnn->get_warning_filesize();
 $idTableFile = $gnn->get_relative_id_table_file();
@@ -48,6 +49,10 @@ $coocTableFilesize = $gnn->get_cooc_table_filesize();
 $hubCountFile = $gnn->get_relative_hub_count_file();
 $hubCountFilesize = $gnn->get_hub_count_filesize();
 $hasDiagrams = $gnn->does_job_have_arrows();
+$diagramFile = $gnn->get_relative_diagram_data_file();
+$diagramZipFile = $gnn->get_relative_diagram_zip_file();
+$diagramFileSize = $gnn->get_diagram_data_filesize();
+$diagramZipFileSize = $gnn->get_diagram_zip_filesize();
 
 // Legacy jobs
 $noMatchesFile = $gnn->get_relative_no_matches_file();
@@ -142,7 +147,7 @@ require_once('inc/header.inc.php');
     <table width="100%" border="1" class="pretty">
         <thead>
             <th></th>
-            <th>File Size (MB)</th>
+            <th>File Size (Unzipped/Zipped MB)</th>
         </thead>
         <tbody>
             <tr style='text-align:center;'>
@@ -152,7 +157,10 @@ require_once('inc/header.inc.php');
                     <a href="<?php echo "$baseUrl/$pfamZipFile"; ?>"><button class="light small">Download ZIP</button></a>
 <?php } ?>
                 </td>
-                <td><?php echo $pfamFilesize; ?> MB</td>
+                <td>
+                    <?php echo $pfamFilesize; ?> MB
+<?php if ($pfamZipFilesize) { echo "/ $pfamZipFilesize MB"; } ?>
+                </td>
             </tr>
         </tbody>
     </table>
@@ -167,15 +175,30 @@ require_once('inc/header.inc.php');
             <thead>
                 <th>Action</th>
                 <th></th>
+                <th>File Size (Unzipped/Zipped MB)</th>
             </thead>
             <tbody>
                 <tr style='text-align:center;'>
                     <td class="button-col">
                         <a href="view_diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button class="light small">View diagrams</button></a>
-                        <a href="download_diagram_data.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button class="light small">Download</button></a>
+                    </td>
+                    <td colspan="2">
+                        Opens arrow diagram explorer in a new tab or window.
+                    </td>
+                </tr>
+                <tr style="text-align:center;">
+                    <td class="button-col">
+                        <a href="<?php echo "$baseUrl/$diagramFile"; ?>" target="_blank"><button class="light small">Download</button></a>
+<?php if ($diagramZipFileSize) { ?>
+                        <a href="<?php echo "$baseUrl/$diagramZipFile"; ?>" target="_blank"><button class="light small">Download ZIP</button></a>
+<?php } ?>
                     </td>
                     <td>
-                        Opens arrow diagram explorer in a new tab or window.
+                        Diagram data for later review
+                    </td>
+                    <td>
+                        <?php echo $diagramFileSize; ?> MB
+<?php if ($diagramZipFileSize) { echo "/ $diagramZipFileSize MB"; } ?>
                     </td>
                 </tr>
             </tbody>

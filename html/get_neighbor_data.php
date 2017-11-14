@@ -18,13 +18,13 @@ if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
         $message = "GNN results are expired.";
     }
     
-    $dbFile = $gnn->get_arrow_data_file();
+    $dbFile = $gnn->get_diagram_data_file();
     if (!file_exists($dbFile))
-        $dbFile = $gnn->get_arrow_data_file_legacy();
+        $dbFile = $gnn->get_diagram_data_file_legacy();
 }
 else if (isset($_GET['upload-id']) && functions::is_diagram_upload_id_valid($_GET['upload-id'])) {
     $arrows = new diagram_data_file($_GET['upload-id']);
-    $dbFile = $arrows->get_arrow_data_file();
+    $dbFile = $arrows->get_diagram_data_file();
 }
 else {
     $message = "No GNN selected.";

@@ -155,7 +155,7 @@ class gnn {
         $exec .= " -id-out " . $this->get_id_table_file();
         $exec .= " -none-dir " . $this->get_pfam_none_dir();
         $exec .= " -none-zip " . $this->get_pfam_none_zip_file();
-        $exec .= " -arrow-file " . $this->get_arrow_data_file();
+        $exec .= " -arrow-file " . $this->get_diagram_data_file();
         $exec .= " -cooc-table " . $this->get_cooc_table_file();
         $exec .= " -hub-count-file \"" . $this->get_hub_count_file() . "\"";
 
@@ -223,7 +223,7 @@ class gnn {
         $exec .= " -none-zip \"" . $this->get_pfam_none_zip_file() . "\"";
         $exec .= " -fasta-dir \"" . $this->get_fasta_dir() . "\"";
         $exec .= " -fasta-zip \"" . $this->get_fasta_zip_file() . "\"";
-        $exec .= " -arrow-file \"" . $this->get_arrow_data_file() . "\"";
+        $exec .= " -arrow-file \"" . $this->get_diagram_data_file() . "\"";
         $exec .= " -cooc-table \"" . $this->get_cooc_table_file() . "\"";
         $exec .= " -hub-count-file \"" . $this->get_hub_count_file() . "\"";
 
@@ -313,6 +313,10 @@ class gnn {
     public function get_relative_pfam_hub() {
         $name = $this->is_legacy ? "pfam" : "pfam_family_gnn";
         return $this->shared_get_relative_file_path("_${name}", ".xgmml");
+    }
+    public function get_pfam_hub_zipfile() {
+        $name = $this->is_legacy ? "pfam" : "pfam_family_gnn";
+        return $this->shared_get_full_file_path("_${name}", ".zip");
     }
 
     public function get_warning_file() {
@@ -418,17 +422,23 @@ class gnn {
         return $this->shared_get_relative_file_path("_stats", ".txt");
     }
 
-    public function get_arrow_data_file() {
+    public function get_diagram_data_file() {
         return $this->shared_get_full_file_path("_arrow_data", ".sqlite");
     }
-    public function get_arrow_data_file_legacy() {
+    public function get_diagram_zip_file() {
+        return $this->shared_get_full_file_path("_arrow_data", ".zip");
+    }
+    public function get_diagram_data_file_legacy() {
         return $this->shared_get_full_file_path("_arrow_data", ".txt");
     }
-    public function get_relative_arrow_data_file() {
+    public function get_relative_diagram_data_file() {
         return $this->shared_get_relative_file_path("_arrow_data", ".sqlite");
     }
+    public function get_relative_diagram_zip_file() {
+        return $this->shared_get_relative_file_path("_arrow_data", ".zip");
+    }
     public function does_job_have_arrows() {
-        return file_exists($this->get_arrow_data_file());
+        return file_exists($this->get_diagram_data_file());
     }
 
     public function get_cooc_table_file() {
@@ -505,6 +515,10 @@ class gnn {
         $file = $this->get_pfam_hub();
         return $this->get_shared_file_size($file);
     }
+    public function get_pfam_hub_zip_filesize() {
+        $file = $this->get_pfam_hub_zipfile();
+        return $this->get_shared_file_size($file);
+    }
     public function get_id_table_filesize() {
         if ($this->is_legacy)
             return 0;
@@ -519,6 +533,15 @@ class gnn {
         $file = $this->get_hub_count_file();
         return $this->get_shared_file_size($file);
     }
+    public function get_diagram_data_filesize() {
+        $file = $this->get_diagram_data_file();
+        return $this->get_shared_file_size($file);
+    }
+    public function get_diagram_zip_filesize() {
+        $file = $this->get_diagram_zip_file();
+        return $this->get_shared_file_size($file);
+    }
+
     private function get_shared_file_size($file) {
         if (file_exists($file))
             return round(filesize($file) / 1048576, 2);

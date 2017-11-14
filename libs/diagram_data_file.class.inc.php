@@ -30,8 +30,7 @@ class diagram_data_file {
         );
 
         $uploadPrefix = settings::get_diagram_upload_prefix();
-        $ext = settings::get_diagram_extension();
-
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
         $result = $db->build_insert('diagram', $insert_array);
         if ($result) {
@@ -108,7 +107,7 @@ class diagram_data_file {
          */
     }
 
-    public function get_arrow_data_file() {
+    public function get_diagram_data_file() {
         return $this->db_file;
     }
 

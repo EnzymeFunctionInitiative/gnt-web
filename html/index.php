@@ -43,7 +43,7 @@ large datasets of sequences.
 <div class="tabs">
     <ul class="tab-headers">
 <?php if (count($jobs) > 0) { ?>
-        <li class="active"><a href="#jobs">Jobs</a></li>
+        <li class="active"><a href="#jobs">Previous Jobs</a></li>
 <?php } ?>
         <li><a href="#create">Create GNN</a></li>
         <li><a href="#diagrams">View Saved Diagrams</a></li>

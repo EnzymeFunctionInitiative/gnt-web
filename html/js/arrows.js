@@ -318,8 +318,10 @@ ArrowDiagram.prototype.drawAxis = function(ypos, drawingWidth, minXpct, maxXpct,
 
 ArrowDiagram.prototype.drawTitle = function(ypos, data) {
     var title = "";
+    if (data.hasOwnProperty("accession"))
+        title = title + "Query UniProt ID: " + data.accession + "; ";
     if (data.hasOwnProperty("organism"))
-        title = data.organism + "; ";
+        title = title + data.organism + "; ";
     if (data.hasOwnProperty("taxon_id"))
         title = title + "NCBI Taxon ID: " + data.taxon_id;
     if (data.hasOwnProperty("id"))

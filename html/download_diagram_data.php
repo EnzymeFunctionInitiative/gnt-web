@@ -23,9 +23,9 @@ if ($isError) {
 
 
 
-$dbFile = $gnn->get_arrow_data_file();
+$dbFile = $gnn->get_diagram_data_file();
 if (!file_exists($dbFile))
-    $dbFile = $gnn->get_arrow_data_file_legacy();
+    $dbFile = $gnn->get_diagram_data_file_legacy();
 $downloadFilename = pathinfo($dbFile, PATHINFO_FILENAME) . ".sqlite";
 
 
