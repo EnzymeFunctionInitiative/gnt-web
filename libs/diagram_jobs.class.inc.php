@@ -2,8 +2,8 @@
 
 require_once "../includes/main.inc.php";
 require_once "functions.class.inc.php";
-require_once "Mail.php";
-require_once "Mail/mime.php";
+require_once "const.class.inc.php";
+
 
 class diagram_jobs {
 
@@ -14,6 +14,85 @@ class diagram_jobs {
         $this->db = $db;
         $this->beta = settings::get_release_status();
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // STATIC FUNCTIONS FOR CREATING NEW JOBS
+
+    public static function create_file($db, $email, $tmp_filename, $filename) {
+
+        $uploadPrefix = settings::get_diagram_upload_prefix();
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        $title = self::get_diagram_title_from_file($filename);
+
+        $jobType = $ext == "zip" ? DiagramJob::DIRECT_ZIP : DiagramJob::DIRECT;
+        
+        $info = self::do_database_create($db, $email, $title, $jobType, array());
+
+        if ($info['id']) {
+            functions::copy_to_uploads_dir($tmp_filename, $filename, $info['id'], $uploadPrefix, $ext);
+        } else {
+            return false;
+        }
+
+        return $info;
+    }
+
+    public static function create_blast_job($db, $email, $title, $evalue, $maxNumSeqs, $blastSeq) {
+        
+        $jobType = DiagramJob::BLAST;
+        $params = array('blast_seq' => $blastSeq, 'evalue' => $evalue, 'max_num_sequence' => $maxNumSeqs);
+
+        $info = self::do_database_create($db, $email, $title, $jobType, $params);
+
+        return $info;
+    }
+
+    public static function create_lookup_job($db, $email, $title, $ids) {
+
+        $ids = preg_replace("/\s+/", ",", $ids);
+        $ids = preg_replace("/,+/", "", $ids);
+        $ids = preg_replace("/,+$/", "", $ids);
+
+        $jobType = DiagramJob::LOOKUP;
+        $params = array('id_list' => $ids);
+
+        $info = self::do_database_create($db, $email, $title, $jobType, $params);
+
+        return $info;
+    }
+
+    private static function do_database_create($db, $email, $title, $jobType, $paramsArray) {
+        $key = functions::generate_key();
+
+        $paramsJson = functions::encode_object($paramsArray);
+
+        $insertArray = array(
+            'diagram_key' => $key,
+            'diagram_email' => $email,
+            'diagram_title' => $title,
+            'diagram_type' => $jobType,
+            'diagram_status' => __NEW__,
+            'diagram_params' => $paramsJson,
+        );
+
+        $result = $db->build_insert('diagram', $insertArray);
+
+        $info = array('id' => $result, 'key' => $key);
+
+        return $info;
+    }
+
+    private static function get_diagram_title_from_file($file) {
+        $file = preg_replace("/\.zip$/", "", $file);
+        $file = preg_replace("/\.sqlite$/", "", $file);
+        $file = preg_replace("/_arrow_data/", "", $file);
+        return $file;
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // ACCESSORS
 
     public function get_new_jobs() {
         $jobs = array();

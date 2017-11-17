@@ -28,9 +28,7 @@ function uploadFile(fileInputId, formId, progressNumId, progressBarId, messageId
             // be accessed as jsonObj.name and jsonObj.country.
             if (jsonObj.valid) {
                 var nextStepScript = "stepb.php";
-                var diagUpload = isSsn ? "" : "&upload=1";
-                window.location.href = nextStepScript + "?id=" + jsonObj.id + "&key=" + jsonObj.key + diagUpload;
-                console.log(jsonObj.cookieInfo);
+                var diagUpload = isSsn ? "" : "&diagram=1";
                 if (jsonObj.cookieInfo)
                     document.cookie = jsonObj.cookieInfo;
             }
@@ -84,5 +82,45 @@ function enableForm(formId) {
 //    document.getElementById('email').disabled = false;
 //    document.getElementById('submit').disabled = false;
 }
+
+function addParam(fd, param, id) {
+    fd.append(param, document.getElementById(id).value);
+}
+
+function submitOptionAForm(formAction, optionId, inputId, titleId, evalueId, maxSeqId, emailId, messageId) {
+
+    var fd = new FormData();
+    addParam(fd, "option", optionId);
+    addParam(fd, "sequence", inputId);
+    addParam(fd, "evalue", evalueId);
+    addParam(fd, "max-seqs", maxSeqId);
+    addParam(fd, "email", emailId);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", formAction, true);
+    xhr.send(fd);
+    xhr.onreadystatechange  = function(){
+        if (xhr.readyState == 4  ) {
+
+            // Javascript function JSON.parse to parse JSON data
+            var jsonObj = JSON.parse(xhr.responseText);
+
+            // jsonObj variable now contains the data structure and can
+            // be accessed as jsonObj.name and jsonObj.country.
+            if (jsonObj.valid) {
+                var nextStepScript = "stepb.php";
+                if (jsonObj.cookieInfo)
+                    document.cookie = jsonObj.cookieInfo;
+                window.location.href = nextStepScript + "?id=" + jsonObj.id + "&key=" + jsonObj.key + "&diagram=1";
+            }
+            if (jsonObj.message) {
+                document.getElementById(messageId).innerHTML = jsonObj.message;
+            } else {
+                document.getElementById(messageId).innerHTML = "";
+            }
+        }
+    }
+}
+
 
 

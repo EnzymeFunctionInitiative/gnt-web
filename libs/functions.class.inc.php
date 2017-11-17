@@ -31,6 +31,52 @@ class functions {
 
     }
 
+    public static function verify_evalue($evalue) {
+        $max_evalue = 100;
+        $valid = 1;
+        if ($evalue == "") {
+            $valid = 0;
+        }
+        if (!preg_match("/^\d+$/",$evalue)) {
+            $valid = 0;
+        }
+        if ($evalue > $max_evalue) {
+            $valid = 0;
+        }
+        return $valid;
+    }
+
+    public static function verify_blast_input($blast_input) {
+        $blast_input = strtolower($blast_input);
+        $valid = 1;
+        if (!strlen($blast_input)) {
+            $valid = 0;
+        }
+        if (strlen($blast_input) > 65534) {
+            $valid = 0;
+        }
+        if (preg_match('/[^a-z-* \n\t\r]/',$blast_input)) {
+            $valid = 0;
+        }
+        return $valid;
+    }
+
+    public static function verify_max_seqs($max_seqs) {
+        $valid = 0;
+        if ($max_seqs == "") {
+            $valid = 0;
+        }
+        elseif (!preg_match("/^[1-9][0-9]*$/",$max_seqs)) {
+            $valid = 0;
+        }
+        elseif ($max_seqs > settings::get_max_blast_seq()) {
+            $valid = 0;
+        }
+        else {
+            $valid = 1;
+        }
+        return $valid;
+    }
 
     public static function get_upload_error($value) {
         return self::$upload_errors[$value];
@@ -90,15 +136,6 @@ class functions {
         return $hash;
     }
 
-    public static function get_new_diagram_key() {
-        $dir = __UPLOADED_DIAGRAM_DIR__;
-        $id = generate_key();
-        while (file_exists("$dir/" . self::get_diagram_file_name($id))) {
-            $id = generate_key();
-        }
-        return $id;
-    }
-
     public static function is_diagram_upload_id_valid($id) {
         // Make sure the ID only contains numbers and letters to prevent attacks.
         $hasInvalidChars = preg_match('/[^A-Za-z0-9]/', $id);
@@ -147,5 +184,40 @@ class functions {
             return false;
         }
     }
+
+    public static function decode_object($json) {
+        $data = json_decode($json, true);
+        if (!$data)
+            return array();
+        else
+            return $data;
+    }
+
+    public static function encode_object($obj) {
+        return json_encode($obj);
+    }
+
+    public static function update_results_object_tmpl($db, $prefix, $table, $column, $id, $data) {
+        $theCol = "${prefix}_${column}";
+
+        $sql = "SELECT $theCol FROM $table WHERE ${prefix}_id='$id'";
+        $result = $db->query($sql);
+        if (!$result)
+            return NULL;
+        $result = $result[0];
+        $results_obj = self::decode_object($result[$theCol]);
+
+        foreach ($data as $key => $value)
+            $results_obj[$key] = $value;
+        
+        $json = self::encode_object($results_obj);
+        
+        $sql = "UPDATE $table SET $theCol = '" . $db->escape_string($json) . "'";
+        $sql .= " WHERE ${prefix}_id='$id' LIMIT 1";
+        $result = $db->non_select_query($sql);
+
+        return $result;
+    }
+
 }
 ?>

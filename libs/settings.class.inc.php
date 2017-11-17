@@ -10,8 +10,8 @@ class settings {
         return __GNN_SCRIPT__;
     }
 
-    public static function get_unzip_diagram_script() {
-        return __UNZIP_DIAGRAM_SCRIPT__;
+    public static function get_process_diagram_script() {
+        return __PROCESS_DIAGRAM_SCRIPT__;
     }
 
     public static function get_uploads_dir() {
@@ -150,6 +150,22 @@ class settings {
 
     public static function get_diagram_upload_prefix() {
         return "diagram_";
+    }
+
+    public static function get_default_evalue() {
+        return __DEFAULT_EVALUE__;
+    }
+
+    public static function get_max_blast_seq() {
+        return __MAX_NUM_BLAST_SEQ__;
+    }
+
+    public static function get_default_blast_seq() {
+        return __DEFAULT_NUM_BLAST_SEQ__;
+    }
+
+    public static function run_jobs_as_legacy() {
+        return __ENABLE_LEGACY__;
     }
 }
 ?>

@@ -327,7 +327,7 @@ function getQueryAttributes($row, $orderData) {
     $attr['evalue'] = $evalue;
     $attr['pid'] = $pid;
 
-    if (substr_compare($attr['organism'], ".", -1) === 0)
+    if (strlen($attr['organism']) > 0 && substr_compare($attr['organism'], ".", -1) === 0)
         $attr['organism'] = substr($attr['organism'], 0, strlen($attr['organism'])-1);
 
     return $attr;

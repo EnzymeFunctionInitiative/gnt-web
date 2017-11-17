@@ -19,8 +19,10 @@ else {
             print "Processing $jobId\n";
             $job = new diagram_job($db, $jobId);
             $msg = $job->process();
-            if (!$msg)
-                print "Error processing job $jobId\n";
+            if (!$msg) {
+                print "Error processing job $jobId:\n";
+                print $job->get_message();
+            }
         }
     }
 }

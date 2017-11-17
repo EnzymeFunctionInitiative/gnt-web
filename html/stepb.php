@@ -6,7 +6,7 @@ require_once "../libs/diagram_jobs.class.inc.php";
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id']) || !isset($_GET['key'])) {
     error404();
-} else if (!isset($_GET['upload'])) {
+} else if (!isset($_GET['diagram'])) {
     $gnn = new gnn($db,$_GET['id']);
     if ($gnn->get_key() != $_GET['key']) {
         error404();
@@ -18,7 +18,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id']) || !isset($_GET['key'])) {
     }
 }
 
-$isUploadedDiagram = isset($_GET['upload']) && $_GET['upload'];
+$isDiagram = isset($_GET['diagram']) && $_GET['diagram'];
 
 require_once('inc/header.inc.php'); 
 
@@ -29,7 +29,7 @@ require_once('inc/header.inc.php');
 
 <hr>
 
-<?php if (!$isUploadedDiagram) { ?>
+<?php if (!$isDiagram) { ?>
 <h2 class="bold">Completing Generation of GNN </h2>
 <p>&nbsp;</p>
 <p>An email will be sent when your GNN generation is complete.</p>

@@ -22,6 +22,7 @@ $title = "Expired Job";
     <link rel="stylesheet" type="text/css" href="/css/shared.css">
     <link rel="stylesheet" type="text/css" href="css/gnt.css">
     <link rel="stylesheet" type="text/css" href="css/tabs.css">
+    <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 <?php if (isset($TUTORIAL) && $TUTORIAL) { ?>
     <link rel="stylesheet" type="text/css" href="css/tutorial.css">
 <?php } ?>

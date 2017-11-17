@@ -47,6 +47,7 @@ large datasets of sequences.
 <?php } ?>
         <li><a href="#create">Create GNN</a></li>
         <li><a href="#diagrams">View Saved Diagrams</a></li>
+        <li><a href="#create-diagrams">Create Diagrams</a></li>
         <li><a href="#tutorial">Tutorial</a></li>
     </ul>
 
@@ -118,17 +119,20 @@ HTML;
                 </p>
     
                 <p>
-                <label for='cooccurrence_input'><b>Co-occurrence percentage lower limit:</b></label>
-                <input type='text' id='cooccurrence' name='cooccurrence' maxlength='3'><br>
-                This option allows to filter the neighboring pFAMs with a co-occurrence <br>percentage lower than the set value. <br>
-                The default value is  <?php echo settings::get_default_cooccurrence(); ?>, Valid values are 1-100.
+                    <label for='cooccurrence_input'><b>Co-occurrence percentage lower limit:</b></label>
+                    <input type='text' id='cooccurrence' name='cooccurrence' maxlength='3'><br>
+                    This option allows to filter the neighboring pFAMs with a co-occurrence <br>percentage lower than the set value. <br>
+                    The default value is  <?php echo settings::get_default_cooccurrence(); ?>, Valid values are 1-100.
+                </p>
                 <p>
-                <input name='ssn_email' id='ssn_email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
-                When the file has been uploaded and processed, you will receive an email containing a link
-                to download the data.
+                    <input name='ssn_email' id='ssn_email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
+                    When the file has been uploaded and processed, you will receive an email containing a link
+                    to download the data.
                 </p>
     
-                <div id='ssn_message' style="color: red"><?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?></div>
+                <div id='ssn_message' style="color: red">
+                    <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>
+                </div>
                 <center>
                     <div><button type="button" id='ssn_submit' name="ssn_submit" class="dark"
                             onclick="uploadFile('ssn_file','upload_form','progress_number','progress_bar','ssn_message','ssn_email','ssn_submit',true)">
@@ -143,22 +147,150 @@ HTML;
         <div id="diagrams" class="tab">
             <form name="upload_diagram_form" id='upload_diagram_form' method="post" action="" enctype="multipart/form-data">
                 <p>
-                <?php echo ui::make_upload_box("<b>Select a File to Upload:</b><br>", "diagram_file", "progress_bar_diagram", "progress_number_diagram", "The acceptable format is sqlite."); ?>
+                    <?php echo ui::make_upload_box("<b>Select a File to Upload:</b><br>", "diagram_file", "progress_bar_diagram", "progress_number_diagram", "The acceptable format is sqlite."); ?>
                 </p>
     
                 <p>
-                <input name='email' id='diagram_email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
-                When the file has been uploaded and processed, you will receive an email containing a link
-                to view the diagrams.
+                    <input name='email' id='diagram_email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
+                    When the file has been uploaded and processed, you will receive an email containing a link
+                    to view the diagrams.
                 </p>
     
-                <div id='diagram_message' style="color: red"><?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?></div>
+                <div id='diagram_message' style="color: red">
+                    <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>
+                </div>
                 <center>
-                    <div><button type="button" id="diagram_submit" name="submit" class="dark" onclick="uploadFile('diagram_file','upload_diagram_form','progress_number_diagram','progress_bar_diagram','diagram_message','diagram_email','diagram_submit',false)">Upload Diagram Data</button></div>
+                    <div><button type="button" id="diagram_submit" name="submit" class="dark"
+                                onclick="uploadFile('diagram_file','upload_diagram_form','progress_number_diagram','progress_bar_diagram','diagram_message','diagram_email','diagram_submit',false)">
+                            Upload Diagram Data</button>
+                    </div>
                     <div><progress id="progress_bar_diagram" max="100" value="0"></progress></div>
                     <div id="progress_number_diagram"></div>
                 </center>
             </form> 
+        </div>
+
+        <div id="create-diagrams" class="tab">
+            <div style="margin-bottom: 10px;">Clicking on the headers below provides access to various ways of generating genomic network diagrams.</div>
+            <div id="create-accordion">
+                <h3>Single Sequence BLAST</h3>
+                <div>
+                    <p>
+                    The provided sequence is used as the query for a BLAST search of the UniProt database.
+                    The retrieved sequences are used to generate genomic neighborhood diagrams. 
+                    </p>
+
+                    <form name="create_diagrams" id="create_diagram_form" method="post" action="">
+                        <input type="hidden" id="option-a-option" name="option" value="a">
+                        <textarea class="options" id="option-a-input" name="option-a-input"><?php
+                            if (isset($_POST['option-a-input'])) { echo $_POST['option-a-input']; }
+                            ?></textarea>
+
+                        <div class="job-title-container">
+                            Optional job title:
+                            <input type="text" class="small" id="option-a-title" name="title" value='<?php
+                                        if (isset($_POST["title"]))
+                                            echo $_POST["title"];
+                                        else
+                                            echo "";
+                                ?>'>
+                        </div>
+
+                        <div class="advanced-toggle">
+                            Advanced Options <i class="fa fa-plus-square" aria-hidden="true"></i>
+                        </div>
+                        <div style="display: none;" class="advanced-options">
+                            <div>
+                                E-Value:
+                                <input type="text" class="small" id="option-a-evalue" name="evalue" value='<?php
+                                        if (isset($_POST["evalue"])) {
+                                            echo $_POST["evalue"];
+                                        } else {
+                                            echo settings::get_default_evalue(); }
+                                    ?>'>
+                                Negative log of e-value for all-by-all BLAST (&ge; 1; default:
+                                <?php echo settings::get_default_evalue(); ?>)
+                            </div>
+                            <div>
+                                Maximum Blast Sequences:
+                                <input type="text" id="option-a-max-seqs" class="small" name="max-seqs" value='<?php
+                                        if (isset($_POST["max-seqs"])) {
+                                            echo $_POST["max-seqs"];
+                                        } else {
+                                            echo settings::get_default_blast_seq(); }
+                                    ?>'>
+                                Maximum number of sequences retrieved (&le; <?php echo settings::get_max_blast_seq(); ?>;
+                                default: <?php echo settings::get_default_blast_seq(); ?>)
+                            </div>
+                        </div>
+
+                        <p>
+                            <input name='email' id='option-a-email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
+                            When the file has been uploaded and processed, you will receive an email containing a link
+                            to view the diagrams.
+                        </p>
+    
+                        <div id='option-a-message' style="color: red">
+                            <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>
+                        </div>
+
+                        <center>
+                            <button type="button" class="dark"
+                                            onclick="submitOptionAForm('create_diagram.php', 'option-a-option', 'option-a-input',
+                                                                       'option-a-title', 'option-a-evalue', 'option-a-max-seqs',
+                                                                       'option-a-email', 'option-a-message');"
+                                >Submit</button>
+                        </center>
+                    </form>
+                </div>
+
+                <h3>Sequence ID Lookup</h3>
+                <div>
+                    <p>
+                    The genomic neighborhoods are retreived for the UniProt, NCBI, EMBL-EBI ENA, and PDB identifiers
+                    that are provided in the input box below.  Not all identifiers may exist in the EFI-GNT database so
+                    the results will only include diagrams for sequences that were identified.
+                    </p>
+
+                    <form name="create_diagrams" id="create_diagram_form" method="post" action="create_diagram.php">
+                        <input type="hidden" name="option" value="d">
+                        <textarea class="options" id="option-d-input" name="input"><?php
+                            if (isset($_POST['input'])) { echo $_POST['input']; }
+                            ?></textarea>
+
+                        <div class="job-title-container">
+                            Optional job title:
+                            <input type="text" class="small" id="option-a-title" name="title" value='<?php
+                                        if (isset($_POST["title"]))
+                                            echo $_POST["title"];
+                                        else
+                                            echo "";
+                                ?>'>
+                        </div>
+                        <!--
+                        <div class="advanced-toggle">
+                            Advanced Options <i class="fa fa-plus-square" aria-hidden="true"></i>
+                        </div>
+                        <div style="display: none;" class="advanced-options">
+                        </div>
+                        -->
+
+                        <p>
+                            <input name='email' id='option_d_email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
+                            When the file has been uploaded and processed, you will receive an email containing a link
+                            to view the diagrams.
+                        </p>
+    
+                        <center><button class="dark">Submit</button></center>
+                    </form>
+                </div>
+
+                <h3>FASTA Sequence Lookup</h3>
+                <div>
+                    <p>
+                    This will be implemented in the future.
+                </div>
+            </div>
         </div>
 
         <div id="tutorial" class="tab">
@@ -254,6 +386,28 @@ HTML;
             $(".tabs " + curAttrValue).fadeIn(300).show().siblings().hide();
             $(this).parent("li").addClass("active").siblings().removeClass("active");
             e.preventDefault();
+        });
+
+        $(".advanced-toggle").click(function () {
+            $header = $(this);
+            //getting the next element
+            $content = $header.next();
+            //open up the content needed - toggle the slide- if visible, slide up, if not slidedown.
+            $content.slideToggle(100, function () {
+                if ($content.is(":visible")) {
+                    $header.find("i.fa").addClass("fa-minus-square");
+                    $header.find("i.fa").removeClass("fa-plus-square");
+                } else {
+                    $header.find("i.fa").removeClass("fa-minus-square");
+                    $header.find("i.fa").addClass("fa-plus-square");
+                }
+            });
+        
+        });
+
+        $("#create-accordion" ).accordion({
+            icons: { "header": "ui-icon-plus", "activeHeader": "ui-icon-minus" },
+            heightStyle: "content"
         });
     });
 </script>

@@ -1,5 +1,7 @@
 <?php
 
+require_once('const.class.inc.php');
+
 class diagram_data_file {
 
     private $id;
@@ -20,17 +22,21 @@ class diagram_data_file {
     public static function create($db, $email, $tmp_filename, $filename) {
         $result = false;
 
+        $uploadPrefix = settings::get_diagram_upload_prefix();
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
         $key = functions::generate_key();
         $title = self::get_diagram_title_from_file($filename);
+
+        $jobType = $ext == "zip" ? DiagramJob::DIRECT_ZIP : DiagramJob::DIRECT;
 
         $insert_array = array(
             'diagram_key' => $key,
             'diagram_email' => $email,
             'diagram_title' => $title,
+            'diagram_type' => $jobType,
+            'diagram_status' => __NEW__,
         );
-
-        $uploadPrefix = settings::get_diagram_upload_prefix();
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
         $result = $db->build_insert('diagram', $insert_array);
         if ($result) {
@@ -126,6 +132,7 @@ class diagram_data_file {
     public function is_loaded() {
         return $this->loaded;
     }
+
 }
 
 ?>

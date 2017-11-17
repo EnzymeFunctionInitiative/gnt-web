@@ -11,50 +11,71 @@
 //                                              
 ////////////////////////////////////
 
-define("__TITLE__","EFI GNT");
-define("__TIMEZONE__","America/Chicago");
-define("__GNN_SCRIPT__","");
-define("__GNN_MODULE__","");
+//
+// PATHS
 define("__OUTPUT_DIR__","");
 define("__DIAGRAM_OUTPUT_DIR__","");
 define("__LEGACY_OUTPUT_DIR__","");
+define("__UPLOAD_DIR__","");
+define("__LOG_FILE__","");
+define("__WEB_ROOT__","");
+define("__EST_URL__","");
+
+//
+// FILE INFO
 define("__RELATIVE_OUTPUT_DIR__","");
 define("__LEGACY_RELATIVE_OUTPUT_DIR__","");
-define("__DEFAULT_NEIGHBOR_SIZE__",10);
 define("__VALID_FILE_TYPE__","xgmml");
 define("__VALID_DIAGRAM_FILE_TYPE__","sqlite");
-define("__UPLOAD_DIR__","");
+
+//
+// DATABASE
 define("__MYSQL_HOST__","");
 define("__MYSQL_USER__","");
 define("__MYSQL_PASSWORD__","");
 define("__MYSQL_DATABASE__","");
+
+//
+// UI PARAMETERS
+define("__TITLE__","EFI GNT");
+define("__TIMEZONE__","America/Chicago");
 define("__ADMIN_EMAIL__","");
-define("__RETENTION_DAYS__","7");
-define("__EMAIL_FOOTER__","");
-
-define("__MAX_TIMEOUT__","3600");
-define("__COOCCURRENCE__",20);
-
 define("__UNIPROT_VERSION__","2015_02");
 define("__ENA_VERSION__","122");
 define("__GNT_VERSION__","1.0");
 define("__EST_VERSION__","2.0");
+define("__EMAIL_FOOTER__","");
+define("__BETA_RELEASE__","");
 
-define("__CLUSTER_USER__","");
-define("__CLUSTER_SCHEDULER__","local"); //local,torque,slurm
+//
+// JOB SCHEDULING PARAMETERS
+define("__GNN_SCRIPT__","");
+define("__PROCESS_DIAGRAM_SCRIPT__","");
+define("__GNN_MODULE__","");
+define("__EFIDB_MODULE__","");
+define("__BLAST_MODULE__","");
+define("__ENABLE_LOG__",false);
+define("__ENABLE_LEGACY__",false);
 
-///////Status/////////////
+//
+// DEFAULTS
+define("__DEFAULT_NEIGHBOR_SIZE__",10);
+define("__MAX_TIMEOUT__","3600");
+define("__COOCCURRENCE__",20);
+define("__RETENTION_DAYS__","7");
+define("__DEFAULT_EVALUE__","5");
+define("__DEFAULT_NUM_BLAST_SEQ__","200");
+define("__MAX_NUM_BLAST_SEQ__","500");
+
+//
+// STATUS
 define("__NEW__","NEW");
 define("__RUNNING__","RUNNING");
 define("__FINISH__","FINISH");
 define("__FAILED__","FAILED");
 
-define("__BETA_RELEASE__","");
-define("__ENABLE_LOG__",false);
-define("__LOG_FILE__","");
-define("__WEB_ROOT__","");
-define("__EST_URL__","");
-
-define("__UPLOADED_DIAGRAM_DIR__","");
+// LEGACY
+define("__CLUSTER_USER__","");
+define("__CLUSTER_SCHEDULER__","local"); //local,torque,slurm
 
 ?>

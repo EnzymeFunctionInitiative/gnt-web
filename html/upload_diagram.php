@@ -1,6 +1,6 @@
 <?php
 require_once '../includes/main.inc.php';
-require_once '../libs/diagram_data_file.class.inc.php';
+require_once '../libs/diagram_jobs.class.inc.php';
 
 $id = 0;
 $key = 0;
@@ -38,7 +38,7 @@ if (isset($_POST['submit'])) {
     $email = $_POST['email'];
 
     if ($valid) {
-        $arrowInfo = diagram_data_file::create($db, $email, $_FILES['file']['tmp_name'], $_FILES['file']['name']);
+        $arrowInfo = diagram_jobs::create_file($db, $email, $_FILES['file']['tmp_name'], $_FILES['file']['name']);
         if ($arrowInfo === false) {
             $valid = false;
         } else {
