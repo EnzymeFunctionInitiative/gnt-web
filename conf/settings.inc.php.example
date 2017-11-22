@@ -66,6 +66,7 @@ define("__RETENTION_DAYS__","7");
 define("__DEFAULT_EVALUE__","5");
 define("__DEFAULT_NUM_BLAST_SEQ__","200");
 define("__MAX_NUM_BLAST_SEQ__","500");
+define("__DEFAULT_NEIGHBORHOOD_SIZE__","10");
 
 //
 // STATUS

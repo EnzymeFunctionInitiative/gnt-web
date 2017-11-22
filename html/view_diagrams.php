@@ -13,13 +13,20 @@ $nbSize = "";
 $gnnName = "";
 $idKeyQueryString = "";
 $windowTitle = "";
+$uniprotIdModalText = "";
+$unmatchedIdModalText = "";
+$blastSequence = "";
+
 $isUploadedDiagram = false;
 $supportsDownload = true;
 $supportsExport = true;
+$isDirectJob = false; // This flag indicates if the job is one that generated an arrow diagram from a single sequence BLAST'ed, list of IDs, or a list of FASTA sequences.
+$hasUnmatchedIds = false;
+$isBlast = false;
 
-if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
+if ((isset($_GET['gnn-id'])) && (is_numeric($_GET['gnn-id']))) {
     $gnnKey = $_GET['key'];
-    $gnnId = $_GET['id'];
+    $gnnId = $_GET['gnn-id'];
     $gnn = new gnn($db, $gnnId);
     $cooccurrence = $gnn->get_cooccurrence();
     $nbSize = $gnn->get_size();
@@ -34,7 +41,7 @@ if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
         prettyError404("That job has expired and doesn't exist anymore.");
     }
 
-    $idKeyQueryString = "id=$gnnId&key=$gnnKey";
+    $idKeyQueryString = "gnn-id=$gnnId&key=$gnnKey";
     $windowTitle = " for Job #$gnnId";
 }
 else if (isset($_GET['upload-id']) && functions::is_diagram_upload_id_valid($_GET['upload-id'])) {
@@ -54,10 +61,46 @@ else if (isset($_GET['upload-id']) && functions::is_diagram_upload_id_valid($_GE
     $gnnName = $arrows->get_name();
     $cooccurrence = $arrows->get_cooccurrence();
     $nbSize = $arrows->get_neighborhood_size();
+    $isDirectJob = $arrows->is_direct_job();
 
     $idKeyQueryString = "upload-id=$gnnId&key=$gnnKey";
     $isUploadedDiagram = true;
     $gnnNameText = "Input filename: $gnnName";
+}
+else if (isset($_GET['direct-id']) && functions::is_diagram_upload_id_valid($_GET['direct-id'])) {
+    $gnnId = $_GET['direct-id'];
+    $gnnKey = $_GET['key'];
+
+    $arrows = new diagram_data_file($gnnId);
+    $key = diagram_jobs::get_key($db, $gnnId);
+
+    if ($gnnKey != $key) {
+        error404();
+    }
+    elseif (!$arrows->is_loaded()) {
+        error_log($arrows->get_message());
+        prettyError404("Oops, something went wrong. Please send us an email and mention the following diagnostic code: $gnnId");
+    }
+
+    $gnnName = $arrows->get_name();
+    $isDirectJob = true;
+    $isBlast = $arrows->is_job_type_blast();
+    $unmatchedIds = $arrows->get_unmatched_ids();
+    $uniprotIds = $arrows->get_uniprot_ids();
+    $blastSequence = $arrows->get_blast_sequence();
+
+    $hasUnmatchedIds = count($unmatchedIds) > 0;
+
+    for ($i = 0; $i < count($uniprotIds); $i++) {
+        $uniprotIdModalText .= "<div>" . $uniprotIds[$i] . "</div>";
+    }
+
+    for ($i = 0; $i < count($unmatchedIds); $i++) {
+        $unmatchedIdModalText .= "<div>" . $unmatchedIds[$i] . "</div>";
+    }
+
+    $idKeyQueryString = "direct-id=$gnnId&key=$gnnKey";
+    $gnnNameText = "Job name: $gnnName";
 }
 else {
     error404();
@@ -65,7 +108,7 @@ else {
 
 $nbSizeText = $nbSize ? "Neighborhood size: $nbSize"  : "";
 $cooccurrenceText = $cooccurrence ? "Co-occurrence: $cooccurrence" : "";
-$gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
+$gnnNameText = $gnnName ? ($isDirectJob ? "Job name: " : "Input filename: ") . $gnnName : "";
 
 ?>
 
@@ -127,16 +170,23 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
                         </a> 
                     </li>-->
                     <li>
-                        <i class="fa fa-search" aria-hidden="true"> </i> <b><span style="margin-left:10px;">SEARCH</span></b>
+                        <i class="fa fa-search" aria-hidden="true"> </i> <span class="sidebar-header">Search</span>
                         <div id="advanced-search-panel">
+<?php if ($isDirectJob) { ?>
+                            <div style="font-size:0.9em">Input specific UniProt IDs to display only those diagrams.</div>
+<?php } else { ?>
                             <div style="font-size:0.9em">Input multiple clusters and/or individual UniProt IDs.</div>
+<?php } ?>
                             <textarea id="advanced-search-input"></textarea>
                             <button type="button" class="btn btn-light" id="advanced-search-cluster-button">Query</button>
+<?php if ($isDirectJob) { ?>
+                            <button type="button" class="btn btn-light" id="advanced-search-reset-button">Reset View</button>
+<?php } ?>
                         </div>
                     </li>
                     <li>
-                        <i class="fa fa-filter" aria-hidden="true"> </i> <b><span style="margin-left:10px;">PFAM FILTERING</span></b>
                         <div class="initial-hidden">
+                            <i class="fa fa-filter" aria-hidden="true"> </i> <span class="sidebar-header">PFam Filtering</span>
                             <div class="filter-cb-div filter-cb-toggle-div" id="filter-container-toggle">
                                 <input id="filter-cb-toggle" type="checkbox" />
                                 <label for="filter-cb-toggle"><span id="filter-cb-toggle-text">Show Pfam Numbers</span></label>
@@ -148,8 +198,60 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
                                 <input id="filter-cb-toggle-dashes" type="checkbox" />
                                 <label for="filter-cb-toggle-dashes"><span id="filter-cb-toggle-dashes-text">Dashed lines</span></label>
                             </div>-->
-                            <div style="width:100%;height:12em;" class="active-filter-list" id="active-filter-list">
+                            <div class="active-filter-list" id="active-filter-list">
                             </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div id="page-tools" class="initial-hidden">
+                            <i class="fa fa-wrench" aria-hidden="true"></i> <span class="sidebar-header">Tools</span>
+
+<?php if ($supportsDownload && !$isUploadedDiagram) { ?>
+                            <div>
+                                <a id="download-data" href="download_diagram_data.php?<?php echo $idKeyQueryString; ?>"
+                                    title="Download the data to upload it for future analysis using this tool." target="_blank">
+                                        <button type="button" class="btn btn-default tool-button">
+                                            <i class="fa fa-download" aria-hidden="true"></i> Download Data
+                                        </button>
+                                </a>
+                            </div>
+<?php } ?>
+<?php if ($supportsExport && !$isUploadedDiagram) { ?>
+                            <div>
+                                <button type="button" class="btn btn-default tool-button" id="save-canvas-button">
+                                    <i class="fa fa-picture-o" aria-hidden="true"></i> Save as SVG
+                                </button>
+                            </div>
+<?php } ?>
+                            <div>
+                                <a href="view_diagrams.php?<?php echo $idKeyQueryString; ?>" target="_blank">
+                                    <button type="button" class="btn btn-default tool-button">
+                                        <i class="fa fa-window-restore" aria-hidden="true"></i> New Window
+                                    </button>
+                                </a>
+                            </div>
+
+<?php if ($isDirectJob) {?>
+                            <div>
+                                <button type="button" class="btn btn-default tool-button" id="show-uniprot-ids">
+                                    <i class="fa fa-thumbs-o-up black" aria-hidden="true"></i> <?php if (!$isBlast) echo "Recognized"; ?> UniProt IDs
+                                </button>
+                            </div>
+<?php if ($hasUnmatchedIds) { ?>
+                            <div>
+                                <button type="button" class="btn btn-default tool-button" id="show-unmatched-ids">
+                                <i class="fa fa-thumbs-down" aria-hidden="true"></i> Unmatched IDs
+                                </button>
+                            </div>
+<?php } ?>
+<?php if ($isBlast) { ?>
+                            <div>
+                                <button type="button" class="btn btn-default tool-button" id="show-blast-sequence">
+                                <i class="fa fa-file-text" aria-hidden="true"></i> Input Sequence
+                                </button>
+                            </div>
+<?php } ?>
+<?php } ?>
                         </div>
                         <div style="margin-top:50px;width:100%;position:fixed;bottom:0;height:50px;margin-bottom:100px">
                             <i id="progress-loader" class="fa fa-refresh fa-spin fa-4x fa-fw hidden-placeholder" style="color:white"></i>
@@ -175,20 +277,14 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
                     <div class="col-md-1">
                     </div>
                     <div class="col-md-5">
-                        <div class="button-wrapper col-centered">
-                            <a href="view_diagrams.php?<?php echo $idKeyQueryString; ?>" target="_blank" class="btn btn-default">New Window</a>
-<?php if ($supportsDownload && !$isUploadedDiagram) { ?>
-                            <a id="download-data" href="download_diagram_data.php?<?php echo $idKeyQueryString; ?>" class="btn btn-default" id="download-data" title="Download the data to upload it for future analysis using this tool.">Download Data</a>
-<?php } ?>
-<?php if ($supportsExport && !$isUploadedDiagram) { ?>
-                            <button type="button" class="btn btn-default" id="save-canvas-button">Save as SVG</button>
-<?php } ?>
+                        <div class="button-wrapper col-centered initial-hidden">
+                            Showing <span id="diagrams-displayed-count">0</span> of <span id="diagrams-total-count">0</span> diagrams.
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="button-wrapper pull-right">
                             <button type="button" class="btn btn-default" id="show-all-arrows-button">Show All</button>
-                            <button type="button" class="btn btn-default" id="show-more-arrows-button">Show More</button>
+                            <button type="button" class="btn btn-default" id="show-more-arrows-button">Show 20 More</button>
                         </div>
                     </div>
                 </div>
@@ -215,6 +311,7 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
                 var arrowDiagrams = new ArrowDiagram("arrow-canvas", "", "arrow-container", popupIds);
                 arrowDiagrams.setJobInfo("<?php echo $idKeyQueryString; ?>");
                 var arrowApp = new ArrowApp(arrowDiagrams);
+                arrowApp.setQueryString("<?php echo $idKeyQueryString; ?>");
 
                 $("#menu-toggle").click(function(e) {
                     e.preventDefault();
@@ -239,6 +336,36 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
                     $("#download-forms").append(dlForm);
                     dlForm.submit();
                 });
+
+<?php if ($isDirectJob) { ?>
+                arrowApp.showDefaultDiagrams();
+                $("#advanced-search-reset-button").click(function(e) {
+                    arrowApp.showDefaultDiagrams();
+                });
+                $("#show-uniprot-ids").click(function(e) {
+                        //arrowApp.getMatchedUniProtIds(function(idList) {
+                        //    var idText = arrowApp.formatIdList(idList);
+                        //    $("#uniprot-ids").text(idText);
+                        //    $("#uniprot-ids-modal").modal("show");
+                        //});
+                        $("#uniprot-ids-modal").modal("show");
+                });
+<?php if ($hasUnmatchedIds) { ?>
+                $("#show-unmatched-ids").click(function(e) {
+                        //arrowApp.getUnmatchedUniProtIds(function(idList) {
+                        //    var idText = arrowApp.formatIdList(idList);
+                        //    $("#unmatched-ids").text(idText);
+                        //    $("#unmatched-ids-modal").modal("show");
+                        //});
+                        $("#unmatched-ids-modal").modal("show");
+                });
+<?php } ?>
+<?php if ($isBlast) { ?>
+                $("#show-blast-sequence").click(function(e) { $("#blast-sequence-modal").modal("show"); });
+<?php } ?>
+<?php } else { ?>
+                $("#start-info").show();
+<?php } ?>
             });
         </script>
 
@@ -260,6 +387,60 @@ $gnnNameText = $gnnName ? "Input filename: $gnnName" : "";
         </div>
         <div id="download-forms" style="display:none;">
         </div>
+<?php if ($isDirectJob) { ?>
+        <div id="uniprot-ids-modal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">UniProt IDs Identified</h4>
+                    </div>
+                    <div class="modal-body" id="uniprot-ids">
+<?php echo $uniprotIdModalText; ?>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div>
+<?php if ($hasUnmatchedIds) { ?>
+        <div id="unmatched-ids-modal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">IDs Detected Without UniProt Match</h4>
+                    </div>
+                    <div class="modal-body" id="unmatched-ids">
+<?php echo $unmatchedIdModalText; ?>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div>
+<?php } ?>
+<?php if ($isBlast) { ?>
+        <div id="blast-sequence-modal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Sequence Used in BLAST</h4>
+                    </div>
+                    <div class="modal-body" id="blast-sequence">
+<?php echo $blastSequence; ?>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div>
+<?php } ?>
+<?php } ?>
     </body>
 </html>
 

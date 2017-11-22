@@ -10,6 +10,11 @@ class diagram_data_file {
     private $loaded;
     private $nb_size;
     private $cooccurrence;
+    private $is_direct; // true if generated from a list of IDs or sequences, not a GNN
+    private $job_type;
+    private $blast_sequence;
+    private $message = "";
+
 
     public function __construct($id) {
         $this->id = $id;
@@ -52,8 +57,10 @@ class diagram_data_file {
     private function load_data() {
         $this->db_file = functions::get_diagram_file_path($this->id);
 
-        if (!file_exists($this->db_file))
+        if (!file_exists($this->db_file)) {
+            $this->message = "File " . $this->db_file . " does not exist.";
             return false;
+        }
 
         $db = new SQLite3($this->db_file);
 
@@ -65,22 +72,41 @@ class diagram_data_file {
             if (!$row)
             {
                 $db->close();
+                $this->message = "Unable to query metadata table.";
                 return false;
             }
 
             if (array_key_exists("cooccurrence", $row))
-                $this->cooccurrence = $row['cooccurrence'];
+                $this->cooccurrence = $row["cooccurrence"];
             else
-                $this->cooccurrence = $row['coocurrence']; //TODO: remove this in production; there was a typo earlier.
-            $this->nb_size = $row['neighborhood_size'];
-            $this->gnn_name = $row['name'];
+                $this->cooccurrence = $row["coocurrence"]; //TODO: remove this in production; there was a typo earlier.
+            
+            if (array_key_exists("type", $row))
+                $this->job_type = strtoupper($row["type"]);
+            else
+                $this->job_type = "";
+
+            if (array_key_exists("sequence", $row))
+                $this->blast_sequence = $row["sequence"];
+            else
+                $this->blast_sequence = "";
+            
+            $this->is_direct = $this->job_type == DiagramJob::BLAST || $this->job_type == DiagramJob::LOOKUP || $this->job_type == DiagramJob::FASTA;
+
+            $this->nb_size = $row["neighborhood_size"];
+            $this->gnn_name = $row["name"];
         } else {
             $this->cooccurrence = "";
             $this->nb_size = "";
             $this->gnn_name = "";
+            $this->is_direct = false;
+            $this->job_type = "";
+            $this->blast_sequence = "";
         }
 
         $db->close();
+
+        $this->message = "";
 
         return true;
     }
@@ -129,10 +155,82 @@ class diagram_data_file {
         return $this->cooccurrence;
     }
 
+    public function is_job_type_blast() {
+        return $this->job_type == DiagramJob::BLAST;
+    }
+
+    public function is_direct_job() {
+        return $this->is_direct;
+    }
+
     public function is_loaded() {
         return $this->loaded;
     }
 
+    public function get_uniprot_ids() {
+        $ids = $this->get_ids_from_id_list(1);
+        if (count($ids) == 0) {
+            return $this->get_ids_from_accessions();
+        } else {
+            return $ids;
+        }
+    }
+
+    private function get_ids_from_id_list($idMatchBoolean) {
+        $ids = array();
+
+        $this->db_file = functions::get_diagram_file_path($this->id);
+        if (!file_exists($this->db_file))
+            return false;
+
+        $db = new SQLite3($this->db_file);
+        if (!functions::sqlite_table_exists($db, "id_list"))
+            return $ids;
+
+        $sql = "SELECT id FROM id_list WHERE id_match = $idMatchBoolean";
+        $dbQuery = $db->query($sql);
+
+        while ($row = $dbQuery->fetchArray()) {
+            array_push($ids, $row["id"]);
+        }
+
+        $db->close();
+
+        return $ids;
+    }
+
+    private function get_ids_from_accessions() {
+        $ids = array();
+
+        $this->db_file = functions::get_diagram_file_path($this->id);
+        if (!file_exists($this->db_file))
+            return false;
+
+        $db = new SQLite3($this->db_file);
+
+        $sql = "SELECT accession FROM attributes ORDER BY accession";
+        $dbQuery = $db->query($sql);
+
+        while ($row = $dbQuery->fetchArray()) {
+            array_push($ids, $row["accession"]);
+        }
+
+        $db->close();
+
+        return $ids;
+    }
+
+    public function get_unmatched_ids() {
+        return $this->get_ids_from_id_list(0);
+    }
+
+    public function get_blast_sequence() {
+        return $this->blast_sequence;
+    }
+
+    public function get_message() {
+        return $this->message;
+    }
 }
 
 ?>

@@ -8,9 +8,9 @@ $output = array();
 $dbFile = "";
 
 $message = "";
-if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
-    $gnn = new gnn($db,$_GET['id']);
-    if ($gnn->get_key() != $_GET['key']) {
+if ((isset($_GET["gnn-id"])) && (is_numeric($_GET["gnn-id"]))) {
+    $gnn = new gnn($db,$_GET["gnn-id"]);
+    if ($gnn->get_key() != $_GET["key"]) {
         $message = "No GNN selected.";
         exit;
     }
@@ -24,6 +24,10 @@ if ((isset($_GET['id'])) && (is_numeric($_GET['id']))) {
 }
 else if (isset($_GET['upload-id']) && functions::is_diagram_upload_id_valid($_GET['upload-id'])) {
     $arrows = new diagram_data_file($_GET['upload-id']);
+    $dbFile = $arrows->get_diagram_data_file();
+}
+else if (isset($_GET['direct-id']) && functions::is_diagram_upload_id_valid($_GET['direct-id'])) {
+    $arrows = new diagram_data_file($_GET['direct-id']);
     $dbFile = $arrows->get_diagram_data_file();
 }
 else {
@@ -54,6 +58,7 @@ if (array_key_exists("query", $_GET)) {
     $orderData = getDefaultOrder();
     $arrowData = getArrowData($items, $dbFile, $orderData);
     $output["eod"] = $arrowData["eod"];
+    $output["counts"] = $arrowData["counts"];
     $output["data"] = $arrowData["data"];
 }
 else if (array_key_exists("fams", $_GET)) {
@@ -115,6 +120,7 @@ function getArrowData($items, $dbFile, $orderDataStruct) {
     $startCount = $pageBounds['start'];
     $maxCount = $pageBounds['end'];
     $output["eod"] = "$startCount $maxCount";
+    $output["counts"] = array("max" => count($ids), "invalid" => array());
     
     $minBp = 999999999999;
     $maxBp = -999999999999;
@@ -129,8 +135,10 @@ function getArrowData($items, $dbFile, $orderDataStruct) {
         $attrSql = "SELECT * FROM attributes WHERE accession = '$id' $orderByClause";
         $dbQuery = $resultsDb->query($attrSql);
         $row = $dbQuery->fetchArray(SQLITE3_ASSOC);
-        if (!$row)
+        if (!$row) {
+            array_push($output["counts"]["invalid"], $id);
             continue;
+        }
     
         if ($idCount++ < $startCount)
             continue;
@@ -171,6 +179,9 @@ function getArrowData($items, $dbFile, $orderDataStruct) {
     $resultsDb->close();
 
     $output["eod"] = $startCount < $maxCount;
+    $output["counts"]["displayed"] = $startCount;
+    if (!$output["eod"])
+        $output["counts"]["displayed"]--;
 
     $output = computeRelativeCoordinates($output, $minBp, $maxBp, $maxQueryWidth);
     

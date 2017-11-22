@@ -120,7 +120,7 @@ body {
     margin-right: -6px;
 }
 
-#advanced-search-cluster-button {
+#advanced-search-panel button {
     color: #111;
     background-color: #f8f9fa;
     border-color: #f8f9fa;
@@ -139,6 +139,12 @@ body {
 
 .sidebar-nav li {
     margin-top: 15px;
+}
+
+.sidebar-header {
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-left: 10px;
 }
 
 
@@ -206,6 +212,8 @@ input.filter-cb {
 #active-filter-list {
     padding-left: 5px;
     overflow: auto;
+    max-height: 10em;
+    width: 100%;
 }
 
 #active-filter-list div {
@@ -217,6 +225,20 @@ input.filter-cb {
     display: inline-block;
     width: 15px;
     height: 15px;
+}
+
+.tool-button {
+    width: 75%;
+    text-align: left;
+    color: #000;
+}
+
+.sidebar-nav li button i {
+    color: #333;
+}
+
+.sidebar-nav li i {
+    color: #aaa;
 }
 
 
@@ -258,6 +280,7 @@ input.filter-cb {
     left: 380px;
     top: 110px;
     vertical-align: text-top;
+    display: none;
 }
 
 #start-info i {
@@ -289,4 +312,18 @@ input.filter-cb {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
+/* Overloads */
+
+#uniprot-ids-modal .modal-body {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+#unmatched-ids-modal .modal-body {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
 

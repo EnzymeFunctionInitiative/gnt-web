@@ -24,10 +24,10 @@ function error404($message = "") {
 function errorBase($message, $IsPretty, $Is404Page, $IsExpiredPage) {
     header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found", true, 404);
     if ($IsPretty)
-        include("includes/header.inc.php");
+        include("inc/header.inc.php");
     include("not_found.php");
     if ($IsPretty)
-        include("includes/footer.inc.php");
+        include("inc/footer.inc.php");
     die();
 }
 

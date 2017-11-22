@@ -286,6 +286,18 @@ textarea.options
     min-height: 500px;
 }
 
+.create-job-options div {
+    margin-bottom: 10px;
+}
+
+.create-job-options table {
+    border: 0;
+}
+
+.create-job-options table td {
+    padding: 0 10px 10px 0;
+}
+
 /* TABLE *************************************************************************************************************/
 
 table.pretty {

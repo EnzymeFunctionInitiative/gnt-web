@@ -7,6 +7,7 @@ abstract class DiagramJob {
     const LOOKUP = "ID_LOOKUP";
     const FASTA = "FASTA";
     const UNKNOWN = "UNKNOWN";
+    const GNN = "GNN";
 
     const JobCompleted = "job.completed";
 }

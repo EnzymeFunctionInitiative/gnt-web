@@ -118,13 +118,30 @@ class diagram_job {
         $args .= " -output \"$target\"";
         $args .= " -evalue " . $this->params["evalue"];
         $args .= " -max-seq " . $this->params["max_num_sequence"];
+        if (array_key_exists("neighborhood_size", $this->params) && $this->params["neighborhood_size"])
+            $args .= " -nb-size " . $this->params["neighborhood_size"];
 
         return $this->execute_job($args);
     }
 
     private function process_lookup_job() {
-        $isUploaded = false;
-        return false;
+        $jobId = $this->id;
+
+        $outDir = settings::get_diagram_output_dir() . "/" . $this->id;
+        $this->create_output_dir($outDir);
+        $target = $this->get_output_file();
+
+        $uploadDir = settings::get_uploads_dir();
+        $uploadPrefix = settings::get_diagram_upload_prefix();
+        $uploadSource = "$uploadDir/$uploadPrefix$jobId.txt";
+
+        $source = "$outDir/$jobId.txt";
+        copy($uploadSource, $source);
+
+        $args = " -id-file \"$source\"";
+        $args .= " -output \"$target\"";
+
+        return $this->execute_job($args);
     }
 
     private function process_fasta_job() {
@@ -142,6 +159,8 @@ class diagram_job {
         $exec .= $commandLine;
         if (settings::run_jobs_as_legacy())
             $exec .= " -legacy";
+        if (array_key_exists("title", $this->params) && $this->params["title"])
+            $exec .= " -title \"" . $this->params["title"] . "\"";
 
         //TODO: remove this debug message
         error_log("Job ID: " . $this->id);
@@ -176,11 +195,12 @@ class diagram_job {
     }
 
     private function email_complete() {
+        $queryType = $this->get_query_string_prefix();
         $subject = $this->beta . "EFI-GNT - GNN diagrams ready";
         $to = $this->email;
         $from = "EFI GNT <" . settings::get_admin_email() . ">";
         $url = settings::get_web_root() . "/view_diagrams.php";
-        $full_url = $url . "?" . http_build_query(array('upload-id' => $this->id, 'key' => $this->key));
+        $full_url = $url . "?" . http_build_query(array("$queryType-id" => $this->id, 'key' => $this->key));
 
         $plain_email = "";
 
@@ -212,6 +232,7 @@ class diagram_job {
     }
 
     private function get_job_type($type) {
+        $type = strtoupper($type);
         if ($type == DiagramJob::DIRECT)
             return DiagramJob::DIRECT;
         elseif ($type == DiagramJob::DIRECT_ZIP)
@@ -222,8 +243,24 @@ class diagram_job {
             return DiagramJob::LOOKUP;
         elseif ($type == DiagramJob::FASTA)
             return DiagramJob::FASTA;
+        elseif ($type == DiagramJob::GNN)
+            return DiagramJob::GNN;
         else
             return DiagramJob::UNKNOWN;
+    }
+
+    private function get_query_string_prefix() {
+        switch ($this->type) {
+            case DiagramJob::BLAST:
+            case DiagramJob::LOOKUP:
+            case DiagramJob::FASTA:
+                return "direct";
+            case DiagramJob::DIRECT:
+            case DiagramJob::DIRECT_ZIP:
+                return "upload";
+            default:
+                return "gnn";
+        }
     }
 
     private function get_output_file() {

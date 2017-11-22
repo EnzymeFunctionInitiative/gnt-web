@@ -87,18 +87,37 @@ function addParam(fd, param, id) {
     fd.append(param, document.getElementById(id).value);
 }
 
-function submitOptionAForm(formAction, optionId, inputId, titleId, evalueId, maxSeqId, emailId, messageId) {
+function submitOptionAForm(formAction, optionId, inputId, titleId, evalueId, maxSeqId, emailId, nbSizeId, messageId) {
 
     var fd = new FormData();
     addParam(fd, "option", optionId);
+    addParam(fd, "title", titleId);
     addParam(fd, "sequence", inputId);
     addParam(fd, "evalue", evalueId);
     addParam(fd, "max-seqs", maxSeqId);
+    addParam(fd, "nb-size", nbSizeId);
     addParam(fd, "email", emailId);
 
+    submitOptionFormPost(formAction, fd, messageId);
+}
+
+
+function submitOptionDForm(formAction, optionId, inputId, titleId, emailId, messageId) {
+
+    var fd = new FormData();
+    addParam(fd, "option", optionId);
+    addParam(fd, "title", titleId);
+    addParam(fd, "ids", inputId);
+    addParam(fd, "email", emailId);
+
+    submitOptionFormPost(formAction, fd, messageId);
+}
+
+
+function submitOptionFormPost(formAction, formData, messageId) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", formAction, true);
-    xhr.send(fd);
+    xhr.send(formData);
     xhr.onreadystatechange  = function(){
         if (xhr.readyState == 4  ) {
 
@@ -121,6 +140,4 @@ function submitOptionAForm(formAction, optionId, inputId, titleId, evalueId, max
         }
     }
 }
-
-
 

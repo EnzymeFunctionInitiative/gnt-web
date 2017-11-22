@@ -31,6 +31,21 @@ class functions {
 
     }
 
+    public static function verify_neighborhood_size($nbSize) {
+        $max_nbSize = 100;
+        $valid = 1;
+        if ($nbSize == "") {
+            $valid = 0;
+        }
+        if (!preg_match("/^\d+$/",$nbSize)) {
+            $valid = 0;
+        }
+        if ($nbSize < 1) {
+            $valid = 0;
+        }
+        return $valid;
+    }
+
     public static function verify_evalue($evalue) {
         $max_evalue = 100;
         $valid = 1;

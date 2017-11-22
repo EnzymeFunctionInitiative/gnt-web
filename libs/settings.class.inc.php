@@ -167,5 +167,9 @@ class settings {
     public static function run_jobs_as_legacy() {
         return __ENABLE_LEGACY__;
     }
+
+    public static function get_default_neighborhood_size() {
+        return __DEFAULT_NEIGHBORHOOD_SIZE__;
+    }
 }
 ?>

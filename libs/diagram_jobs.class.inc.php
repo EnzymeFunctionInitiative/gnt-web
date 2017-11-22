@@ -38,10 +38,11 @@ class diagram_jobs {
         return $info;
     }
 
-    public static function create_blast_job($db, $email, $title, $evalue, $maxNumSeqs, $blastSeq) {
+    public static function create_blast_job($db, $email, $title, $evalue, $maxNumSeqs, $nbSize, $blastSeq) {
         
         $jobType = DiagramJob::BLAST;
-        $params = array('blast_seq' => $blastSeq, 'evalue' => $evalue, 'max_num_sequence' => $maxNumSeqs);
+        $params = array('blast_seq' => $blastSeq, 'evalue' => $evalue, 'max_num_sequence' => $maxNumSeqs,
+                            'neighborhood_size' => $nbSize);
 
         $info = self::do_database_create($db, $email, $title, $jobType, $params);
 
@@ -51,13 +52,27 @@ class diagram_jobs {
     public static function create_lookup_job($db, $email, $title, $ids) {
 
         $ids = preg_replace("/\s+/", ",", $ids);
-        $ids = preg_replace("/,+/", "", $ids);
+        $ids = preg_replace("/,,+/", ",", $ids);
         $ids = preg_replace("/,+$/", "", $ids);
 
         $jobType = DiagramJob::LOOKUP;
-        $params = array('id_list' => $ids);
+        $params = array();
 
         $info = self::do_database_create($db, $email, $title, $jobType, $params);
+
+        if ($info === false || !$info["id"]) {
+            return false;
+        }
+
+        $prefix = settings::get_diagram_upload_prefix();
+        $uploadsDir = settings::get_uploads_dir();
+        
+        $fileName = $prefix . $info["id"] . ".txt";
+        $filePath = "$uploadsDir/$fileName";
+
+        $retCode = file_put_contents($filePath, $ids);
+        if ($retCode === false)
+            return false;
 
         return $info;
     }
@@ -127,6 +142,15 @@ class diagram_jobs {
             return "";
         else
             return $result[0]['diagram_key'];
+    }
+
+    public static function get_time_completed($db, $id) {
+        $sql = "SELECT diagram_time_completed FROM diagram WHERE diagram_id = $id";
+        $result = $db->query($sql);
+        if (!$result)
+            return false;
+        else
+            return $result[0]["diagram_time_completed"];
     }
 }
 

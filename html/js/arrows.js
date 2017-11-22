@@ -26,6 +26,8 @@ function ArrowDiagram(canvasId, displayModeCbId, canvasContainerId, popupIds) {
 
     this.diagramPage = 0;
     this.diagramCount = 0;
+    this.maxDiagrams = 0;
+    this.displayedDiagrams = 0;
 
     this.popupElement = $("#" + this.popupIds.ParentId);
 
@@ -138,6 +140,9 @@ ArrowDiagram.prototype.makeArrowDiagram = function(data, usePaging, resetCanvas)
         document.getElementById(this.canvasId).setAttribute("style","height:" + this.diagramHeight + "px");
         this.S.attr({viewBox: "0 0 " + this.initialWidth + " 70"});
     }
+
+    this.maxDiagrams = data.counts.max;
+    this.displayedDiagrams = data.counts.displayed;
 
     var drawingWidth = this.initialWidth - this.padding * 2;
 
@@ -616,4 +621,9 @@ function getColors() {
 ArrowDiagram.prototype.setJobInfo = function(idKeyQueryString) {
     this.idKeyQueryString = idKeyQueryString; 
 }
+
+ArrowDiagram.prototype.getDiagramCounts = function() {
+    return [this.displayedDiagrams, this.maxDiagrams];
+}
+
 

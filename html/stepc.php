@@ -180,7 +180,7 @@ require_once('inc/header.inc.php');
             <tbody>
                 <tr style='text-align:center;'>
                     <td class="button-col">
-                        <a href="view_diagrams.php?id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button class="light small">View diagrams</button></a>
+                        <a href="view_diagrams.php?gnn-id=<?php echo $gnnId; ?>&key=<?php echo $gnnKey; ?>" target="_blank"><button class="light small">View diagrams</button></a>
                     </td>
                     <td colspan="2">
                         Opens arrow diagram explorer in a new tab or window.

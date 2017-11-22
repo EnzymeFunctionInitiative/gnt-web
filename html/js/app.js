@@ -11,8 +11,11 @@ function ArrowApp(arrows, popupIds) {
     this.filterListObj = $("#filter-container");
     this.filterContainerToggleObj = $("#filter-container-toggle");
     this.filterLegendObj = $("#active-filter-list");
+    this.diagramsDisplayed = $("#diagrams-displayed-count");
+    this.diagramsTotal = $("#diagrams-total-count");
     this.firstRun = true;
     this.showFamsById = false;
+    this.idKeyQueryString = "";
 
     var that = this;
     this.filterLegendObj.empty();
@@ -37,6 +40,7 @@ function ArrowApp(arrows, popupIds) {
             that.nextPageCallback(isEod);
             that.populateFilterList();
             that.stopProgressBar();
+            that.updateCountFields();
         });
     });
     
@@ -46,6 +50,7 @@ function ArrowApp(arrows, popupIds) {
             that.updateMoreButtonStatus(isEod);
             that.populateFilterList();
             that.stopProgressBar();
+            that.updateCountFields();
 //            $('html,body').animate({scrollTop: document.body.scrollHeight},{duration:800});
         });
     });
@@ -59,9 +64,23 @@ function ArrowApp(arrows, popupIds) {
     this.enableSaveButton();
 }
 
+ArrowApp.prototype.setQueryString = function(idKeyQueryString) {
+    this.idKeyQueryString = idKeyQueryString;
+}
+
+ArrowApp.prototype.showDefaultDiagrams = function() {
+    this.startProgressBar();
+    this.doSearch("1");
+}
+
 ArrowApp.prototype.search = function(inputObj) {
     this.startProgressBar();
     var idList = this.getIdList(inputObj);
+    this.doSearch(idList);
+}
+
+ArrowApp.prototype.doSearch = function(idList) {
+    console.log(idList);
     this.arrows.clearFamilyData();
     this.clearFilter();
     var that = this;
@@ -69,6 +88,7 @@ ArrowApp.prototype.search = function(inputObj) {
         that.populateFilterList();
         that.updateMoreButtonStatus(isEod);
         that.stopProgressBar();
+        that.updateCountFields();
         $("#start-info").hide();
     });
 }
@@ -186,8 +206,44 @@ ArrowApp.prototype.enableSaveButton = function() {
     }
 }
 
+ArrowApp.prototype.getMatchedUniProtIds = function(callback) {
+   var xmlhttp = new XMLHttpRequest();
+   xmlhttp.open("GET", "get_direct_ids.php?" + this.idKeyQueryString + "&type=matched", true);
+   xmlhttp.onload = function() {
+       if (this.readyState == 4 && this.status == 200) {
+           var data = JSON.parse(this.responseText);
+           typeof callback === 'function' && callback(data);
+       }
+   };
+   xmlhttp.send(null);
+}
 
+ArrowApp.prototype.getUnmatchedUniProtIds = function(callback) {
+   var xmlhttp = new XMLHttpRequest();
+   xmlhttp.open("GET", "get_direct_ids.php?" + this.idKeyQueryString + "&type=unmatched", true);
+   xmlhttp.onload = function() {
+       if (this.readyState == 4 && this.status == 200) {
+           var data = JSON.parse(this.responseText);
+           typeof callback === 'function' && callback(data);
+       }
+   };
+   xmlhttp.send(null);
+}
 
+ArrowApp.prototype.formatIdList = function(idList) {
+    var text = $("<div></div>");
+    for (var i = 0; i < idList.length; i++) {
+        text.append("<div>" + idList[i] + "</div>");
+    }
+
+    return text;
+}
+
+ArrowApp.prototype.updateCountFields = function() {
+    var c = this.arrows.getDiagramCounts();
+    this.diagramsDisplayed.text(c[0]);
+    this.diagramsTotal.text(c[1]);
+}
 
 
 

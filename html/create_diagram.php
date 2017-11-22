@@ -71,6 +71,10 @@ function create_blast_job($db, $email, $title) {
     
         $retval["message"] = "The given maximum sequence value is invalid.";
 
+    } elseif (!isset($_POST["nb-size"]) || !functions::verify_neighborhood_size($_POST["nb-size"])) {
+
+        $retval["message"] = "The neighborhood size is invalid.";
+
     } elseif (!isset($_POST["sequence"]) || !functions::verify_blast_input($_POST["sequence"])) {
 
         $retval["message"] = "The BLAST sequence is not valid.";
@@ -78,7 +82,7 @@ function create_blast_job($db, $email, $title) {
     } else {
 
         $retval["valid"] = true;
-        $jobInfo = diagram_jobs::create_blast_job($db, $email, $title, $_POST["evalue"], $_POST["max-seqs"], $_POST["sequence"]);
+        $jobInfo = diagram_jobs::create_blast_job($db, $email, $title, $_POST["evalue"], $_POST["max-seqs"], $_POST["nb-size"], $_POST["sequence"]);
     
         if ($jobInfo === false) {
             $retval["message"] .= " The job was unable to be created.";
@@ -93,28 +97,37 @@ function create_blast_job($db, $email, $title) {
 }
 
 
-function create_fasta_job($email, $title) {
+function create_fasta_job($db, $email, $title) {
 
     //TODO: Implement this
     
-    return "";
+    return $retval;
 }
 
 
-function create_lookup_job($email, $title) {
+function create_lookup_job($db, $email, $title) {
 
     $retval = array("id" => 0, "key" => "", "valid" => false, "message" => "");
 
-//    if (!isset($_POST["ids"]) || strlen($_POST["ids"]) == 0) {
-//
-//        $retval["message"] = "The given list of IDs is invalid. Please input some IDs.";
-//
-//    } else {
-//
-//        $retval["valid"] = true;
-//        file_put_contents(
+    if (!isset($_POST["ids"]) || strlen($_POST["ids"]) == 0) {
 
-    return "";
+        $retval["message"] = "The given list of IDs is invalid. Please input some IDs.";
+
+    } else {
+
+        $retval["valid"] = true;
+        $jobInfo = diagram_jobs::create_lookup_job($db, $email, $title, $_POST["ids"]);
+
+        if ($jobInfo === false) {
+            $retval["message"] .= " The job was unable to be created.";
+            $retval["valid"] = false;
+        } else {
+            $retval["id"] = $jobInfo["id"];
+            $retval["key"] = $jobInfo["key"];
+        }
+    }
+
+    return $retval;
 }
 
 

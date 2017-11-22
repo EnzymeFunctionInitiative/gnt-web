@@ -186,49 +186,84 @@ HTML;
                             if (isset($_POST['option-a-input'])) { echo $_POST['option-a-input']; }
                             ?></textarea>
 
-                        <div class="job-title-container">
-                            Optional job title:
-                            <input type="text" class="small" id="option-a-title" name="title" value='<?php
-                                        if (isset($_POST["title"]))
-                                            echo $_POST["title"];
-                                        else
-                                            echo "";
-                                ?>'>
-                        </div>
+                        <div class="create-job-options">
+                            <table>
+                                <tr>
+                                    <td>Optional job title:</td>
+                                    <td>
+                                        <input type="text" class="small" id="option-a-title" name="title" value='<?php
+                                                    if (isset($_POST["title"]))
+                                                        echo $_POST["title"];
+                                                    else
+                                                        echo "";
+                                            ?>'>
+                                    </td>
+                                    <td></td>
+                                </tr>
 
-                        <div class="advanced-toggle">
-                            Advanced Options <i class="fa fa-plus-square" aria-hidden="true"></i>
-                        </div>
-                        <div style="display: none;" class="advanced-options">
+    
+                                <!--
+                                <div class="advanced-toggle">
+                                    Advanced Options <i class="fa fa-plus-square" aria-hidden="true"></i>
+                                </div>
+                                <div class="advanced-options">
+                                </div>
+                                -->
+                                <tr>
+                                    <td><label for="max-seqs">Maximum Blast Sequences:</label></td>
+                                    <td>
+                                        <input type="text" id="option-a-max-seqs" class="small" name="max-seqs" value='<?php
+                                                if (isset($_POST["max-seqs"])) {
+                                                    echo $_POST["max-seqs"];
+                                                } else {
+                                                    echo settings::get_default_blast_seq(); }
+                                                    ?>'>
+                                   </td>
+                                   <td>
+                                        Maximum number of sequences retrieved (&le; <?php echo settings::get_max_blast_seq(); ?>;
+                                        default: <?php echo settings::get_default_blast_seq(); ?>)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Neighborhood window size:</td>
+                                    <td>
+                                        <input type="text" id="option-a-nb-size" class="small" name="nb-size" value='<?php
+                                                if (isset($_POST["nb-size"])) {
+                                                    echo $_POST["nb-size"];
+                                                } else {
+                                                    echo settings::get_default_neighborhood_size(); }
+                                            ?>'>
+                                    </td>
+                                    <td>
+                                        Number of neighbors to retrieve on either side of the query sequence for each BLAST result
+                                        (default: <?php echo settings::get_default_neighborhood_size(); ?>)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>E-Value:</td>
+                                    <td>
+                                        <input type="text" class="small" id="option-a-evalue" name="evalue" value='<?php
+                                                if (isset($_POST["evalue"])) {
+                                                    echo $_POST["evalue"];
+                                                } else {
+                                                    echo settings::get_default_evalue(); }
+                                            ?>'>
+                                    </td>
+                                    <td>
+                                        Negative log of e-value for all-by-all BLAST (&ge; 1; default:
+                                        <?php echo settings::get_default_evalue(); ?>)
+                                    </td>
+                                </tr>
+                            </table>
                             <div>
-                                E-Value:
-                                <input type="text" class="small" id="option-a-evalue" name="evalue" value='<?php
-                                        if (isset($_POST["evalue"])) {
-                                            echo $_POST["evalue"];
-                                        } else {
-                                            echo settings::get_default_evalue(); }
-                                    ?>'>
-                                Negative log of e-value for all-by-all BLAST (&ge; 1; default:
-                                <?php echo settings::get_default_evalue(); ?>)
+                                Email address:
+                                <input name='email' id='option-a-email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
                             </div>
                             <div>
-                                Maximum Blast Sequences:
-                                <input type="text" id="option-a-max-seqs" class="small" name="max-seqs" value='<?php
-                                        if (isset($_POST["max-seqs"])) {
-                                            echo $_POST["max-seqs"];
-                                        } else {
-                                            echo settings::get_default_blast_seq(); }
-                                    ?>'>
-                                Maximum number of sequences retrieved (&le; <?php echo settings::get_max_blast_seq(); ?>;
-                                default: <?php echo settings::get_default_blast_seq(); ?>)
+                                When the file has been uploaded and processed, you will receive an email containing a link
+                                to view the diagrams.
                             </div>
                         </div>
-
-                        <p>
-                            <input name='email' id='option-a-email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
-                            When the file has been uploaded and processed, you will receive an email containing a link
-                            to view the diagrams.
-                        </p>
     
                         <div id='option-a-message' style="color: red">
                             <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>
@@ -238,7 +273,7 @@ HTML;
                             <button type="button" class="dark"
                                             onclick="submitOptionAForm('create_diagram.php', 'option-a-option', 'option-a-input',
                                                                        'option-a-title', 'option-a-evalue', 'option-a-max-seqs',
-                                                                       'option-a-email', 'option-a-message');"
+                                                                       'option-a-email', 'option-a-nb-size', 'option-a-message');"
                                 >Submit</button>
                         </center>
                     </form>
@@ -253,35 +288,47 @@ HTML;
                     </p>
 
                     <form name="create_diagrams" id="create_diagram_form" method="post" action="create_diagram.php">
-                        <input type="hidden" name="option" value="d">
+                        <input type="hidden" id="option-d-option" name="option" value="d">
                         <textarea class="options" id="option-d-input" name="input"><?php
                             if (isset($_POST['input'])) { echo $_POST['input']; }
                             ?></textarea>
 
-                        <div class="job-title-container">
-                            Optional job title:
-                            <input type="text" class="small" id="option-a-title" name="title" value='<?php
-                                        if (isset($_POST["title"]))
-                                            echo $_POST["title"];
-                                        else
-                                            echo "";
-                                ?>'>
-                        </div>
-                        <!--
-                        <div class="advanced-toggle">
-                            Advanced Options <i class="fa fa-plus-square" aria-hidden="true"></i>
-                        </div>
-                        <div style="display: none;" class="advanced-options">
-                        </div>
-                        -->
+                        <div class="create-job-options">
+                            <table>
+                                <tr>
+                                    <td>Optional job title:</td>
+                                    <td>
+                                        <input type="text" class="small" id="option-d-title" name="title" value='<?php
+                                                    if (isset($_POST["title"]))
+                                                        echo $_POST["title"];
+                                                    else
+                                                        echo "";
+                                            ?>'>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </table>
 
-                        <p>
-                            <input name='email' id='option_d_email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
-                            When the file has been uploaded and processed, you will receive an email containing a link
-                            to view the diagrams.
-                        </p>
+                            <div>
+                                Email address:
+                                <input name='email' id='option-d-email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
+                            </div>
+                            <div>
+                                When the file has been uploaded and processed, you will receive an email containing a link
+                                to view the diagrams.
+                            </div>
+                        </div>
     
-                        <center><button class="dark">Submit</button></center>
+                        <div id="option-d-message" style="color: red">
+                            <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>
+                        </div>
+
+                        <center>
+                            <button type="button" class="dark"
+                                            onclick="submitOptionDForm('create_diagram.php', 'option-d-option', 'option-d-input',
+                                                                       'option-d-title', 'option-d-email', 'option-d-message');"
+                                >Submit</button>
+                        </center>
                     </form>
                 </div>
 
