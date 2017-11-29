@@ -1,15 +1,16 @@
 <?php
 
 abstract class DiagramJob {
-    const DIRECT = "DIRECT";
-    const DIRECT_ZIP = "DIRECT_ZIP";
+    const Uploaded = "DIRECT";
+    const UploadedZip = "DIRECT_ZIP";
     const BLAST = "BLAST";
-    const LOOKUP = "ID_LOOKUP";
-    const FASTA = "FASTA";
+    const IdLookup = "ID_LOOKUP";
+    const FastaLookup = "FASTA";
     const UNKNOWN = "UNKNOWN";
     const GNN = "GNN";
 
     const JobCompleted = "job.completed";
+    const JobError = "job.error";
 }
 
 ?>

@@ -4,11 +4,13 @@ require "../libs/user_jobs.class.inc.php";
 require_once "../libs/ui.class.inc.php";
 require_once "../includes/main.inc.php";
 
-$jobs = array();
+$gnnJobs = array();
+$diagramJobs = array();
 if (user_jobs::has_token_cookie()) {
     $userJobs = new user_jobs();
     $userJobs->load_jobs($db, user_jobs::get_user_token());
-    $jobs = $userJobs->get_jobs();
+    $gnnJobs = $userJobs->get_jobs();
+    $diagramJobs = $userJobs->get_diagram_jobs();
 }
 
 
@@ -42,36 +44,39 @@ large datasets of sequences.
 
 <div class="tabs">
     <ul class="tab-headers">
-<?php if (count($jobs) > 0) { ?>
+<?php if (count($gnnJobs) > 0 || count($diagramJobs) > 0) { ?>
         <li class="active"><a href="#jobs">Previous Jobs</a></li>
 <?php } ?>
         <li><a href="#create">Create GNN</a></li>
         <li><a href="#diagrams">View Saved Diagrams</a></li>
-        <li><a href="#create-diagrams">Create Diagrams</a></li>
+        <li><a href="#create-diagrams">Retrieve Neighborhoods</a></li>
         <li><a href="#tutorial">Tutorial</a></li>
     </ul>
 
     <div class="tab-content">
-<?php if (count($jobs) > 0) { ?>
+<?php if (count($gnnJobs) > 0 || count($diagramJobs) > 0) { ?>
         <div id="jobs" class="tab active">
+<?php } ?>
+<?php if (count($gnnJobs) > 0) { ?>
+            <h4>GNN Jobs</h4>
             <table class="pretty">
                 <thead>
-                    <th>ID</th>
+                    <th class="id-col">ID</th>
                     <th>Filename</th>
-                    <th>Date Completed</th>
+                    <th class="date-col">Date Completed</th>
                 </thead>
                 <tbody>
 <?php
-for ($i = 0; $i < count($jobs); $i++) {
-    $key = $jobs[$i]["key"];
-    $id = $jobs[$i]["id"];
-    $name = $jobs[$i]["filename"];
-    $dateCompleted = $jobs[$i]["completed"];
+for ($i = 0; $i < count($gnnJobs); $i++) {
+    $key = $gnnJobs[$i]["key"];
+    $id = $gnnJobs[$i]["id"];
+    $name = $gnnJobs[$i]["filename"];
+    $dateCompleted = $gnnJobs[$i]["completed"];
 
     $linkStart = $dateCompleted == "RUNNING" ? "" : "<a href=\"stepc.php?id=$id&key=$key\">";
     $linkEnd = $dateCompleted == "RUNNING" ? "" : "</a>";
 
-    if (array_key_exists("diagram", $jobs[$i]))
+    if (array_key_exists("diagram", $gnnJobs[$i]))
         $linkStart = "<a href=\"view_diagrams.php?upload-id=$id&key=$key\">";
 
     echo <<<HTML
@@ -85,10 +90,50 @@ HTML;
 ?>
                 </tbody>
             </table>
+<?php } ?>
+            
+<?php if (count($diagramJobs) > 0) { ?>
+            <h4>Diagram Jobs</h4>
+            <table class="pretty">
+                <thead>
+                    <th class="id-col">ID</th>
+                    <th class="name-col">Job Name</th>
+                    <th class="type-col">Job Type</th>
+                    <th class="date-col">Date Completed</th>
+                </thead>
+                <tbody>
+<?php
+for ($i = 0; $i < count($diagramJobs); $i++) {
+    $key = $diagramJobs[$i]["key"];
+    $id = $diagramJobs[$i]["id"];
+    $name = $diagramJobs[$i]["filename"];
+    $dateCompleted = $diagramJobs[$i]["completed"];
+
+    $linkStart = $dateCompleted == "RUNNING" ? "" : "<a href=\"stepc.php?id=$id&key=$key\">";
+    $linkEnd = $dateCompleted == "RUNNING" ? "" : "</a>";
+    $idField = $diagramJobs[$i]["id_field"];
+    $jobType = $diagramJobs[$i]["verbose_type"];
+
+    $linkStart = "<a href=\"view_diagrams.php?$idField=$id&key=$key\">";
+
+    echo <<<HTML
+                    <tr>
+                        <td>$linkStart${id}$linkEnd</td>
+                        <td>$linkStart${name}$linkEnd</td>
+                        <td>$linkStart${jobType}$linkEnd</td>
+                        <td>$dateCompleted</td>
+                    </tr>
+HTML;
+}
+?>
+                </tbody>
+            </table>
+<?php } ?>
+<?php if (count($gnnJobs) > 0 || count($diagramJobs) > 0) { ?>
         </div>
 <?php } ?>
 
-        <div id="create" class="tab <?php echo (count($jobs) === 0 ? "active" : "") ?>">
+        <div id="create" class="tab <?php echo (count($gnnJobs) === 0 && count($diagramJobs) === 0 ? "active" : "") ?>">
             <p>
             <strong class="blue">Upload the Sequence Similarity Network (SSN) for which you want to create a Genome Neighborhood Network (GNN)</strong>
             </p>
@@ -293,6 +338,13 @@ HTML;
                             if (isset($_POST['input'])) { echo $_POST['input']; }
                             ?></textarea>
 
+                        <div style="margin-bottom: 20px">
+                            <?php echo ui::make_upload_box(
+                                        "Alternatively, a file containing a list of IDs can be uploaded:<br>",
+                                        "option-d-file", "option-d-progress-bar", "option-d-progress-number",
+                                        "The acceptable format is text."); ?>
+                        </div>
+
                         <div class="create-job-options">
                             <table>
                                 <tr>
@@ -306,6 +358,21 @@ HTML;
                                             ?>'>
                                     </td>
                                     <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Neighborhood window size:</td>
+                                    <td>
+                                        <input type="text" id="option-d-nb-size" class="small" name="nb-size" value='<?php
+                                                if (isset($_POST["nb-size"])) {
+                                                    echo $_POST["nb-size"];
+                                                } else {
+                                                    echo settings::get_default_neighborhood_size(); }
+                                            ?>'>
+                                    </td>
+                                    <td>
+                                        Number of neighbors to retrieve on either side of the query sequence for each BLAST result
+                                        (default: <?php echo settings::get_default_neighborhood_size(); ?>)
+                                    </td>
                                 </tr>
                             </table>
 
@@ -326,8 +393,11 @@ HTML;
                         <center>
                             <button type="button" class="dark"
                                             onclick="submitOptionDForm('create_diagram.php', 'option-d-option', 'option-d-input',
-                                                                       'option-d-title', 'option-d-email', 'option-d-message');"
+                                                'option-d-title', 'option-d-email', 'option-d-nb-size', 'option-d-file',
+                                                'option-d-progress-number', 'option-d-progress-bar', 'option-d-message');"
                                 >Submit</button>
+                            <div><progress id="option-d-progress-bar" max="100" value="0"></progress></div>
+                            <div id="option-d-progress-number"></div>
                         </center>
                     </form>
                 </div>
@@ -335,7 +405,79 @@ HTML;
                 <h3>FASTA Sequence Lookup</h3>
                 <div>
                     <p>
-                    This will be implemented in the future.
+                    The genomic neighborhoods are retreived for the UniProt, NCBI, EMBL-EBI ENA, and PDB identifiers
+                    that are identified in the FASTA <b>headers</b>.  Not all identifiers may exist in the EFI-GNT database so
+                    the results will only include diagrams for sequences that were identified.
+                    </p>
+
+                    <form name="create_diagrams" id="create_diagram_form" method="post" action="create_diagram.php">
+                        <input type="hidden" id="option-c-option" name="option" value="c">
+                        <textarea class="options" id="option-c-input" name="input"><?php
+                            if (isset($_POST['input'])) { echo $_POST['input']; }
+                            ?></textarea>
+
+                        <div style="margin-bottom: 20px">
+                            <?php echo ui::make_upload_box(
+                                        "Alternatively, a file containing FASTA headers and sequences can be uploaded:<br>",
+                                        "option-c-file", "option-c-progress-bar", "option-c-progress-number",
+                                        "The acceptable format is text."); ?>
+                        </div>
+
+                        <div class="create-job-options">
+                            <table>
+                                <tr>
+                                    <td>Optional job title:</td>
+                                    <td>
+                                        <input type="text" class="small" id="option-c-title" name="title" value='<?php
+                                                    if (isset($_POST["title"]))
+                                                        echo $_POST["title"];
+                                                    else
+                                                        echo "";
+                                            ?>'>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Neighborhood window size:</td>
+                                    <td>
+                                        <input type="text" id="option-c-nb-size" class="small" name="nb-size" value='<?php
+                                                if (isset($_POST["nb-size"])) {
+                                                    echo $_POST["nb-size"];
+                                                } else {
+                                                    echo settings::get_default_neighborhood_size(); }
+                                            ?>'>
+                                    </td>
+                                    <td>
+                                        Number of neighbors to retrieve on either side of the query sequence for each BLAST result
+                                        (default: <?php echo settings::get_default_neighborhood_size(); ?>)
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div>
+                                Email address:
+                                <input name='email' id='option-c-email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
+                            </div>
+                            <div>
+                                When the file has been uploaded and processed, you will receive an email containing a link
+                                to view the diagrams.
+                            </div>
+                        </div>
+    
+                        <div id="option-c-message" style="color: red">
+                            <?php if (isset($message)) { echo "<h4 class='center'>" . $message . "</h4>"; } ?>
+                        </div>
+
+                        <center>
+                            <button type="button" class="dark"
+                                            onclick="submitOptionCForm('create_diagram.php', 'option-c-option', 'option-c-input',
+                                                'option-c-title', 'option-c-email', 'option-c-nb-size', 'option-c-file',
+                                                'option-c-progress-number', 'option-c-progress-bar', 'option-c-message');"
+                                >Submit</button>
+                            <div><progress id="option-c-progress-bar" max="100" value="0"></progress></div>
+                            <div id="option-c-progress-number"></div>
+                        </center>
+                    </form>
                 </div>
             </div>
         </div>

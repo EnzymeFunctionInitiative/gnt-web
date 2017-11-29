@@ -25,7 +25,7 @@ if (isset($_POST['submit'])) {
         $valid = 0;
         $message .= "<br><b>Error uploading file: " . functions::get_upload_error($_FILES['file']['error']) . "</b>";
     }
-    elseif (!settings::is_valid_diagram_file_type($file_type)) {
+    elseif (!functions::is_valid_diagram_file_type($file_type)) {
         $valid = 0;
         $message .= "<br><b>Invalid filetype ($file_type).  The file has to be an " . settings::get_valid_diagram_file_types() . " filetype.</b>";
     }

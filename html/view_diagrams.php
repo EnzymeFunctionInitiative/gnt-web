@@ -16,6 +16,7 @@ $windowTitle = "";
 $uniprotIdModalText = "";
 $unmatchedIdModalText = "";
 $blastSequence = "";
+$jobTypeText = "";
 
 $isUploadedDiagram = false;
 $supportsDownload = true;
@@ -88,6 +89,7 @@ else if (isset($_GET['direct-id']) && functions::is_diagram_upload_id_valid($_GE
     $unmatchedIds = $arrows->get_unmatched_ids();
     $uniprotIds = $arrows->get_uniprot_ids();
     $blastSequence = $arrows->get_blast_sequence();
+    $jobTypeText = $arrows->get_verbose_job_type();;
 
     $hasUnmatchedIds = count($unmatchedIds) > 0;
 
@@ -106,9 +108,18 @@ else {
     error404();
 }
 
-$nbSizeText = $nbSize ? "Neighborhood size: $nbSize"  : "";
-$cooccurrenceText = $cooccurrence ? "Co-occurrence: $cooccurrence" : "";
-$gnnNameText = $gnnName ? ($isDirectJob ? "Job name: " : "Input filename: ") . $gnnName : "";
+$gnnNameText = "";
+$nbSizeDiv = "";
+$cooccurrenceDiv = "";
+$jobTypeDiv = "";
+
+if ($isDirectJob) {
+    $gnnNameText = $gnnName ? "Job name: $gnnName" : "";
+    $jobTypeDiv = $jobTypeText ? "<div>Job Type: $jobTypeText</div>" : "";
+} else {
+    $nbSizeDiv = $nbSize ? "<div>Neighborhood size: $nbSize</div>"  : "";
+    $cooccurrenceDiv = $cooccurrence ? "<div>Co-occurrence: $cooccurrence</div>" : "";
+}
 
 ?>
 
@@ -152,9 +163,10 @@ $gnnNameText = $gnnName ? ($isDirectJob ? "Job name: " : "Input filename: ") . $
             </div>
             <div class="span6">
                 <div class="header-metadata pull-right align-middle">
-                    <div><?php echo $cooccurrenceText; ?></div>
-                    <div><?php echo $nbSizeText; ?></div>
                     <div><?php echo $gnnNameText; ?></div>
+                    <?php echo $cooccurrenceDiv; ?>
+                    <?php echo $nbSizeDiv; ?>
+                    <?php echo $jobTypeDiv; ?>
                 </div>
             </div>
         </header>
@@ -208,7 +220,7 @@ $gnnNameText = $gnnName ? ($isDirectJob ? "Job name: " : "Input filename: ") . $
 
 <?php if ($supportsDownload && !$isUploadedDiagram) { ?>
                             <div>
-                                <a id="download-data" href="download_diagram_data.php?<?php echo $idKeyQueryString; ?>"
+                                <a id="download-data" href="download_files.php?<?php echo $idKeyQueryString; ?>&type=data-file"
                                     title="Download the data to upload it for future analysis using this tool." target="_blank">
                                         <button type="button" class="btn btn-default tool-button">
                                             <i class="fa fa-download" aria-hidden="true"></i> Download Data
@@ -327,14 +339,7 @@ $gnnNameText = $gnnName ? ($isDirectJob ? "Job name: " : "Input filename: ") . $
 
                 $("#save-canvas-button").click(function(e) {
                     var svg = escape($("#arrow-canvas")[0].outerHTML);
-                    var dlForm = $("<form></form>");
-                    dlForm.attr("method", "POST");
-                    dlForm.attr("action", "download_diagram_image.php");
-                    dlForm.append('<input type="hidden" name="type" value="svg">');
-                    dlForm.append('<input type="hidden" name="name" value="<?php echo $gnnName ?>">');
-                    dlForm.append('<input type="hidden" name="svg" value="' + svg + '">');
-                    $("#download-forms").append(dlForm);
-                    dlForm.submit();
+                    arrowApp.downloadSvg(svg, "<?php echo $gnnName ?>");
                 });
 
 <?php if ($isDirectJob) { ?>
@@ -343,21 +348,11 @@ $gnnNameText = $gnnName ? ($isDirectJob ? "Job name: " : "Input filename: ") . $
                     arrowApp.showDefaultDiagrams();
                 });
                 $("#show-uniprot-ids").click(function(e) {
-                        //arrowApp.getMatchedUniProtIds(function(idList) {
-                        //    var idText = arrowApp.formatIdList(idList);
-                        //    $("#uniprot-ids").text(idText);
-                        //    $("#uniprot-ids-modal").modal("show");
-                        //});
-                        $("#uniprot-ids-modal").modal("show");
+                    $("#uniprot-ids-modal").modal("show");
                 });
 <?php if ($hasUnmatchedIds) { ?>
                 $("#show-unmatched-ids").click(function(e) {
-                        //arrowApp.getUnmatchedUniProtIds(function(idList) {
-                        //    var idText = arrowApp.formatIdList(idList);
-                        //    $("#unmatched-ids").text(idText);
-                        //    $("#unmatched-ids-modal").modal("show");
-                        //});
-                        $("#unmatched-ids-modal").modal("show");
+                    $("#unmatched-ids-modal").modal("show");
                 });
 <?php } ?>
 <?php if ($isBlast) { ?>
@@ -399,6 +394,11 @@ $gnnNameText = $gnnName ? ($isDirectJob ? "Job name: " : "Input filename: ") . $
 <?php echo $uniprotIdModalText; ?>
                     </div>
                     <div class="modal-footer">
+                        <a href="download_files.php?<?php echo $idKeyQueryString; ?>&type=uniprot"
+                            title="Download the list of UniProt IDs that are contained within the diagrams." target="_blank">
+                                <button type="button" class="btn btn-default" id="save-uniprot-ids-btn">Save to File</button>
+                        </a>
+                            <!--                            onclick='saveDataFn("<?php echo "${gnnId}_${gnnName}_UniProt_IDs.txt" ?>", "uniprot-ids")'>Save to File</button>-->
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     </div>
                 </div><!-- /.modal-content -->
@@ -416,6 +416,11 @@ $gnnNameText = $gnnName ? ($isDirectJob ? "Job name: " : "Input filename: ") . $
 <?php echo $unmatchedIdModalText; ?>
                     </div>
                     <div class="modal-footer">
+                        <a href="download_files.php?<?php echo $idKeyQueryString; ?>&type=unmatched"
+                            title="Download the list of IDs that were not matched to a UniProt ID." target="_blank">
+                                <button type="button" class="btn btn-default" id="save-unmatched-ids-btn">Save to File</button>
+                        </a>
+                            <!--                            onclick='saveDataFn("<?php echo "${gnnId}_${gnnName}_Unmatched.txt" ?>", "unmatched-ids")'>Save to File</button>-->
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     </div>
                 </div><!-- /.modal-content -->
@@ -434,6 +439,10 @@ $gnnNameText = $gnnName ? ($isDirectJob ? "Job name: " : "Input filename: ") . $
 <?php echo $blastSequence; ?>
                     </div>
                     <div class="modal-footer">
+                        <a href="download_files.php?<?php echo $idKeyQueryString; ?>&type=blast"
+                            title="Download the list of UniProt IDs that are contained within the diagrams." target="_blank">
+                                <button type="button" class="btn btn-default" id="save-blast-seq-btn">Save to File</button>
+                        </a>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     </div>
                 </div><!-- /.modal-content -->

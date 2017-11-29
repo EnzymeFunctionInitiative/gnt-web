@@ -25,8 +25,9 @@ define("__EST_URL__","");
 // FILE INFO
 define("__RELATIVE_OUTPUT_DIR__","");
 define("__LEGACY_RELATIVE_OUTPUT_DIR__","");
-define("__VALID_FILE_TYPE__","xgmml");
+define("__VALID_FILE_TYPE__","xgmml zip");
 define("__VALID_DIAGRAM_FILE_TYPE__","sqlite");
+define("__VALID_ID_FILE_TYPE__","txt fasta");
 
 //
 // DATABASE

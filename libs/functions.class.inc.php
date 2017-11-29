@@ -1,4 +1,5 @@
 <?php
+require_once("const.class.inc.php");
 
 class functions {
 
@@ -232,6 +233,48 @@ class functions {
         $result = $db->non_select_query($sql);
 
         return $result;
+    }
+
+    public static function get_verbose_job_type($diagramType) {
+        $title = "";
+        if ($diagramType == DiagramJob::Uploaded || $diagramType == DiagramJob::UploadedZip)
+            $title = "Uploaded diagram data file";
+        elseif ($diagramType == DiagramJob::BLAST)
+            $title = "Sequence BLAST";
+        elseif ($diagramType == DiagramJob::IdLookup || $diagramType == "LOOKUP") // "lookup" is for legacy"
+            $title = "Sequence ID lookup";
+        elseif ($diagramType == DiagramJob::FastaLookup)
+            $title = "FASTA header ID lookup";
+        return $title;
+    }
+
+    public static function get_diagram_id_field($type) {
+        switch ($type) {
+            case DiagramJob::BLAST:
+            case DiagramJob::IdLookup:
+            case DiagramJob::FastaLookup:
+                return "direct-id";
+            case DiagramJob::Uploaded:
+            case DiagramJob::UploadedZip:
+                return "upload-id";
+            default:
+                return "gnn-id";
+        }
+    }
+
+    public static function is_valid_file_type($filetype) {
+        $filetypes = explode(" ", __VALID_FILE_TYPE__);
+        return in_array($filetype, $filetypes);
+    }
+
+    public static function is_valid_diagram_file_type($filetype) {
+        $filetypes = explode(" ", __VALID_DIAGRAM_FILE_TYPE__);
+        return in_array($filetype, $filetypes);
+    }
+
+    public static function is_valid_id_file_type($filetype) {
+        $filetypes = explode(" ", __VALID_ID_FILE_TYPE__);
+        return in_array($filetype, $filetypes);
     }
 
 }

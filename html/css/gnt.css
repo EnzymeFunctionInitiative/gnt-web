@@ -298,6 +298,18 @@ textarea.options
     padding: 0 10px 10px 0;
 }
 
+#jobs table th.id-col {
+    width: 60px;
+}
+
+#jobs table th.type-col {
+    width: 200px;
+}
+
+#jobs table th.date-col {
+    width: 150px;
+}
+
 /* TABLE *************************************************************************************************************/
 
 table.pretty {

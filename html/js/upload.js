@@ -1,45 +1,64 @@
 
+var DIAGRAM_UPLOAD = 0;
+var SSN_UPLOAD = 1;
+
 function uploadFile(fileInputId, formId, progressNumId, progressBarId, messageId, emailId, submitId, isSsn) {
     var fd = new FormData();
-    fd.append("file", document.getElementById(fileInputId).files[0]);
-    var xhr = new XMLHttpRequest();
+    addParam(fd, "email", emailId);
+    addParam(fd, "submit", submitId);
+    if (isSsn) {
+        addParam(fd, "neighbor_size", "neighbor_size");
+        addParam(fd, "MAX_FILE_SIZE", "MAX_FILE_SIZE");
+        addParam(fd, "cooccurrence", "cooccurrence");
+    }
+
+    var files = document.getElementById(fileInputId).files;
+    var completionHandler = function() { enableForm(formId); };
+    fd.append("file", files[0]);
+    var fileHandler = function(xhr) {
+        addUploadStuff(xhr, progressNumId, progressBarId);
+    };
+
+    disableForm(formId);
+    var script = isSsn ? "upload_ssn.php" : "upload_diagram.php";
+
+    var uploadType = isSsn ? SSN_UPLOAD : DIAGRAM_UPLOAD;
+    doFormPost(script, fd, messageId, fileHandler, uploadType, completionHandler);
+    
+//    var xhr = new XMLHttpRequest();
+//    addUploadStuff(xhr, progressNumId, progressBarId);
+//    xhr.open("POST", script, true);
+//    xhr.send(fd);
+//    xhr.onreadystatechange  = function(){
+//        if (xhr.readyState == 4  ) {
+//
+//            // Javascript function JSON.parse to parse JSON data
+//            var jsonObj = JSON.parse(xhr.responseText);
+//
+//            // jsonObj variable now contains the data structure and can
+//            // be accessed as jsonObj.name and jsonObj.country.
+//            if (jsonObj.valid) {
+//                var nextStepScript = "stepb.php";
+//                var diagUpload = isSsn ? "" : "&diagram=1";
+//                if (jsonObj.cookieInfo)
+//                    document.cookie = jsonObj.cookieInfo;
+//                window.location.href = nextStepScript + "?id=" + jsonObj.id + "&key=" + jsonObj.key + diagUpload;
+//            }
+//            if (jsonObj.message) {
+//                enableForm(formId);
+//                document.getElementById(messageId).innerHTML = jsonObj.message;
+//            }
+//
+//        }
+//    }
+
+}
+
+function addUploadStuff(xhr, progressNumId, progressBarId) {
     xhr.upload.addEventListener("progress", function(evt) { uploadProgress(evt, progressNumId, progressBarId);}, false);
     xhr.addEventListener("load", uploadComplete, false);
     xhr.addEventListener("error", uploadFailed, false);
     xhr.addEventListener("abort", uploadCanceled, false);
-    fd.append('email',document.getElementById(emailId).value);
-    fd.append('submit',document.getElementById(submitId).value);
-    if (isSsn) {
-        fd.append('neighbor_size',document.getElementById('neighbor_size').value);
-        fd.append('MAX_FILE_SIZE',document.getElementById('MAX_FILE_SIZE').value);
-        fd.append('cooccurrence',document.getElementById('cooccurrence').value);
-    }
-    disableForm(formId);
-    var script = isSsn ? "upload_ssn.php" : "upload_diagram.php";
-    xhr.open("POST", script, true);
-    xhr.send(fd);
-    xhr.onreadystatechange  = function(){
-        if (xhr.readyState == 4  ) {
-
-            // Javascript function JSON.parse to parse JSON data
-            var jsonObj = JSON.parse(xhr.responseText);
-
-            // jsonObj variable now contains the data structure and can
-            // be accessed as jsonObj.name and jsonObj.country.
-            if (jsonObj.valid) {
-                var nextStepScript = "stepb.php";
-                var diagUpload = isSsn ? "" : "&diagram=1";
-                if (jsonObj.cookieInfo)
-                    document.cookie = jsonObj.cookieInfo;
-            }
-            if (jsonObj.message) {
-                enableForm(formId);
-                document.getElementById(messageId).innerHTML = jsonObj.message;
-            }
-
-        }
-    }
-
 }
 
 function uploadProgress(evt, progressTextId, progressBarId) {
@@ -84,6 +103,7 @@ function enableForm(formId) {
 }
 
 function addParam(fd, param, id) {
+    console.log(param + "   " + id);
     fd.append(param, document.getElementById(id).value);
 }
 
@@ -97,25 +117,65 @@ function submitOptionAForm(formAction, optionId, inputId, titleId, evalueId, max
     addParam(fd, "max-seqs", maxSeqId);
     addParam(fd, "nb-size", nbSizeId);
     addParam(fd, "email", emailId);
+    var fileHandler = function(xhr) {};
+    var completionHandler = function() {};
 
-    submitOptionFormPost(formAction, fd, messageId);
+    doFormPost(formAction, fd, messageId, fileHandler, DIAGRAM_UPLOAD, completionHandler);
 }
 
 
-function submitOptionDForm(formAction, optionId, inputId, titleId, emailId, messageId) {
+function submitOptionDForm(formAction, optionId, inputId, titleId, emailId, nbSizeId, fileId, progressNumId, progressBarId, messageId) {
+    submitOptionForm(formAction, optionId, "ids", inputId, titleId, emailId, nbSizeId, fileId, progressNumId, progressBarId, messageId);
 
+//    var fd = new FormData();
+//    addParam(fd, "option", optionId);
+//    addParam(fd, "title", titleId);
+//    addParam(fd, "ids", inputId);
+//    addParam(fd, "nb-size", nbSizeId);
+//    addParam(fd, "email", emailId);
+//    var files = document.getElementById(fileId).files;
+//    var fileHandler = function(xhr) {};
+//    var completionHandler = function() {};
+//    if (files.length > 0) {
+//        fd.append("file", files[0]);
+//        fileHandler = function(xhr) {
+//            addUploadStuff(xhr, progressNumId, progressBarId);
+//        };
+//    }
+//
+//    doFormPost(formAction, fd, messageId, fileHandler, DIAGRAM_UPLOAD, completionHandler);
+}
+
+
+function submitOptionCForm(formAction, optionId, inputId, titleId, emailId, nbSizeId, fileId, progressNumId, progressBarId, messageId) {
+    submitOptionForm(formAction, optionId, "fasta", inputId, titleId, emailId, nbSizeId, fileId, progressNumId, progressBarId, messageId);
+}
+
+function submitOptionForm(formAction, optionId, inputField, inputId, titleId, emailId, nbSizeId, fileId, progressNumId, progressBarId, messageId) {
     var fd = new FormData();
     addParam(fd, "option", optionId);
     addParam(fd, "title", titleId);
-    addParam(fd, "ids", inputId);
+    addParam(fd, inputField, inputId);
+    addParam(fd, "nb-size", nbSizeId);
     addParam(fd, "email", emailId);
+    var files = document.getElementById(fileId).files;
+    var fileHandler = function(xhr) {};
+    var completionHandler = function() {};
+    if (files.length > 0) {
+        fd.append("file", files[0]);
+        fileHandler = function(xhr) {
+            addUploadStuff(xhr, progressNumId, progressBarId);
+        };
+    }
 
-    submitOptionFormPost(formAction, fd, messageId);
+    doFormPost(formAction, fd, messageId, fileHandler, DIAGRAM_UPLOAD, completionHandler);
 }
 
 
-function submitOptionFormPost(formAction, formData, messageId) {
+function doFormPost(formAction, formData, messageId, fileHandler, uploadType, completionHandler) {
     var xhr = new XMLHttpRequest();
+    if (typeof fileHandler === "function")
+        fileHandler(xhr);
     xhr.open("POST", formAction, true);
     xhr.send(formData);
     xhr.onreadystatechange  = function(){
@@ -128,13 +188,15 @@ function submitOptionFormPost(formAction, formData, messageId) {
             // be accessed as jsonObj.name and jsonObj.country.
             if (jsonObj.valid) {
                 var nextStepScript = "stepb.php";
+                var diagUpload = uploadType == SSN_UPLOAD ? "" : "&diagram=1";
                 if (jsonObj.cookieInfo)
                     document.cookie = jsonObj.cookieInfo;
-                window.location.href = nextStepScript + "?id=" + jsonObj.id + "&key=" + jsonObj.key + "&diagram=1";
+                window.location.href = nextStepScript + "?id=" + jsonObj.id + "&key=" + jsonObj.key + diagUpload;
             }
             if (jsonObj.message) {
                 document.getElementById(messageId).innerHTML = jsonObj.message;
             } else {
+                completionHandler();
                 document.getElementById(messageId).innerHTML = "";
             }
         }

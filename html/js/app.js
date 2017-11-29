@@ -245,6 +245,16 @@ ArrowApp.prototype.updateCountFields = function() {
     this.diagramsTotal.text(c[1]);
 }
 
+ArrowApp.prototype.downloadSvg = function(svg, gnnName) {
+    var dlForm = $("<form></form>");
+    dlForm.attr("method", "POST");
+    dlForm.attr("action", "download_diagram_image.php");
+    dlForm.append('<input type="hidden" name="type" value="svg">');
+    dlForm.append('<input type="hidden" name="name" value="' + gnnName + '">');
+    dlForm.append('<input type="hidden" name="svg" value="' + svg + '">');
+    $("#download-forms").append(dlForm);
+    dlForm.submit();
+}
 
 
 
@@ -265,6 +275,34 @@ function PopupIds() {
     this.SpTrId = "info-popup-sptr";
     this.SeqLenId = "info-popup-seqlen";
     this.DescId = "info-popup-desc";
+}
+
+
+
+
+
+function saveDataFn(filename, dataId) {
+    var data = getDataFromDivs(dataId);
+    var blob = new Blob([data], {type: 'text/plain'});
+    if(window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveBlob(blob, filename);
+    }
+    else{
+        var elem = window.document.createElement('a');
+        elem.href = window.URL.createObjectURL(blob);
+        elem.download = filename;        
+        document.body.appendChild(elem);
+        elem.click();        
+        document.body.removeChild(elem);
+    }
+}
+function getDataFromDivs(parentId) {
+    var data = "";
+    var parent = document.getElementById(parentId);
+    for (var i = 0; i < parent.children.length; i++) {
+        data += parent.children[i].innerHTML + "\n";
+    }
+    return data;
 }
 
 

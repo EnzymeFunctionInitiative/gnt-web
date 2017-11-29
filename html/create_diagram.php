@@ -27,9 +27,9 @@ if (isset($_POST["option"])) {
         if ($opt == "a") {
             $retval = create_blast_job($db, $email, $title);
         } elseif ($opt == "c") {
-            $retval = create_fasta_job($db, $email, $title);
+            $retval = create_lookup_job($db, $email, $title, "fasta", DiagramJob::FastaLookup);
         } elseif ($opt == "d") {
-            $retval = create_lookup_job($db, $email, $title);
+            $retval = create_lookup_job($db, $email, $title, "ids", DiagramJob::IdLookup);
         }
 
         if ($retval["valid"] === false) {
@@ -97,26 +97,41 @@ function create_blast_job($db, $email, $title) {
 }
 
 
-function create_fasta_job($db, $email, $title) {
-
-    //TODO: Implement this
-    
-    return $retval;
-}
-
-
-function create_lookup_job($db, $email, $title) {
+function create_lookup_job($db, $email, $title, $contentField, $jobType) {
 
     $retval = array("id" => 0, "key" => "", "valid" => false, "message" => "");
 
-    if (!isset($_POST["ids"]) || strlen($_POST["ids"]) == 0) {
+    $fileType = "";
+    $hasInputContent = isset($_POST[$contentField]) && strlen($_POST[$contentField]) > 0;
+    $hasFile = isset($_FILES['file']);
 
-        $retval["message"] = "The given list of IDs is invalid. Please input some IDs.";
+    if ($hasFile) {
+        $fileType = strtolower(pathinfo($_FILES['file']['name'],PATHINFO_EXTENSION));
+
+        if (isset($_FILES['file']['error']) && ($_FILES['file']['error'] != 0)) {
+            $retval["message"] .= "<br><b>Error uploading file: " . functions::get_upload_error($_FILES['file']['error']) . "</b>";
+        }
+        elseif (!functions::is_valid_id_file_type($fileType)) {
+            $message .= "<br><b>Invalid filetype ($fileType).  The file has to be an " . settings::get_id_diagram_file_types() . " filetype.</b>";
+        }
+    }
+
+    if (!$hasFile && !$hasInputContent) {
+    
+        $retval["message"] = "Either a list of IDs or a file containing a list of IDs must be uploaded.";
+
+    } elseif (!isset($_POST["nb-size"]) || !functions::verify_neighborhood_size($_POST["nb-size"])) {
+
+        $retval["message"] = "The neighborhood size is invalid.";
 
     } else {
 
         $retval["valid"] = true;
-        $jobInfo = diagram_jobs::create_lookup_job($db, $email, $title, $_POST["ids"]);
+
+        if ($hasFile)
+            $jobInfo = diagram_jobs::create_file_lookup_job($db, $email, $title, $_POST["nb-size"], $_FILES["file"]["tmp_name"], $_FILES["file"]["name"], $jobType);
+        else
+            $jobInfo = diagram_jobs::create_lookup_job($db, $email, $title, $_POST["nb-size"], $_POST[$contentField], $jobType);
 
         if ($jobInfo === false) {
             $retval["message"] .= " The job was unable to be created.";

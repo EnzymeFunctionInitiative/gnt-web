@@ -16,6 +16,7 @@ class diagram_job {
     private $type;
     private $params;
     private $message = "";
+    private $title = "";
     private $eol = PHP_EOL;
 
     public function __construct($db, $id) {
@@ -29,25 +30,24 @@ class diagram_job {
         $sql = "SELECT * FROM diagram WHERE diagram_id = " . $this->id;
         $result = $this->db->query($sql);
         $result = $result[0];
-        $this->key = $result['diagram_key'];
-        $this->email = $result['diagram_email'];
-        $this->status = $result['diagram_status'];
-        $this->type = $this->get_job_type($result['diagram_type']);
-        $this->params = functions::decode_object($result['diagram_params']);
+        $this->key = $result["diagram_key"];
+        $this->email = $result["diagram_email"];
+        $this->status = $result["diagram_status"];
+        $this->type = $this->get_job_type($result["diagram_type"]);
+        $this->title = $result["diagram_title"];
+        $this->params = functions::decode_object($result["diagram_params"]);
     }
 
     public function process() {
 
-        if ($this->type == DiagramJob::DIRECT) {
+        if ($this->type == DiagramJob::Uploaded) {
             return $this->process_direct_job();
-        } elseif ($this->type == DiagramJob::DIRECT_ZIP) {
+        } elseif ($this->type == DiagramJob::UploadedZip) {
             return $this->process_direct_zip_job();
         } elseif ($this->type == DiagramJob::BLAST) {
             return $this->process_blast_job();
-        } elseif ($this->type == DiagramJob::LOOKUP) {
+        } elseif ($this->type == DiagramJob::IdLookup || $this->type == DiagramJob::FastaLookup) {
             return $this->process_lookup_job();
-        } elseif ($this->type == DiagramJob::FASTA) {
-            return $this->process_fasta_job();
         } else {
             return false;
         }
@@ -112,14 +112,10 @@ class diagram_job {
 
         $outDir = settings::get_diagram_output_dir() . "/" . $this->id;
         $this->create_output_dir($outDir);
-        $target = $this->get_output_file();
 
         $args = " -blast \"" . $this->params["blast_seq"] . "\"";
-        $args .= " -output \"$target\"";
         $args .= " -evalue " . $this->params["evalue"];
         $args .= " -max-seq " . $this->params["max_num_sequence"];
-        if (array_key_exists("neighborhood_size", $this->params) && $this->params["neighborhood_size"])
-            $args .= " -nb-size " . $this->params["neighborhood_size"];
 
         return $this->execute_job($args);
     }
@@ -129,7 +125,6 @@ class diagram_job {
 
         $outDir = settings::get_diagram_output_dir() . "/" . $this->id;
         $this->create_output_dir($outDir);
-        $target = $this->get_output_file();
 
         $uploadDir = settings::get_uploads_dir();
         $uploadPrefix = settings::get_diagram_upload_prefix();
@@ -138,29 +133,35 @@ class diagram_job {
         $source = "$outDir/$jobId.txt";
         copy($uploadSource, $source);
 
-        $args = " -id-file \"$source\"";
-        $args .= " -output \"$target\"";
+        $args = "";
+        if ($this->type == DiagramJob::IdLookup) {
+            $args = " -id-file \"$source\"";
+        } elseif ($this->type == DiagramJob::FastaLookup) {
+            $args = " -fasta-file \"$source\"";
+        }
 
         return $this->execute_job($args);
     }
 
-    private function process_fasta_job() {
-        $isUploaded = false;
-        return false;
-    }
-
     private function execute_job($commandLine) {
         
+        $target = $this->get_output_file();
+
         $binary = settings::get_process_diagram_script();
         $exec = "source /etc/profile.d/modules.sh; ";
         $exec .= "module load " . settings::get_gnn_module() . "; ";
         $exec .= "module load " . settings::get_efidb_module() . "; ";
         $exec .= $binary . " ";
         $exec .= $commandLine;
+        $exec .= " -output \"$target\"";
         if (settings::run_jobs_as_legacy())
             $exec .= " -legacy";
-        if (array_key_exists("title", $this->params) && $this->params["title"])
-            $exec .= " -title \"" . $this->params["title"] . "\"";
+        if ($this->title)
+            $exec .= " -title \"" . $this->title . "\"";
+        if ($this->type)
+            $exec .= " -job-type \"" . $this->type . "\"";
+        if (array_key_exists("neighborhood_size", $this->params) && $this->params["neighborhood_size"])
+            $exec .= " -nb-size " . $this->params["neighborhood_size"];
 
         //TODO: remove this debug message
         error_log("Job ID: " . $this->id);
@@ -176,6 +177,10 @@ class diagram_job {
             error_log("Job running with job # $pbs_job_number");
             $this->db->non_select_query("UPDATE diagram SET diagram_status = '" . __RUNNING__ . "' WHERE diagram_id = " . $this->id);
         } else {
+            $currentTime = date("Y-m-d H:i:s", time());
+            $this->db->non_select_query("UPDATE diagram SET diagram_status = '" . __FAILED__ . "', " .
+                                        "diagram_time_completed = '$currentTime' WHERE diagram_id = " . $this->id);
+            $this->email_failed();
             error_log("Error: $output");
         }
 
@@ -186,30 +191,96 @@ class diagram_job {
 
         $outDir = $this->get_output_dir();
         $isDone = file_exists("$outDir/" . DiagramJob::JobCompleted) || file_exists("$outDir/unzip.completed");
+        $isError = file_exists("$outDir/" . DiagramJob::JobError) || !file_exists($this->get_output_file());
 
         if ($isDone) {
-            print $this->id . " is done.\n";
-            $this->db->non_select_query("UPDATE diagram SET diagram_status = '" . __FINISH__ . "' WHERE diagram_id = " . $this->id);
-            $this->email_complete();
+            $currentTime = date("Y-m-d H:i:s", time());
+            
+            $status = __FINISH__;
+            if ($isError)
+                $status = __FAILED__;
+            print $this->id . " has completed and has status = $status.\n";
+
+            $this->db->non_select_query("UPDATE diagram SET diagram_status = '" . __FINISH__ . "', " .
+                                        "diagram_time_completed = '$currentTime' WHERE diagram_id = " . $this->id);
+
+            if ($isError)
+                $this->email_failed();
+            else
+                $this->email_complete();
         }
     }
 
+    private function email_failed() {
+
+        $emailTitleBit = "failed to be retrieved";
+        $emailBody = "";
+        $emailBody .= "There was an error retrieving the neighborhood data for the job (job #" . $this->id . ").";
+        $emailBody .= $this->eol . $this->eol;
+
+        $this->email_shared($emailTitleBit, $emailBody);
+    }
+
     private function email_complete() {
-        $queryType = $this->get_query_string_prefix();
-        $subject = $this->beta . "EFI-GNT - GNN diagrams ready";
+
+        $emailTitleBit = "ready";
+        $emailBody = "";
+        $emailBody .= "The diagram data file you uploaded is ready to be viewed at ";
+        $emailBody .= "THE_URL" . $this->eol . $this->eol;
+        $emailBody .= "These data will only be retained for " . settings::get_retention_days() . " days." . $this->eol . $this->eol;
+
+        $this->email_shared($emailTitleBit, $emailBody);
+
+        //$queryType = $this->get_query_string_id_field();
+        //$subject = $this->beta . "EFI-GNT - GNN diagrams ready";
+        //$to = $this->email;
+        //$from = "EFI GNT <" . settings::get_admin_email() . ">";
+        //$url = settings::get_web_root() . "/view_diagrams.php";
+        //$full_url = $url . "?" . http_build_query(array($queryType => $this->id, 'key' => $this->key));
+
+        //$plain_email = "";
+
+        //if ($this->beta) $plain_email = "Thank you for using the beta site of EFI-GNT." . $this->eol;
+
+        ////plain text email
+        //$plain_email .= "The diagram data file you uploaded is ready to be viewed at ";
+        //$plain_email .= "THE_URL" . $this->eol . $this->eol;
+        //$plain_email .= "These data will only be retained for " . settings::get_retention_days() . " days." . $this->eol . $this->eol;
+        //$plain_email .= settings::get_email_footer();
+
+        //$html_email = nl2br($plain_email, false);
+
+        //$plain_email = str_replace("THE_URL", $full_url, $plain_email);
+        //$html_email = str_replace("THE_URL", "<a href='" . htmlentities($full_url) . "'>" . $full_url . "</a>", $html_email);
+
+        //$message = new Mail_mime(array("eol" => $this->eol));
+        //$message->setTXTBody($plain_email);
+        //$message->setHTMLBody($html_email);
+        //$body = $message->get();
+        //$extraheaders = array(
+        //    "From" => $from,
+        //    "Subject" => $subject
+        //);
+        //$headers = $message->headers($extraheaders);
+
+        //$mail = Mail::factory("mail");
+        //$mail->send($to, $headers, $body);
+    }
+
+    private function email_shared($titleBit, $message) {
+        $queryType = $this->get_query_string_id_field();
+        $subject = $this->beta . "EFI-GNT - GNN diagrams $titleBit";
         $to = $this->email;
         $from = "EFI GNT <" . settings::get_admin_email() . ">";
         $url = settings::get_web_root() . "/view_diagrams.php";
-        $full_url = $url . "?" . http_build_query(array("$queryType-id" => $this->id, 'key' => $this->key));
+        $full_url = $url . "?" . http_build_query(array($queryType => $this->id, 'key' => $this->key));
 
         $plain_email = "";
 
         if ($this->beta) $plain_email = "Thank you for using the beta site of EFI-GNT." . $this->eol;
 
         //plain text email
-        $plain_email .= "The diagram data file you uploaded is ready to be viewed at ";
-        $plain_email .= "THE_URL" . $this->eol . $this->eol;
-        $plain_email .= "These data will only be retained for " . settings::get_retention_days() . " days." . $this->eol . $this->eol;
+        $plain_email .= $message;
         $plain_email .= settings::get_email_footer();
 
         $html_email = nl2br($plain_email, false);
@@ -233,34 +304,24 @@ class diagram_job {
 
     private function get_job_type($type) {
         $type = strtoupper($type);
-        if ($type == DiagramJob::DIRECT)
-            return DiagramJob::DIRECT;
-        elseif ($type == DiagramJob::DIRECT_ZIP)
-            return DiagramJob::DIRECT_ZIP;
+        if ($type == DiagramJob::Uploaded)
+            return DiagramJob::Uploaded;
+        elseif ($type == DiagramJob::UploadedZip)
+            return DiagramJob::UploadedZip;
         elseif ($type == DiagramJob::BLAST)
             return DiagramJob::BLAST;
-        elseif ($type == DiagramJob::LOOKUP)
-            return DiagramJob::LOOKUP;
-        elseif ($type == DiagramJob::FASTA)
-            return DiagramJob::FASTA;
+        elseif ($type == DiagramJob::IdLookup)
+            return DiagramJob::IdLookup;
+        elseif ($type == DiagramJob::FastaLookup)
+            return DiagramJob::FastaLookup;
         elseif ($type == DiagramJob::GNN)
             return DiagramJob::GNN;
         else
             return DiagramJob::UNKNOWN;
     }
 
-    private function get_query_string_prefix() {
-        switch ($this->type) {
-            case DiagramJob::BLAST:
-            case DiagramJob::LOOKUP:
-            case DiagramJob::FASTA:
-                return "direct";
-            case DiagramJob::DIRECT:
-            case DiagramJob::DIRECT_ZIP:
-                return "upload";
-            default:
-                return "gnn";
-        }
+    private function get_query_string_id_field() {
+        return functions::get_diagram_id_field($this->type);
     }
 
     private function get_output_file() {

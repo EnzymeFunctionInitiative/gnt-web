@@ -5,14 +5,14 @@ php_value max_execution_time 360
 php_value memory_limit -1
 
 <Files *.xgmml>
-ForceType text/xml
-Header set Content-Disposition attachment
+    ForceType application/octet-stream
+    Header set Content-Disposition attachment
 </Files>
 
 
 <Files *.tab>
-ForceType text/plain
-Header set Content-Disposition attachment
+    ForceType application/octet-stream
+    Header set Content-Disposition attachment
 </Files>
 
 

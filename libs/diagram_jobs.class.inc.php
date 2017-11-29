@@ -25,7 +25,7 @@ class diagram_jobs {
 
         $title = self::get_diagram_title_from_file($filename);
 
-        $jobType = $ext == "zip" ? DiagramJob::DIRECT_ZIP : DiagramJob::DIRECT;
+        $jobType = $ext == "zip" ? DiagramJob::UploadedZip : DiagramJob::Uploaded;
         
         $info = self::do_database_create($db, $email, $title, $jobType, array());
 
@@ -49,14 +49,57 @@ class diagram_jobs {
         return $info;
     }
 
-    public static function create_lookup_job($db, $email, $title, $ids) {
+    public static function create_lookup_job($db, $email, $title, $nbSize, $content, $jobType) {
 
-        $ids = preg_replace("/\s+/", ",", $ids);
-        $ids = preg_replace("/,,+/", ",", $ids);
-        $ids = preg_replace("/,+$/", "", $ids);
+        if ($jobType == DiagramJob::IdLookup) {
+            $content = preg_replace("/\s+/", ",", $content);
+            $content = preg_replace("/,,+/", ",", $content);
+            $content = preg_replace("/,+$/", "", $content);
+        }
 
-        $jobType = DiagramJob::LOOKUP;
-        $params = array();
+        return self::do_create_diagram_job($db, $email, $title, $nbSize, $jobType, "txt", $content);
+
+//        $params = array('neighborhood_size' => $nbSize);
+//
+//        $info = self::do_database_create($db, $email, $title, $jobType, $params);
+//
+//        if ($info === false || !$info["id"]) {
+//            return false;
+//        }
+//
+//        $prefix = settings::get_diagram_upload_prefix();
+//        $uploadsDir = settings::get_uploads_dir();
+//        
+//        $fileName = $prefix . $info["id"] . ".txt";
+//        $filePath = "$uploadsDir/$fileName";
+//
+//        $retCode = file_put_contents($filePath, $ids);
+//        if ($retCode === false)
+//            return false;
+//
+//        return $info;
+    }
+
+    public static function create_file_lookup_job($db, $email, $title, $nbSize, $tempName, $fileName, $jobType) {
+        return self::do_create_file_diagram_job($db, $email, $title, $nbSize, $tempName, $fileName, $jobType, "txt");
+    }
+
+//    public static function create_fasta_job($db, $email, $title, $nbSize, $fasta) {
+//        $jobType = DiagramJob::FastaLookup;
+//        return do_create_diagram_job($db, $email, $title, $nbSize, $jobType, "txt", $fasta);
+//    }
+//
+//    public static function create_file_fasta_job($db, $email, $title, $nbSize, $tempName, $fileName) {
+//        $jobType = DiagramJob::FastaLookup;
+//        return self::do_create_file_diagram_job($db, $email, $title, $nbSize, $tempName, $fileName, $jobType, "txt");
+//    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Private Helpers
+
+    private static function do_create_diagram_job($db, $email, $title, $nbSize, $jobType, $ext, $contents) {
+        $params = array('neighborhood_size' => $nbSize);
 
         $info = self::do_database_create($db, $email, $title, $jobType, $params);
 
@@ -67,12 +110,35 @@ class diagram_jobs {
         $prefix = settings::get_diagram_upload_prefix();
         $uploadsDir = settings::get_uploads_dir();
         
-        $fileName = $prefix . $info["id"] . ".txt";
+        $fileName = $prefix . $info["id"] . ".$ext";
         $filePath = "$uploadsDir/$fileName";
 
-        $retCode = file_put_contents($filePath, $ids);
+        $retCode = file_put_contents($filePath, $contents);
         if ($retCode === false)
             return false;
+
+        return $info;
+    }
+
+    private static function do_create_file_diagram_job($db, $email, $title, $nbSize, $tempName, $fileName, $jobType, $ext) {
+
+        $uploadPrefix = settings::get_diagram_upload_prefix();
+        $params = array('neighborhood_size' => $nbSize);
+
+        if (!$title)
+            $title = self::get_diagram_title_from_file($fileName);
+
+        $info = self::do_database_create($db, $email, $title, $jobType, $params);
+
+        if ($info !== false && $info['id']) {
+            functions::copy_to_uploads_dir($tempName, $fileName, $info['id'], $uploadPrefix, $ext);
+        } else {
+            return false;
+        }
+
+        if ($info === false || !$info["id"]) {
+            return false;
+        }
 
         return $info;
     }

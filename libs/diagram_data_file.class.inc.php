@@ -33,7 +33,7 @@ class diagram_data_file {
         $key = functions::generate_key();
         $title = self::get_diagram_title_from_file($filename);
 
-        $jobType = $ext == "zip" ? DiagramJob::DIRECT_ZIP : DiagramJob::DIRECT;
+        $jobType = $ext == "zip" ? DiagramJob::UploadedZip : DiagramJob::Uploaded;
 
         $insert_array = array(
             'diagram_key' => $key,
@@ -91,7 +91,7 @@ class diagram_data_file {
             else
                 $this->blast_sequence = "";
             
-            $this->is_direct = $this->job_type == DiagramJob::BLAST || $this->job_type == DiagramJob::LOOKUP || $this->job_type == DiagramJob::FASTA;
+            $this->is_direct = $this->job_type == DiagramJob::BLAST || $this->job_type == DiagramJob::IdLookup || $this->job_type == DiagramJob::FastaLookup;
 
             $this->nb_size = $row["neighborhood_size"];
             $this->gnn_name = $row["name"];
@@ -159,6 +159,10 @@ class diagram_data_file {
         return $this->job_type == DiagramJob::BLAST;
     }
 
+    public function get_verbose_job_type() {
+        return functions::get_verbose_job_type($this->job_type);
+    }
+
     public function is_direct_job() {
         return $this->is_direct;
     }
@@ -168,35 +172,7 @@ class diagram_data_file {
     }
 
     public function get_uniprot_ids() {
-        $ids = $this->get_ids_from_id_list(1);
-        if (count($ids) == 0) {
-            return $this->get_ids_from_accessions();
-        } else {
-            return $ids;
-        }
-    }
-
-    private function get_ids_from_id_list($idMatchBoolean) {
-        $ids = array();
-
-        $this->db_file = functions::get_diagram_file_path($this->id);
-        if (!file_exists($this->db_file))
-            return false;
-
-        $db = new SQLite3($this->db_file);
-        if (!functions::sqlite_table_exists($db, "id_list"))
-            return $ids;
-
-        $sql = "SELECT id FROM id_list WHERE id_match = $idMatchBoolean";
-        $dbQuery = $db->query($sql);
-
-        while ($row = $dbQuery->fetchArray()) {
-            array_push($ids, $row["id"]);
-        }
-
-        $db->close();
-
-        return $ids;
+        return $this->get_ids_from_accessions();
     }
 
     private function get_ids_from_accessions() {
@@ -221,7 +197,26 @@ class diagram_data_file {
     }
 
     public function get_unmatched_ids() {
-        return $this->get_ids_from_id_list(0);
+        $ids = array();
+
+        $this->db_file = functions::get_diagram_file_path($this->id);
+        if (!file_exists($this->db_file))
+            return false;
+
+        $db = new SQLite3($this->db_file);
+        if (!functions::sqlite_table_exists($db, "unmatched"))
+            return $ids;
+
+        $sql = "SELECT id_list FROM unmatched";
+        $dbQuery = $db->query($sql);
+
+        while ($row = $dbQuery->fetchArray()) {
+            array_push($ids, $row["id_list"]);
+        }
+
+        $db->close();
+
+        return $ids;
     }
 
     public function get_blast_sequence() {
