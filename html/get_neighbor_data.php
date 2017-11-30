@@ -34,6 +34,11 @@ else {
     $message = "No GNN selected.";
 }
 
+$window = NULL;
+if (isset($_GET["window"]) && is_numeric($_GET["window"])) {
+    $window = intval($_GET["window"]);
+}
+
 $output["message"] = "";
 $output["error"] = false;
 $output["eod"] = false;
@@ -56,7 +61,7 @@ if (array_key_exists("query", $_GET)) {
     $blastId = getBlastId();
     //$orderData = getOrder($blastId, $items, $dbFile, $blastCacheDir, $gnn);
     $orderData = getDefaultOrder();
-    $arrowData = getArrowData($items, $dbFile, $orderData);
+    $arrowData = getArrowData($items, $dbFile, $orderData, $window);
     $output["eod"] = $arrowData["eod"];
     $output["counts"] = $arrowData["counts"];
     $output["data"] = $arrowData["data"];
@@ -106,7 +111,7 @@ function getFamilies($dbFile) {
 
 
 
-function getArrowData($items, $dbFile, $orderDataStruct) {
+function getArrowData($items, $dbFile, $orderDataStruct, $window) {
 
     $orderData = $orderDataStruct['order'];
     $output = array();
@@ -157,6 +162,11 @@ function getArrowData($items, $dbFile, $orderDataStruct) {
 
 
         $nbSql = "SELECT * FROM neighbors WHERE gene_key = '" . $row['sort_key'] . "'";
+        if ($window !== NULL) {
+            //TODO: handle circular case
+            $numClause = "num >= " . ($attr['num'] - $window) . " AND num <= " . ($attr['num'] + $window);
+            $nbSql .= " AND " . $numClause;
+        }
         $dbQuery = $resultsDb->query($nbSql);
     
         $neighbors = array();
@@ -288,10 +298,19 @@ function getPageLimits() {
     $startCount = 0;
     $maxCount = 100000000;
     if (array_key_exists("page", $_GET)) {
-        $page = intval($_GET["page"]);
-        if ($page >= 0 && $page <= 10000) { // error check to limit to 10000 pages 
-            $startCount = $page * $pageSize;
-            $maxCount = $startCount + $pageSize;
+        $parm = $_GET["page"];
+        $dashPos = strpos($parm, "-");
+        if ($dashPos !== FALSE) {
+            $startPage = substr($parm, 0, $dashPos);
+            $endPage = substr($parm, $dashPos + 1);
+            $startCount = $startPage * $pageSize;
+            $maxCount = $endPage * $pageSize + $pageSize;
+        } else {
+            $page = intval($parm);
+            if ($page >= 0 && $page <= 10000) { // error check to limit to 10000 pages 
+                $startCount = $page * $pageSize;
+                $maxCount = $startCount + $pageSize;
+            }
         }
     }
 

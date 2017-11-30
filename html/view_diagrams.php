@@ -90,6 +90,7 @@ else if (isset($_GET['direct-id']) && functions::is_diagram_upload_id_valid($_GE
     $uniprotIds = $arrows->get_uniprot_ids();
     $blastSequence = $arrows->get_blast_sequence();
     $jobTypeText = $arrows->get_verbose_job_type();;
+    $nbSize = $arrows->get_neighborhood_size();
 
     $hasUnmatchedIds = count($unmatchedIds) > 0;
 
@@ -215,6 +216,24 @@ if ($isDirectJob) {
                         </div>
                     </li>
                     <li>
+                        <div id="window-tools" class="initial-hidden">
+                            <i class="fa fa-window-maximize" aria-hidden="true"></i> <span class="sidebar-header">Genome Window</span>
+                            <div>
+                                <select id="window-size" class="light">
+<?php
+    for ($i = 1; $i <= $nbSize; $i++) {
+        $sel = $i == $nbSize ? "selected" : "";
+        echo "                                    <option value=\"$i\" $sel>$i</option>\n";
+    }
+?>
+                                </select>
+                                <button type="button" class="btn btn-default tool-button" id="refresh-window" style="width:auto">
+                                    <i class="fa fa-refresh" aria-hidden="true"></i> Apply
+                                </button>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
                         <div id="page-tools" class="initial-hidden">
                             <i class="fa fa-wrench" aria-hidden="true"></i> <span class="sidebar-header">Tools</span>
 
@@ -326,34 +345,34 @@ if ($isDirectJob) {
                 arrowApp.setQueryString("<?php echo $idKeyQueryString; ?>");
 
                 $("#menu-toggle").click(function(e) {
-                    e.preventDefault();
-                    $("#wrapper").toggleClass("toggled");
-                    $("#filter-container").toggleClass("hidden");
-                    $("#toggle-icon-left").toggleClass("hidden");
-                    $("#toggle-icon-right").toggleClass("hidden");
-                    $("#advanced-search-panel").toggleClass("hidden");
-                });
+                        e.preventDefault();
+                        $("#wrapper").toggleClass("toggled");
+                        $("#filter-container").toggleClass("hidden");
+                        $("#toggle-icon-left").toggleClass("hidden");
+                        $("#toggle-icon-right").toggleClass("hidden");
+                        $("#advanced-search-panel").toggleClass("hidden");
+                    });
                 $("#filter-cb-toggle").click(function(e) {
-                    arrowApp.togglePfamNamesNumbers(this.checked);
-                });
+                        arrowApp.togglePfamNamesNumbers(this.checked);
+                    });
 
                 $("#save-canvas-button").click(function(e) {
-                    var svg = escape($("#arrow-canvas")[0].outerHTML);
-                    arrowApp.downloadSvg(svg, "<?php echo $gnnName ?>");
-                });
+                        var svg = escape($("#arrow-canvas")[0].outerHTML);
+                        arrowApp.downloadSvg(svg, "<?php echo $gnnName ?>");
+                    });
 
 <?php if ($isDirectJob) { ?>
                 arrowApp.showDefaultDiagrams();
                 $("#advanced-search-reset-button").click(function(e) {
-                    arrowApp.showDefaultDiagrams();
-                });
+                        arrowApp.showDefaultDiagrams();
+                    });
                 $("#show-uniprot-ids").click(function(e) {
-                    $("#uniprot-ids-modal").modal("show");
-                });
+                        $("#uniprot-ids-modal").modal("show");
+                    });
 <?php if ($hasUnmatchedIds) { ?>
                 $("#show-unmatched-ids").click(function(e) {
-                    $("#unmatched-ids-modal").modal("show");
-                });
+                        $("#unmatched-ids-modal").modal("show");
+                    });
 <?php } ?>
 <?php if ($isBlast) { ?>
                 $("#show-blast-sequence").click(function(e) { $("#blast-sequence-modal").modal("show"); });
@@ -361,6 +380,7 @@ if ($isDirectJob) {
 <?php } else { ?>
                 $("#start-info").show();
 <?php } ?>
+                arrowApp.setNeighborhoodWindow(<?php echo $nbSize; ?>);
             });
         </script>
 

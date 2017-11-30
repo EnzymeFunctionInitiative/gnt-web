@@ -201,7 +201,7 @@ class diagram_job {
                 $status = __FAILED__;
             print $this->id . " has completed and has status = $status.\n";
 
-            $this->db->non_select_query("UPDATE diagram SET diagram_status = '" . __FINISH__ . "', " .
+            $this->db->non_select_query("UPDATE diagram SET diagram_status = '$status', " .
                                         "diagram_time_completed = '$currentTime' WHERE diagram_id = " . $this->id);
 
             if ($isError)

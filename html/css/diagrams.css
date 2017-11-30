@@ -241,6 +241,10 @@ input.filter-cb {
     color: #aaa;
 }
 
+#window-tools select {
+    color: #333;
+}
+
 
 /* Arrows */
 
