@@ -172,10 +172,6 @@ class diagram_data_file {
     }
 
     public function get_uniprot_ids() {
-        return $this->get_ids_from_accessions();
-    }
-
-    private function get_ids_from_accessions() {
         $ids = array();
 
         $this->db_file = functions::get_diagram_file_path($this->id);
@@ -183,6 +179,21 @@ class diagram_data_file {
             return false;
 
         $db = new SQLite3($this->db_file);
+        if (!functions::sqlite_table_exists($db, "matched")) {
+            $rawIds = $this->get_ids_from_accessions($db);
+            for ($i = 0; $i < count($rawIds); $i++)
+                $ids[$rawIds[$i]] = $rawIds[$i];
+        } else {
+            $ids = $this->get_ids_from_match_table($db);
+        }
+
+        $db->close();
+
+        return $ids;
+    }
+
+    private function get_ids_from_accessions($db) {
+        $ids = array();
 
         $sql = "SELECT accession FROM attributes ORDER BY accession";
         $dbQuery = $db->query($sql);
@@ -191,7 +202,18 @@ class diagram_data_file {
             array_push($ids, $row["accession"]);
         }
 
-        $db->close();
+        return $ids;
+    }
+
+    private function get_ids_from_match_table($db) {
+        $ids = array();
+
+        $sql = "SELECT * FROM matched ORDER BY uniprot_id";
+        $dbQuery = $db->query($sql);
+
+        while ($row = $dbQuery->fetchArray()) {
+            $ids[$row["uniprot_id"]] = $row["id_list"];
+        }
 
         return $ids;
     }

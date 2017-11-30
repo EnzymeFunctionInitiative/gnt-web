@@ -53,7 +53,11 @@ if (isset($_GET["type"])) {
         $gnnName = $arrows->get_name();
         $downloadFilename = "${theId}_${gnnName}_UniProt_IDs.txt";
         $ids = $arrows->get_uniprot_ids();
-        $content = implode("\n", $ids);
+        $content = "UniProt ID\tQuery ID\n";
+        foreach ($ids as $upId => $otherId) {
+            $content .= "$upId\t$otherId\n";
+        }
+        #$content = implode("\n", $ids);
         sendHeaders($downloadFilename, strlen($content));
         print $content;
         exit(0);

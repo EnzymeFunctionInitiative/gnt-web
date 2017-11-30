@@ -13,6 +13,8 @@ $nbSize = "";
 $gnnName = "";
 $idKeyQueryString = "";
 $windowTitle = "";
+$uniprotIdModalFooter = "";
+$uniprotIdModalHeader = "";
 $uniprotIdModalText = "";
 $unmatchedIdModalText = "";
 $blastSequence = "";
@@ -94,8 +96,12 @@ else if (isset($_GET['direct-id']) && functions::is_diagram_upload_id_valid($_GE
 
     $hasUnmatchedIds = count($unmatchedIds) > 0;
 
-    for ($i = 0; $i < count($uniprotIds); $i++) {
-        $uniprotIdModalText .= "<div>" . $uniprotIds[$i] . "</div>";
+    #for ($i = 0; $i < count($uniprotIds); $i++) {
+    foreach ($uniprotIds as $upId => $otherId) {
+        if ($upId == $otherId)
+            $uniprotIdModalText .= "<tr><td>$upId</td><td></td></tr>";
+        else
+            $uniprotIdModalText .= "<tr><td>$upId</td><td>$otherId</td></tr>";
     }
 
     for ($i = 0; $i < count($unmatchedIds); $i++) {
@@ -411,7 +417,17 @@ if ($isDirectJob) {
                         <h4 class="modal-title">UniProt IDs Identified</h4>
                     </div>
                     <div class="modal-body" id="uniprot-ids">
+<?php echo $uniprotIdModalHeader; ?>
+                        <table border="0">
+                            <thead>
+                                <th width="120px">UniProt ID</th>
+                                <th>Query ID</th>
+                            </thead>
+                            <tbody>
 <?php echo $uniprotIdModalText; ?>
+<?php echo $uniprotIdModalFooter; ?>
+                            </tbody>
+                        </table>
                     </div>
                     <div class="modal-footer">
                         <a href="download_files.php?<?php echo $idKeyQueryString; ?>&type=uniprot"
