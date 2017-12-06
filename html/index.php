@@ -37,9 +37,10 @@ large datasets of sequences.
 </p>
 
 <div class="update_message">
-    The GNT database has been updated to use UniProt
+    Several new features have been added to the GNT! <a href="notes.php">See the release notes.</a>
+<!--    The GNT database has been updated to use UniProt
     <?php echo settings::get_uniprot_version(); ?> and ENA
-    <?php echo settings::get_ena_version(); ?>.
+    <?php echo settings::get_ena_version(); ?>.-->
 </div>
 
 <div class="tabs">
