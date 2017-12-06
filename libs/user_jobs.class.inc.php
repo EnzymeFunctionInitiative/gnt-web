@@ -144,6 +144,10 @@ class user_jobs {
     public function get_diagram_jobs() {
         return $this->diagram_jobs;
     }
+
+    public function get_email() {
+        return $this->user_email;
+    }
 }
 
 ?>

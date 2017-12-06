@@ -4,6 +4,8 @@ require "../libs/user_jobs.class.inc.php";
 require_once "../libs/ui.class.inc.php";
 require_once "../includes/main.inc.php";
 
+$userEmail = "Enter your email address";
+
 $gnnJobs = array();
 $diagramJobs = array();
 if (user_jobs::has_token_cookie()) {
@@ -11,6 +13,7 @@ if (user_jobs::has_token_cookie()) {
     $userJobs->load_jobs($db, user_jobs::get_user_token());
     $gnnJobs = $userJobs->get_jobs();
     $diagramJobs = $userJobs->get_diagram_jobs();
+    $userEmail = $userJobs->get_email();
 }
 
 
@@ -171,7 +174,7 @@ HTML;
                     The default value is  <?php echo settings::get_default_cooccurrence(); ?>, Valid values are 1-100.
                 </p>
                 <p>
-                    <input name='ssn_email' id='ssn_email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
+                    <input name='ssn_email' id='ssn_email' type="text" value="<?php echo $userEmail; ?>" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
                     When the file has been uploaded and processed, you will receive an email containing a link
                     to download the data.
                 </p>
@@ -197,7 +200,7 @@ HTML;
                 </p>
     
                 <p>
-                    <input name='email' id='diagram_email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
+                    <input name='email' id='diagram_email' type="text" value="<?php echo $userEmail; ?>" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;"><br>
                     When the file has been uploaded and processed, you will receive an email containing a link
                     to view the diagrams.
                 </p>
@@ -303,7 +306,7 @@ HTML;
                             </table>
                             <div>
                                 Email address:
-                                <input name='email' id='option-a-email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
+                                <input name='email' id='option-a-email' type="text" value="<?php echo $userEmail; ?>" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
                             </div>
                             <div>
                                 When the file has been uploaded and processed, you will receive an email containing a link
@@ -379,7 +382,7 @@ HTML;
 
                             <div>
                                 Email address:
-                                <input name='email' id='option-d-email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
+                                <input name='email' id='option-d-email' type="text" value="<?php echo $userEmail; ?>" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
                             </div>
                             <div>
                                 When the file has been uploaded and processed, you will receive an email containing a link
@@ -457,7 +460,7 @@ HTML;
 
                             <div>
                                 Email address:
-                                <input name='email' id='option-c-email' type="text" value="Enter your email address" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
+                                <input name='email' id='option-c-email' type="text" value="<?php echo $userEmail; ?>" class="email" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
                             </div>
                             <div>
                                 When the file has been uploaded and processed, you will receive an email containing a link
