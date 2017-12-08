@@ -1,4 +1,5 @@
 <?php
+require_once "../includes/main.inc.php";
 require_once "inc/header.inc.php";
 
 ?>
@@ -10,8 +11,10 @@ Several new features have been added to the GNT:
 
 <ul>
     <li>To improve usability of the GNT, the various tools have been separated into separate tabs.</li>
+<?php if (settings::is_recent_jobs_enabled()) { ?>
     <li>Recently-ran jobs are now listed on the first tab of the GNT. This feature is enabled
         the first time a new job is submitted.</li>
+<?php } ?>
     <li>When a GNN is created, the user now has the option of downloading the genomic neighborhood
         diagram data file; this file can be uploaded and visualized using the new "View Saved Diagrams"
         feature.</li>
