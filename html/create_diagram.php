@@ -48,13 +48,17 @@ if (isset($_POST["option"])) {
     }
 }
 
-echo json_encode(array(
+$returnData = array(
     "valid" => $valid,
     "id" => $id,
     "key" => $key,
     "message" => $message,
-    "cookieInfo" => $cookieInfo
-));
+);
+
+if (settings::is_recent_jobs_enabled())
+    $returnData["cookieInfo"] $cookieInfo;
+
+echo json_encode($returnData);
 
 
 

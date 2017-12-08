@@ -8,7 +8,7 @@ $userEmail = "Enter your email address";
 
 $gnnJobs = array();
 $diagramJobs = array();
-if (user_jobs::has_token_cookie()) {
+if (settings::is_recent_jobs_enabled() && user_jobs::has_token_cookie()) {
     $userJobs = new user_jobs();
     $userJobs->load_jobs($db, user_jobs::get_user_token());
     $gnnJobs = $userJobs->get_jobs();

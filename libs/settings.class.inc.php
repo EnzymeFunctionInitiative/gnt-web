@@ -161,5 +161,9 @@ class settings {
     public static function get_default_neighborhood_size() {
         return __DEFAULT_NEIGHBORHOOD_SIZE__;
     }
+
+    public static function is_recent_jobs_enabled() {
+        return __ENABLE_RECENT_JOBS__;
+    }
 }
 ?>

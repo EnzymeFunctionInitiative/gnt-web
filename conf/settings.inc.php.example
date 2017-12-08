@@ -47,6 +47,7 @@ define("__GNT_VERSION__","1.0");
 define("__EST_VERSION__","2.0");
 define("__EMAIL_FOOTER__","");
 define("__BETA_RELEASE__","");
+define("__ENABLE_RECENT_JOBS__",false);
 
 //
 // JOB SCHEDULING PARAMETERS
