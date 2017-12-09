@@ -6,6 +6,7 @@ require_once "../includes/main.inc.php";
 
 $userEmail = "Enter your email address";
 
+$showPreviousJobs = false;
 $gnnJobs = array();
 $diagramJobs = array();
 if (settings::is_recent_jobs_enabled() && user_jobs::has_token_cookie()) {
@@ -14,6 +15,7 @@ if (settings::is_recent_jobs_enabled() && user_jobs::has_token_cookie()) {
     $gnnJobs = $userJobs->get_jobs();
     $diagramJobs = $userJobs->get_diagram_jobs();
     $userEmail = $userJobs->get_email();
+    $showPreviousJobs = count($gnnJobs) > 0 || count($diagramJobs) > 0;
 }
 
 
@@ -48,17 +50,17 @@ large datasets of sequences.
 
 <div class="tabs">
     <ul class="tab-headers">
-<?php if (count($gnnJobs) > 0 || count($diagramJobs) > 0) { ?>
+<?php if ($showPreviousJobs) { ?>
         <li class="active"><a href="#jobs">Previous Jobs</a></li>
 <?php } ?>
         <li><a href="#create">Create GNN</a></li>
         <li><a href="#diagrams">View Saved Diagrams</a></li>
         <li><a href="#create-diagrams">Retrieve Neighborhoods</a></li>
-        <li><a href="#tutorial">Tutorial</a></li>
+        <li <?php if (! $showPreviousJobs) echo "class=\"active\""; ?>><a href="#tutorial">Tutorial</a></li>
     </ul>
 
     <div class="tab-content">
-<?php if (count($gnnJobs) > 0 || count($diagramJobs) > 0) { ?>
+<?php if ($showPreviousJobs) { ?>
         <div id="jobs" class="tab active">
 <?php } ?>
 <?php if (count($gnnJobs) > 0) { ?>
@@ -133,11 +135,11 @@ HTML;
                 </tbody>
             </table>
 <?php } ?>
-<?php if (count($gnnJobs) > 0 || count($diagramJobs) > 0) { ?>
+<?php if ($showPreviousJobs) { ?>
         </div>
 <?php } ?>
 
-        <div id="create" class="tab <?php echo (count($gnnJobs) === 0 && count($diagramJobs) === 0 ? "active" : "") ?>">
+        <div id="create" class="tab <?php echo ($showPreviousJobs ? "active" : "") ?>">
             <p>
             <strong class="blue">Upload the Sequence Similarity Network (SSN) for which you want to create a Genome Neighborhood Network (GNN)</strong>
             </p>
@@ -486,7 +488,7 @@ HTML;
             </div>
         </div>
 
-        <div id="tutorial" class="tab">
+        <div id="tutorial" class="tab <?php if (!$showPreviousJobs) echo "active"; ?>">
             <h3>EFI-Genome Neighborhood Tool Overview</h3>
     
             <p>

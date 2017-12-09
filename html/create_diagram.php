@@ -56,7 +56,7 @@ $returnData = array(
 );
 
 if (settings::is_recent_jobs_enabled())
-    $returnData["cookieInfo"] $cookieInfo;
+    $returnData["cookieInfo"] = $cookieInfo;
 
 echo json_encode($returnData);
 

@@ -246,7 +246,7 @@ if ($isDirectJob) {
 <?php if ($supportsDownload && !$isUploadedDiagram) { ?>
                             <div>
                                 <a id="download-data" href="download_files.php?<?php echo $idKeyQueryString; ?>&type=data-file"
-                                    title="Download the data to upload it for future analysis using this tool." target="_blank">
+                                    title="Download the data to upload it for future analysis using this tool.">
                                         <button type="button" class="btn btn-default tool-button">
                                             <i class="fa fa-download" aria-hidden="true"></i> Download Data
                                         </button>
@@ -431,7 +431,7 @@ if ($isDirectJob) {
                     </div>
                     <div class="modal-footer">
                         <a href="download_files.php?<?php echo $idKeyQueryString; ?>&type=uniprot"
-                            title="Download the list of UniProt IDs that are contained within the diagrams." target="_blank">
+                            title="Download the list of UniProt IDs that are contained within the diagrams.">
                                 <button type="button" class="btn btn-default" id="save-uniprot-ids-btn">Save to File</button>
                         </a>
                             <!--                            onclick='saveDataFn("<?php echo "${gnnId}_${gnnName}_UniProt_IDs.txt" ?>", "uniprot-ids")'>Save to File</button>-->
@@ -453,7 +453,7 @@ if ($isDirectJob) {
                     </div>
                     <div class="modal-footer">
                         <a href="download_files.php?<?php echo $idKeyQueryString; ?>&type=unmatched"
-                            title="Download the list of IDs that were not matched to a UniProt ID." target="_blank">
+                            title="Download the list of IDs that were not matched to a UniProt ID.">
                                 <button type="button" class="btn btn-default" id="save-unmatched-ids-btn">Save to File</button>
                         </a>
                             <!--                            onclick='saveDataFn("<?php echo "${gnnId}_${gnnName}_Unmatched.txt" ?>", "unmatched-ids")'>Save to File</button>-->
@@ -476,7 +476,7 @@ if ($isDirectJob) {
                     </div>
                     <div class="modal-footer">
                         <a href="download_files.php?<?php echo $idKeyQueryString; ?>&type=blast"
-                            title="Download the list of UniProt IDs that are contained within the diagrams." target="_blank">
+                            title="Download the list of UniProt IDs that are contained within the diagrams.">
                                 <button type="button" class="btn btn-default" id="save-blast-seq-btn">Save to File</button>
                         </a>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
