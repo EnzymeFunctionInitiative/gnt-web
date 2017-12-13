@@ -61,15 +61,15 @@ $noNeighborsFile = $gnn->get_relative_no_neighbors_file();
 $noNeighborsFilesize = $gnn->get_no_neighbors_filesize();
 
 
+$updateMessage = functions::get_update_message();
 
 require_once('inc/header.inc.php'); 
 
 ?>
 
-<div class="update_message">
-    The GNT database has been updated to use UniProt
-    <?php echo settings::get_uniprot_version(); ?> and ENA
-    <?php echo settings::get_ena_version(); ?>.
+<div id="update-message" class="update_message initial-hidden">
+    Several new features have been added to the GNT! <a href="notes.php">See the release notes.</a><br>
+<?php if (isset($updateMessage)) echo $updateMessage; ?>
 </div>
 
 <!--<hr>
