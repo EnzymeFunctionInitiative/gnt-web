@@ -30,6 +30,7 @@ for ($i=3;$i<=20;$i++) {
         $neighbor_size_html .= "<option value='" . $i . "'>" . $i . "</option>";
 }
 
+$updateMessage = functions::get_update_message();
 
 ?>
 
@@ -41,11 +42,9 @@ gene clustering. EFI-GNT enables a user to retrieve, display, and interact with 
 large datasets of sequences.
 </p>
 
-<div class="update_message">
-    Several new features have been added to the GNT! <a href="notes.php">See the release notes.</a>
-<!--    The GNT database has been updated to use UniProt
-    <?php echo settings::get_uniprot_version(); ?> and ENA
-    <?php echo settings::get_ena_version(); ?>.-->
+<div id="update-message" class="update_message initial-hidden">
+    Several new features have been added to the GNT! <a href="notes.php">See the release notes.</a><br>
+<?php if (isset($updateMessage)) echo $updateMessage; ?>
 </div>
 
 <div class="tabs">

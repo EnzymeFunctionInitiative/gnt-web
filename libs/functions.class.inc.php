@@ -277,5 +277,10 @@ class functions {
         return in_array($filetype, $filetypes);
     }
 
+    public static function get_update_message() {
+        return "The GNT database has been updated to use UniProt " . 
+            settings::get_uniprot_version() . " and ENA " . settings::get_ena_version() . ".";
+    }
+
 }
 ?>
