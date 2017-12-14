@@ -136,9 +136,9 @@ class gnn {
 
         mkdir(settings::get_output_dir() . "/" . $this->get_id());
 
-        $exec = "source /etc/profile.d/modules.sh; ";
-        $exec .= "module load " . settings::get_efidb_module() . "; ";
-        $exec .= "module load " . settings::get_gnn_module() . "; ";
+        $exec = "source /etc/profile\n";
+        $exec .= "module load " . settings::get_efidb_module() . "\n";
+        $exec .= "module load " . settings::get_gnn_module() . "\n";
         $exec .= $binary . " ";
         $exec .= " -ssnin " . $ssnin;
         $exec .= " -n " . $this->get_size();
@@ -158,6 +158,8 @@ class gnn {
         $exec .= " -arrow-file " . $this->get_diagram_data_file();
         $exec .= " -cooc-table " . $this->get_cooc_table_file();
         $exec .= " -hub-count-file \"" . $this->get_hub_count_file() . "\"";
+        if (settings::get_cluster_scheduler())
+            $exec .= " -scheduler " . settings::get_cluster_scheduler();
 
         error_log("Job ID: " . $this->get_id());
         error_log("Exec: " . $exec);
@@ -202,7 +204,7 @@ class gnn {
         chdir($out_dir);
         copy($ssnin, $target_ssnin);
 
-        $exec = "source /etc/profile.d/modules.sh; ";
+        $exce = "";
         $exec .= "module load " . settings::get_efidb_module() . "; ";
         $exec .= "module load " . settings::get_gnn_module() . "; ";
         $exec .= $binary . " ";
