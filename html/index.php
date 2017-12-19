@@ -150,7 +150,6 @@ HTML;
             </p>
     
             <form name="upload_form" id='upload_form' method="post" action="" enctype="multipart/form-data">
-                <input type="hidden" id='MAX_FILE_SIZE' name="MAX_FILE_SIZE" value="2147483648" />
     
                 <p>
                 <?php echo ui::make_upload_box("<b>Select a File to Upload:</b><br>", "ssn_file", "progress_bar", "progress_number", "The acceptable format is uncompressed or zipped xgmml."); ?>

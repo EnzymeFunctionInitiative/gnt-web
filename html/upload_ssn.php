@@ -26,7 +26,7 @@ if (isset($_POST['submit'])) {
     }
     elseif (isset($_FILES['file']['error']) && ($_FILES['file']['error'] != 0)) {
         $valid = 0;
-        $message .= "<br><b>Error uploading file: " . functions::get_upload_error($_FILES['file']['error']) . "</b>";
+        $message .= "<br><b>Error uploading file: " . functions::get_upload_error($_FILES['file']['error']) . "</b>" . $_POST['MAX_FILE_SIZE'];
     }
     elseif (!functions::is_valid_file_type($file_type)) {
         $valid = 0;

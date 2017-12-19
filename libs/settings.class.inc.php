@@ -15,7 +15,7 @@ class settings {
     }
 
     public static function get_uploads_dir() {
-        $dir =__UPLOAD_DIR__;
+        $dir = __UPLOAD_DIR__;
         if (is_dir($dir)) {
             return $dir;
         }
@@ -164,6 +164,10 @@ class settings {
 
     public static function is_recent_jobs_enabled() {
         return __ENABLE_RECENT_JOBS__;
+    }
+
+    public static function get_cluster_scheduler() {
+        return __CLUSTER_SCHEDULER__;
     }
 }
 ?>
