@@ -204,9 +204,11 @@ class gnn {
         chdir($out_dir);
         copy($ssnin, $target_ssnin);
 
-        $exce = "";
-        $exec .= "module load " . settings::get_efidb_module() . "; ";
-        $exec .= "module load " . settings::get_gnn_module() . "; ";
+        $sched = settings::get_cluster_scheduler();
+
+        $exec = "source /etc/profile\n";
+        $exec .= "module load " . settings::get_efidb_module() . "\n";
+        $exec .= "module load " . settings::get_gnn_module() . "\n";
         $exec .= $binary . " ";
         $exec .= " -ssnin \"" . $target_ssnin . "\"";
         $exec .= " -nb-size " . $this->get_size();
@@ -228,6 +230,8 @@ class gnn {
         $exec .= " -arrow-file \"" . $this->get_diagram_data_file() . "\"";
         $exec .= " -cooc-table \"" . $this->get_cooc_table_file() . "\"";
         $exec .= " -hub-count-file \"" . $this->get_hub_count_file() . "\"";
+        if ($sched)
+            $exec .= " -scheduler $sched";
 
         //TODO: remove this debug message
         error_log("Job ID: " . $this->get_id());
@@ -241,7 +245,10 @@ class gnn {
         $output = exec($exec, $output_array, $exit_status);
         $output = trim(rtrim($output));
 
-        $pbs_job_number = substr($output, 0, strpos($output, "."));
+        if ($sched == "slurm")
+            $pbs_job_number = $output;
+        else
+            $pbs_job_number = substr($output, 0, strpos($output, "."));
 
         if ($pbs_job_number && !$exit_status) {
             if (!$is_debug) {
@@ -666,7 +673,7 @@ class gnn {
             $this->is_legacy = is_null($this->status);
 
             // Sanitize the filename
-            $this->filename = mb_ereg_replace("([\._]{2,})", '', mb_ereg_replace("([^a-zA-Z0-9\-_\.])", '', $this->filename));
+            $this->filename = preg_replace("([\._]{2,})", '', preg_replace("([^a-zA-Z0-9\-_\.])", '', $this->filename));
 
             $fname = strtolower($this->filename);
             $ext_pos = strpos($fname, ".xgmml");
@@ -679,7 +686,7 @@ class gnn {
         }	
     }
 
-    protected function generate_key() {
+    protected static function generate_key() {
         $key = uniqid (rand (),true);
         $hash = sha1($key);
         return $hash;

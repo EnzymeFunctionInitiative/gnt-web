@@ -31,7 +31,11 @@ Several new features have been added to the GNT:
         recognized IDs.</li>
 </ul>
 
+<p></p>
 
-<?php require_once('inc/footer.inc.php'); ?>
+<p class="center"><a href="index.php"><button class="dark">Run GNT</button></a></p>
+
+
+<?php require_once("inc/footer.inc.php"); ?>
 
 
