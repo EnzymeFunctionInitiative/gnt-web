@@ -138,7 +138,7 @@ HTML;
         </div>
 <?php } ?>
 
-        <div id="create" class="tab <?php echo (!$showPreviousJobs ? "active" : "") ?>">
+        <div id="create" class="tab">
             <p>
             <strong class="blue">Upload the Sequence Similarity Network (SSN) for which you want to create a Genome Neighborhood Network (GNN)</strong>
             </p>
