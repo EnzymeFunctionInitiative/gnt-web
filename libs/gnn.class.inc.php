@@ -855,13 +855,13 @@ class gnn {
         }
 
     public function check_pbs_running() {
-        $sched = strtolower(functions::get_cluster_scheduler());
+        $sched = strtolower(settings::get_cluster_scheduler());
         $jobNum = $this->get_pbs_number();
         $output = "";
         $exit_status = "";
         $exec = "";
         if ($sched == "slurm")
-            $exec = "squeue $jobNum 2> /dev/null | grep $jobNum";
+            $exec = "squeue --job $jobNum 2> /dev/null | grep $jobNum";
         else
             $exec = "qstat $jobNum 2> /dev/null | grep $jobNum";
         exec($exec,$output,$exit_status);
