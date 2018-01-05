@@ -136,9 +136,9 @@ class gnn {
 
         mkdir(settings::get_output_dir() . "/" . $this->get_id());
 
-        $exec = "source /etc/profile.d/modules.sh; ";
-        $exec .= "module load " . settings::get_efidb_module() . "; ";
-        $exec .= "module load " . settings::get_gnn_module() . "; ";
+        $exec = "source /etc/profile\n";
+        $exec .= "module load " . settings::get_efidb_module() . "\n";
+        $exec .= "module load " . settings::get_gnn_module() . "\n";
         $exec .= $binary . " ";
         $exec .= " -ssnin " . $ssnin;
         $exec .= " -n " . $this->get_size();
@@ -158,6 +158,8 @@ class gnn {
         $exec .= " -arrow-file " . $this->get_diagram_data_file();
         $exec .= " -cooc-table " . $this->get_cooc_table_file();
         $exec .= " -hub-count-file \"" . $this->get_hub_count_file() . "\"";
+        if (settings::get_cluster_scheduler())
+            $exec .= " -scheduler " . settings::get_cluster_scheduler();
 
         error_log("Job ID: " . $this->get_id());
         error_log("Exec: " . $exec);
@@ -202,9 +204,11 @@ class gnn {
         chdir($out_dir);
         copy($ssnin, $target_ssnin);
 
-        $exec = "source /etc/profile.d/modules.sh; ";
-        $exec .= "module load " . settings::get_efidb_module() . "; ";
-        $exec .= "module load " . settings::get_gnn_module() . "; ";
+        $sched = settings::get_cluster_scheduler();
+
+        $exec = "source /etc/profile\n";
+        $exec .= "module load " . settings::get_efidb_module() . "\n";
+        $exec .= "module load " . settings::get_gnn_module() . "\n";
         $exec .= $binary . " ";
         $exec .= " -ssnin \"" . $target_ssnin . "\"";
         $exec .= " -nb-size " . $this->get_size();
@@ -226,6 +230,8 @@ class gnn {
         $exec .= " -arrow-file \"" . $this->get_diagram_data_file() . "\"";
         $exec .= " -cooc-table \"" . $this->get_cooc_table_file() . "\"";
         $exec .= " -hub-count-file \"" . $this->get_hub_count_file() . "\"";
+        if ($sched)
+            $exec .= " -scheduler $sched";
 
         //TODO: remove this debug message
         error_log("Job ID: " . $this->get_id());
@@ -239,7 +245,10 @@ class gnn {
         $output = exec($exec, $output_array, $exit_status);
         $output = trim(rtrim($output));
 
-        $pbs_job_number = substr($output, 0, strpos($output, "."));
+        if ($sched == "slurm")
+            $pbs_job_number = $output;
+        else
+            $pbs_job_number = substr($output, 0, strpos($output, "."));
 
         if ($pbs_job_number && !$exit_status) {
             if (!$is_debug) {
@@ -664,7 +673,7 @@ class gnn {
             $this->is_legacy = is_null($this->status);
 
             // Sanitize the filename
-            $this->filename = mb_ereg_replace("([\._]{2,})", '', mb_ereg_replace("([^a-zA-Z0-9\-_\.])", '', $this->filename));
+            $this->filename = preg_replace("([\._]{2,})", '', preg_replace("([^a-zA-Z0-9\-_\.])", '', $this->filename));
 
             $fname = strtolower($this->filename);
             $ext_pos = strpos($fname, ".xgmml");
@@ -677,7 +686,7 @@ class gnn {
         }	
     }
 
-    protected function generate_key() {
+    protected static function generate_key() {
         $key = uniqid (rand (),true);
         $hash = sha1($key);
         return $hash;
@@ -846,9 +855,15 @@ class gnn {
         }
 
     public function check_pbs_running() {
-        $output;
-        $exit_status;
-        $exec = "qstat " . $this->get_pbs_number() . " 2> /dev/null | grep " . $this->get_pbs_number();
+        $sched = strtolower(settings::get_cluster_scheduler());
+        $jobNum = $this->get_pbs_number();
+        $output = "";
+        $exit_status = "";
+        $exec = "";
+        if ($sched == "slurm")
+            $exec = "squeue --job $jobNum 2> /dev/null | grep $jobNum";
+        else
+            $exec = "qstat $jobNum 2> /dev/null | grep $jobNum";
         exec($exec,$output,$exit_status);
         if (count($output) == 1) {
             return true;

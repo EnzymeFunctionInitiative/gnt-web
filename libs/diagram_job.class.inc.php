@@ -146,11 +146,12 @@ class diagram_job {
     private function execute_job($commandLine) {
         
         $target = $this->get_output_file();
+        $sched = settings::get_cluster_scheduler();
 
         $binary = settings::get_process_diagram_script();
-        $exec = "source /etc/profile.d/modules.sh; ";
-        $exec .= "module load " . settings::get_gnn_module() . "; ";
-        $exec .= "module load " . settings::get_efidb_module() . "; ";
+        $exec = "source /etc/profile\n";
+        $exec .= "module load " . settings::get_gnn_module() . "\n";
+        $exec .= "module load " . settings::get_efidb_module() . "\n";
         $exec .= $binary . " ";
         $exec .= $commandLine;
         $exec .= " -output \"$target\"";
@@ -162,6 +163,8 @@ class diagram_job {
             $exec .= " -job-type \"" . $this->type . "\"";
         if (array_key_exists("neighborhood_size", $this->params) && $this->params["neighborhood_size"])
             $exec .= " -nb-size " . $this->params["neighborhood_size"];
+        if ($sched)
+            $exec .= " -scheduler $sched";
 
         //TODO: remove this debug message
         error_log("Job ID: " . $this->id);
@@ -172,7 +175,11 @@ class diagram_job {
         $output = exec($exec, $output_array, $exit_status);
         $output = trim(rtrim($output));
 
-        $pbs_job_number = substr($output, 0, strpos($output, "."));
+        if ($sched == "slurm")
+            $pbs_job_number = $output;
+        else
+            $pbs_job_number = substr($output, 0, strpos($output, "."));
+
         if (!$exit_status) {
             error_log("Job running with job # $pbs_job_number");
             $this->db->non_select_query("UPDATE diagram SET diagram_status = '" . __RUNNING__ . "' WHERE diagram_id = " . $this->id);
