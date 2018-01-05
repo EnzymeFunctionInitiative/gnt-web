@@ -43,9 +43,10 @@ large datasets of sequences.
 </p>
 
 <div id="update-message" class="update_message initial-hidden">
-    Several new features have been added to the GNT! <a href="notes.php">See the release notes.</a><br>
 <?php if (isset($updateMessage)) echo $updateMessage; ?>
 </div>
+
+A listing of new features and other information pertaining to EST is available on the <a href="notes.php">release notes page</a>. 
 
 <div class="tabs">
     <ul class="tab-headers">

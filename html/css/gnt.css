@@ -96,6 +96,7 @@ h2.bold {
 
 a {
     color: #005591;
+    font-weight: bold;
 }
 
 table td {
