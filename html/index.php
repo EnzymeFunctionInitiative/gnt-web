@@ -43,9 +43,10 @@ large datasets of sequences.
 </p>
 
 <div id="update-message" class="update_message initial-hidden">
-    Several new features have been added to the GNT! <a href="notes.php">See the release notes.</a><br>
 <?php if (isset($updateMessage)) echo $updateMessage; ?>
 </div>
+
+A listing of new features and other information pertaining to EST is available on the <a href="notes.php">release notes page</a>. 
 
 <div class="tabs">
     <ul class="tab-headers">
@@ -138,7 +139,7 @@ HTML;
         </div>
 <?php } ?>
 
-        <div id="create" class="tab <?php echo (!$showPreviousJobs ? "active" : "") ?>">
+        <div id="create" class="tab">
             <p>
             <strong class="blue">Upload the Sequence Similarity Network (SSN) for which you want to create a Genome Neighborhood Network (GNN)</strong>
             </p>
@@ -150,7 +151,6 @@ HTML;
             </p>
     
             <form name="upload_form" id='upload_form' method="post" action="" enctype="multipart/form-data">
-                <input type="hidden" id='MAX_FILE_SIZE' name="MAX_FILE_SIZE" value="2147483648" />
     
                 <p>
                 <?php echo ui::make_upload_box("<b>Select a File to Upload:</b><br>", "ssn_file", "progress_bar", "progress_number", "The acceptable format is uncompressed or zipped xgmml."); ?>

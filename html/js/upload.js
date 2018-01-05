@@ -8,7 +8,7 @@ function uploadFile(fileInputId, formId, progressNumId, progressBarId, messageId
     addParam(fd, "submit", submitId);
     if (isSsn) {
         addParam(fd, "neighbor_size", "neighbor_size");
-        addParam(fd, "MAX_FILE_SIZE", "MAX_FILE_SIZE");
+//        addParam(fd, "MAX_FILE_SIZE", "MAX_FILE_SIZE");
         addParam(fd, "cooccurrence", "cooccurrence");
     }
 
