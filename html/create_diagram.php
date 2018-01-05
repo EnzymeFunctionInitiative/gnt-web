@@ -42,9 +42,9 @@ if (isset($_POST["option"])) {
             $key = $retval["key"];
         }
         
-        $userObj = new user_jobs();
-        $userObj->save_user($db, $email);
-        $cookieInfo = $userObj->get_cookie();
+        //$userObj = new user_jobs();
+        //$userObj->save_user($db, $email);
+        //$cookieInfo = $userObj->get_cookie();
     }
 }
 
@@ -55,8 +55,12 @@ $returnData = array(
     "message" => $message,
 );
 
-if (settings::is_recent_jobs_enabled())
+// This resets the expiration date of the cookie so that frequent users don't have to login in every X days as long
+// as they keep using the app.
+if ($valid && settings::is_recent_jobs_enabled() && user_jobs::has_token_cookie()) {
+    $cookieInfo = user_jobs::get_cookie_shared(user_jobs::get_user_token());
     $returnData["cookieInfo"] = $cookieInfo;
+}
 
 echo json_encode($returnData);
 

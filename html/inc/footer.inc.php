@@ -29,6 +29,8 @@ if ((isset($Is404Page) && $Is404Page) || (isset($IsExpiredPage) && $IsExpiredPag
         </div>
     </div> <!-- container -->
 
+<?php include("../../main/html/inc/global_login.inc.php"); ?>
+
 </body>
 </html>
 

@@ -15,6 +15,7 @@ include_once '../conf/settings.inc.php';
 
 date_default_timezone_set(__TIMEZONE__);
 $db = new db(__MYSQL_HOST__,__MYSQL_DATABASE__,__MYSQL_USER__,__MYSQL_PASSWORD__);
+#$authDb = new db(__MYSQL_HOST__,__MYSQL_AUTH_DATABASE__,__MYSQL_USER__,__MYSQL_PASSWORD__);
 
 
 function error404($message = "") {

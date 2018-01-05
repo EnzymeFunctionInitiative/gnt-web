@@ -1,11 +1,11 @@
 <?php
-require_once "inc/header.inc.php";
-require "../libs/user_jobs.class.inc.php";
+require_once "../libs/user_jobs.class.inc.php";
 require_once "../libs/ui.class.inc.php";
 require_once "../includes/main.inc.php";
 
 $userEmail = "Enter your email address";
 
+$IsLoggedIn = false;
 $showPreviousJobs = false;
 $gnnJobs = array();
 $diagramJobs = array();
@@ -16,8 +16,9 @@ if (settings::is_recent_jobs_enabled() && user_jobs::has_token_cookie()) {
     $diagramJobs = $userJobs->get_diagram_jobs();
     $userEmail = $userJobs->get_email();
     $showPreviousJobs = count($gnnJobs) > 0 || count($diagramJobs) > 0;
+    if ($userEmail)
+        $IsLoggedIn = $userEmail;
 }
-
 
 $neighborhood = 10;
 $cooccurrence = 20;
@@ -31,6 +32,8 @@ for ($i=3;$i<=20;$i++) {
 }
 
 $updateMessage = functions::get_update_message();
+
+require_once "inc/header.inc.php";
 
 ?>
 

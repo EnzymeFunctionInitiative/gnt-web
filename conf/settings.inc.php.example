@@ -35,6 +35,7 @@ define("__MYSQL_HOST__","");
 define("__MYSQL_USER__","");
 define("__MYSQL_PASSWORD__","");
 define("__MYSQL_DATABASE__","");
+define("__MYSQL_AUTH_DATABASE__","");
 
 //
 // UI PARAMETERS

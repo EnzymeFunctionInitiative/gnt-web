@@ -4,7 +4,7 @@ body {
     background: #ececec url(../images/bodyBG.png) repeat-y center;
     font-family: Arial, sans-serif;
     color: #333;
-    margin-top: 0px;
+    margin: 0px;
 }
 
 /* Set header fonts */
